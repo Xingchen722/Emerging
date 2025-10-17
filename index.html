@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Insights - 全球协调AI助手</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-globe-americas"></i>
+                <span>Network Insights</span>
+            </div>
+            <div class="nav-menu">
+                <a href="#home" class="nav-link" data-i18n="nav.home">首页</a>
+                <a href="#features" class="nav-link" data-i18n="nav.features">功能</a>
+                <a href="#chat" class="nav-link" data-i18n="nav.chat">AI助手</a>
+                <a href="#about" class="nav-link" data-i18n="nav.about">关于</a>
+            </div>
+            <div class="nav-actions">
+                <button class="lang-toggle" id="navLangBtn" aria-haspopup="true" aria-expanded="false" title="Language">
+                    <i class="fas fa-globe"></i>
+                </button>
+                <div class="lang-menu" id="navLangMenu" role="menu">
+                    <button class="lang-item" data-lang="zh">🇨🇳 中文</button>
+                    <button class="lang-item" data-lang="en">🇺🇸 English</button>
+                    <button class="lang-item" data-lang="de">🇩🇪 Deutsch</button>
+                    <button class="lang-item" data-lang="fr">🇫🇷 Français</button>
+                    <button class="lang-item" data-lang="ja">🇯🇵 日本語</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容区域 -->
+    <main class="main-content">
+        <!-- 英雄区域 -->
+        <section id="home" class="hero">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    <span class="gradient-text">Network Insights</span>
+                    <br data-i18n="hero.title">全球协调AI助手
+                </h1>
+                <p class="hero-subtitle" data-i18n="hero.subtitle">
+                    让全球团队协作更智能、更高效。通过AI驱动的对话式界面，
+                    快速获取项目状态、联系团队成员、获取实时报告。
+                </p>
+                <div class="hero-buttons">
+                    <button class="btn-primary" onclick="scrollToChat()">
+                        <i class="fas fa-comments"></i>
+                        <span data-i18n="hero.startChat">开始对话</span>
+                    </button>
+                    <button class="btn-secondary" onclick="scrollToFeatures()">
+                        <i class="fas fa-info-circle"></i>
+                        <span data-i18n="hero.learnMore">了解更多</span>
+                    </button>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="chat-preview">
+                    <div class="chat-message user-message">
+                        <div class="message-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="message-content">
+                            货物#342现在在哪里？
+                        </div>
+                    </div>
+                    <div class="chat-message ai-message">
+                        <div class="message-avatar ai-avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="message-content">
+                            货物#342目前在新加坡港口，预计今晚9点启航。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 功能特性区域 -->
+        <section id="features" class="features">
+            <div class="container">
+                <h2 class="section-title" data-i18n="features.title">核心功能</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-question-circle"></i>
+                        </div>
+                        <h3 data-i18n="features.smartQA.title">智能问答</h3>
+                        <p data-i18n="features.smartQA.desc">快速获取项目状态、货物位置、系统状态等实时信息</p>
+                        <div class="feature-example">
+                            <strong data-i18n="features.example">示例：</strong>"Where is shipment #342 now?"
+                        </div>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3 data-i18n="features.teamCom.title">团队沟通辅助</h3>
+                        <p data-i18n="features.teamCom.desc">自动识别并连接相关团队成员，促进跨部门协作</p>
+                        <div class="feature-example">
+                            <strong data-i18n="features.example">示例：</strong>"Who's the contact for Europe network issues?"
+                        </div>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3 data-i18n="features.reports.title">智能报告</h3>
+                        <p data-i18n="features.reports.desc">自动生成每日/每周全球协调报告，识别瓶颈和机会</p>
+                        <div class="feature-example">
+                            <strong data-i18n="features.example">示例：</strong>全球延误分析、沟通频率统计
+                        </div>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-language"></i>
+                        </div>
+                        <h3 data-i18n="features.translation.title">语言辅助</h3>
+                        <p data-i18n="features.translation.desc">实时翻译多语言消息，消除全球团队沟通障碍</p>
+                        <div class="feature-example">
+                            <strong data-i18n="features.example">示例：</strong>中文↔英文↔德文自动翻译
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 聊天界面区域 -->
+        <section id="chat" class="chat-section">
+            <div class="container">
+                <h2 class="section-title" data-i18n="chat.title">AI助手对话</h2>
+                <div class="chat-container">
+                    <div class="chat-header">
+                        <div class="chat-avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="chat-info">
+                            <h3 data-i18n="chat.aiAssistant">Network AI助手</h3>
+                            <span class="status" data-i18n="chat.online">在线</span>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="chat-message ai-message" id="welcomeMessage">
+                            <div class="message-avatar ai-avatar">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="message-content">
+                                <span data-i18n="chat.welcome.hello">你好！我是Network Insights AI助手。我可以帮你：</span>
+                                <ul>
+                                    <li data-i18n="chat.welcome.item1">查询项目状态和货物位置</li>
+                                    <li data-i18n="chat.welcome.item2">联系相关团队成员</li>
+                                    <li data-i18n="chat.welcome.item3">生成协调报告</li>
+                                    <li data-i18n="chat.welcome.item4">翻译多语言消息</li>
+                                </ul>
+                                <span data-i18n="chat.welcome.ask">有什么我可以帮助你的吗？</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-input-container">
+                        <div class="language-selector">
+                            <label for="languageSelect">
+                                <i class="fas fa-globe"></i>
+                                <span data-i18n="chat.selectLanguage">选择语言:</span>
+                            </label>
+                            <select id="languageSelect" onchange="changeLanguage()">
+                                <option value="zh">🇨🇳 中文</option>
+                                <option value="en">🇺🇸 English</option>
+                                <option value="de">🇩🇪 Deutsch</option>
+                                <option value="fr">🇫🇷 Français</option>
+                                <option value="ja">🇯🇵 日本語</option>
+                                <option value="ko">🇰🇷 한국어</option>
+                                <option value="es">🇪🇸 Español</option>
+                                <option value="it">🇮🇹 Italiano</option>
+                                <option value="pt">🇵🇹 Português</option>
+                                <option value="ru">🇷🇺 Русский</option>
+                            </select>
+                        </div>
+                        <div class="chat-input">
+                            <input type="text" id="messageInput" data-i18n-placeholder="chat.inputPlaceholder" placeholder="输入你的问题..." autocomplete="off">
+                            <button id="sendButton" onclick="sendMessage()">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <div class="quick-actions">
+                            <button class="quick-btn" onclick="askQuestion('货物#342现在在哪里？')" data-i18n="chat.quickActions.shipment">查询货物状态</button>
+                            <button class="quick-btn" onclick="askQuestion('欧洲网络问题联系谁？')" data-i18n="chat.quickActions.contact">联系团队</button>
+                            <button class="quick-btn" onclick="askQuestion('生成今天的协调报告')" data-i18n="chat.quickActions.report">生成报告</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 关于区域 -->
+        <section id="about" class="about">
+            <div class="container">
+                <h2 class="section-title" data-i18n="about.title">关于Network Insights</h2>
+                <div class="about-content">
+                    <div class="about-text">
+                        <p data-i18n="about.desc1">
+                            Network Insights是一个专为跨国公司设计的智能协调平台。
+                            我们理解全球团队协作的挑战，因此开发了这个AI驱动的解决方案。
+                        </p>
+                        <p data-i18n="about.desc2">
+                            通过自然语言处理、实时数据分析和智能推荐，
+                            我们帮助全球团队更高效地沟通、协调和决策。
+                        </p>
+                        <div class="stats">
+                            <div class="stat-item">
+                                <div class="stat-number">24/7</div>
+                                <div class="stat-label" data-i18n="about.stats.availability">全天候服务</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">50+</div>
+                                <div class="stat-label" data-i18n="about.stats.languages">支持语言</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">99.9%</div>
+                                <div class="stat-label" data-i18n="about.stats.uptime">系统可用性</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="about-visual">
+                        <div class="globe-animation">
+                            <i class="fas fa-globe"></i>
+                            <div class="connection-lines">
+                                <div class="line line-1"></div>
+                                <div class="line line-2"></div>
+                                <div class="line line-3"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Network Insights</h4>
+                    <p data-i18n="footer.tagline">让全球协作更智能</p>
+                </div>
+                <div class="footer-section">
+                    <h4 data-i18n="footer.product">产品</h4>
+                    <ul>
+                        <li><a href="#features" data-i18n="footer.features">功能特性</a></li>
+                        <li><a href="#chat" data-i18n="footer.aiAssistant">AI助手</a></li>
+                        <li><a href="#about" data-i18n="footer.about">关于我们</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4 data-i18n="footer.support">支持</h4>
+                    <ul>
+                        <li><a href="#" data-i18n="footer.help">帮助中心</a></li>
+                        <li><a href="#" data-i18n="footer.contact">联系我们</a></li>
+                        <li><a href="#" data-i18n="footer.privacy">隐私政策</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p data-i18n="footer.copyright">&copy; 2024 Network Insights. 保留所有权利。</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

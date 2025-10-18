@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Network Insights – Global Shipping Coordination AI</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --ocean-dark: #0a3d62;
+      --ocean-mid: #3c6382;
+      --ocean-light: #60a3bc;
+      --accent: #e58e26;
+      --text: #f5f6fa;
+      --muted: #cfe1ed;
+      --card: #0e2a41aa;
+      --nav: #0a3d62cc;
+      --chip: #14334a;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      font: 16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Arial;
+      color: var(--text);
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+    .container { width: min(1100px, 92%); margin-inline: auto; }
+    .ocean-bg {
+      position: fixed; inset: 0; z-index: -10;
+      background: linear-gradient(180deg, var(--ocean-light) 0%, var(--ocean-mid) 50%, var(--ocean-dark) 100%);
+    }
+    .wave-container { position: fixed; inset: 0; overflow: hidden; z-index: -9; }
+    .wave {
+      position: absolute; width: 200%; height: 200px;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.2" d="M0,192L48,197.3C96,203,192,213,288,218.7C384,224,480,224,576,202.7C672,181,768,139,864,138.7C960,139,1056,181,1152,186.7C1248,192,1344,160,1392,144L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+      background-repeat: repeat-x;
+      background-position: 0 bottom;
+      background-size: 200% 100%;
+    }
+    .wave-1 { bottom: 0; animation: wave 15s linear infinite; opacity: 0.2; }
+    .wave-2 { bottom: -25px; animation: wave 10s linear reverse infinite; opacity: 0.15; }
+    .wave-3 { bottom: -50px; animation: wave 8s linear infinite; opacity: 0.1; }
+    @keyframes wave { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+    .navbar {
+      position: sticky; top: 0; z-index: 50;
+      background: var(--nav); backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+    }
+    .nav-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; }
+    .brand { display: flex; gap: 10px; align-items: center; font-weight: 800; }
+    .brand i { color: var(--accent); }
+    .nav-links { display: flex; gap: 22px; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 14px; border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #0d314bb3; cursor: pointer; color: var(--text);
+    }
+    .hero { position: relative; padding: 80px 0 40px; }
+    .title { font-size: clamp(36px,5vw,56px); font-weight: 900; margin: 0 0 10px; }
+    .title .accent { color: var(--accent); text-shadow: 0 2px 0 rgba(0,0,0,0.2); }
+    .subtitle { max-width: 820px; color: var(--muted); margin: 10px 0 24px; }
+    .cta { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn-primary { background: var(--accent); border-color: transparent; color: #1b1404; }
+    .cargo-card { position: relative; margin: 36px 0 0; width: min(560px,95%); background: #f6fbff; color: #16324b; border-radius: 16px; box-shadow: var(--shadow); padding: 16px; }
+    .cargo-chip { position: absolute; right: 14px; top: -12px; background: var(--accent); color: #2a1900; padding: 6px 10px; border-radius: 10px; font-weight: 800; }
+    .cargo-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #dde7f3; }
+    .cargo-row:last-child { border-bottom: 0; }
+    .section { padding: 64px 0; }
+    .section h2 { text-align: center; margin: 0 0 8px; font-size: clamp(28px,3.2vw,40px); }
+    .under { width: 70px; height: 4px; background: var(--accent); border-radius: 999px; margin: 0 auto 28px; }
+    .about-panel { background: linear-gradient(180deg, rgba(13,41,65,.92), rgba(9,31,49,.92)); border: 1px solid rgba(255,255,255,.10); border-radius: 26px; box-shadow: 0 18px 60px rgba(0,0,0,.35); padding: 38px 26px; }
+    .about-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 34px; align-items: center; }
+    @media(max-width:980px){ .about-grid{ grid-template-columns: 1fr; } }
+    .about-kpis { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; margin-top: 26px; }
+    .kpi { background: #0d2134cc; border: 1px solid rgba(255,255,255,.1); padding: 18px; border-radius: 16px; text-align: center; }
+    .kpi .n { font-size: 28px; font-weight: 900; color: var(--accent); }
+    .radar { width: 100%; max-width: 320px; margin-inline: auto; filter: drop-shadow(0 8px 20px rgba(0,0,0,.35)); }
+    .section-divider { height: 6px; background: var(--accent); opacity: .9; }
+    footer { background: #07131fcc; border-top: 1px solid rgba(255,255,255,.06); }
+    .foot { display: grid; gap: 26px; padding: 26px 0; align-items: start; }
+    @media(min-width:860px){ .foot{ grid-template-columns: repeat(3,1fr); } }
+    .copyright { border-top: 1px solid rgba(255,255,255,.06); padding: 12px 0; text-align: center; color: #a8bed4; }
+    /* --- FEATURES styles --- */
+    .features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:28px}
+    .feature-card{border-radius:22px;overflow:hidden;background:#0e2a41;box-shadow:0 14px 38px rgba(0,0,0,.35)}
+    .feature-top{background:#0a2a42 url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22240%22 height=%22240%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2218%22 fill=%22%230f3a5a%22/%3E%3Ccircle cx=%22160%22 cy=%2280%22 r=%2212%22 fill=%22%230f3a5a%22/%3E%3Ccircle cx=%2290%22 cy=%22160%22 r=%2214%22 fill=%22%230f3a5a%22/%3E%3C/svg%3E') repeat;border-bottom:4px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;height:120px}
+    .feature-top i{font-size:44px;color:#ffffff}
+    .feature-body{background:#f5f9fc;color:#0d2235;padding:22px}
+    .feature-body h3{margin:0 0 10px;color:#0b2a45;font-size:24px}
+    .feature-body p{margin:0 0 14px;color:#445b6d}
+    .example{background:#ffffff;border:1px solid #f0f4f8;border-left:4px solid var(--accent);border-radius:12px;padding:12px;}
+
+    /* --- CHAT demo styles --- */
+    .chat-wrap{display:flex;justify-content:center}
+    .chat-box{width:min(900px,100%);border-radius:24px;background:#0c2b44;box-shadow:0 18px 50px rgba(0,0,0,.35);overflow:hidden}
+    .chat-header{display:flex;gap:10px;align-items:center;padding:14px 18px;background:#0a2540;color:#fff}
+    .chat-header .dot{width:10px;height:10px;background:#23d160;border-radius:50%;display:inline-block}
+    .msgs{height:320px;overflow:auto;background:#f5f7fb;color:#102131;padding:18px}
+    .ai,.user{display:flex;margin:8px 0}
+    .ai{justify-content:flex-start}
+    .user{justify-content:flex-end}
+    .bubble{max-width:74%;padding:12px 14px;border-radius:14px;background:#fff;box-shadow:0 4px 16px rgba(0,0,0,.08)}
+    .ai .bubble{background:#ffffff}
+    .user .bubble{background:#e6f0f9}
+    .inputbar{display:flex;gap:10px;padding:12px;background:#f0f4f8}
+    .inputbar input{flex:1;border-radius:12px;border:1px solid #d8e2ee;padding:12px 14px;font-size:16px}
+    .inputbar button{border:0;border-radius:999px;background:var(--accent);color:#1f1404;padding:12px 16px;cursor:pointer}
+  /* === Moving ship background (non-intrusive) === */
+    .bg-ship { position: fixed; z-index: -8; color: #e45740; opacity: .85; font-size: 36px; will-change: transform; }
+    @keyframes sailX { 0% { transform: translateX(-12vw); } 50% { transform: translateX(112vw); } 100% { transform: translateX(-12vw); } }
+    @keyframes floatY { 0% { margin-top: 0 } 50% { margin-top: 8px } 100% { margin-top: 0 } }
+  </style>
+</head>
+<body>
+  <div class="ocean-bg"></div>
+  <div class="wave-container"><div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div></div>
+
+  <nav class="navbar">
+    <div class="container nav-row">
+      <div class="brand"><i class="fa-solid fa-ship"></i> <span>Network Insights</span></div>
+      <div class="nav-links">
+        <a href="#home">Home</a>
+        <a href="#features">Features</a>
+        <a href="#chat">AI Assistant</a>
+        <a href="#about">About</a>
+      </div>
+      <button class="btn"><i class="fa-solid fa-globe"></i> Language</button>
+    </div>
+  </nav>
+
+  <header id="home" class="hero">
+    <div class="container">
+      <h1 class="title"><span class="accent">Network Insights</span><br/>Global Shipping Coordination AI</h1>
+      <p class="subtitle">Navigate global logistics with precision. Our AI‑powered platform provides real‑time tracking, team coordination, and actionable insights for your global shipping operations.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="#chat"><i class="fa-solid fa-comments"></i> Start Chat</a>
+        <a class="btn" href="#features"><i class="fa-solid fa-circle-info"></i> Learn More</a>
+      </div>
+      <div class="cargo-card" aria-label="Cargo status mock card">
+        <div class="cargo-chip">#342</div>
+        <div class="cargo-row"><span>Current Location:</span> <span>Singapore Port</span></div>
+        <div class="cargo-row"><span>Departure:</span> <span>Today, 21:00</span></div>
+        <div class="cargo-row"><span>Destination:</span> <span>Rotterdam, NL</span></div>
+        <div class="cargo-row"><span>Status:</span> <span>On Schedule</span></div>
+      </div>
+    </div>
+  </header>
+
+  <section id="features" class="section">
+    <div class="container">
+      <h2>Core Features</h2><div class="under"></div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-top"><i class="fa-solid fa-location-crosshairs"></i></div>
+          <div class="feature-body">
+            <h3>Smart Tracking</h3>
+            <p>Get instant updates on cargo location, project status, and system information through natural language queries.</p>
+            <div class="example"><strong>Example:</strong> "Where is shipment #342 now?"</div>
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-top"><i class="fa-solid fa-users"></i></div>
+          <div class="feature-body">
+            <h3>Team Coordination</h3>
+            <p>Automatically connect with relevant team members across departments and global offices to streamline communication.</p>
+            <div class="example"><strong>Example:</strong> "Who's the contact for Europe network issues?"</div>
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-top"><i class="fa-solid fa-chart-line"></i></div>
+          <div class="feature-body">
+            <h3>Analytics & Reports</h3>
+            <p>Generate detailed reports on global shipping metrics, identify bottlenecks, and discover optimization opportunities.</p>
+            <div class="example"><strong>Example:</strong> "Generate a weekly delay analysis for Asian routes"</div>
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-top"><i class="fa-solid fa-language"></i></div>
+          <div class="feature-body">
+            <h3>Language Translation</h3>
+            <p>Break down language barriers with real-time translation, enabling seamless collaboration between global teams.</p>
+            <div class="example"><strong>Example:</strong> "Translate this message to Mandarin for Shanghai office"</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="chat" class="section chat">
+    <div class="container">
+      <h2>AI Assistant Chat</h2><div class="under"></div>
+      <div class="chat-wrap">
+        <div class="chat-box">
+          <div class="chat-header"><span class="dot"></span><div style="font-weight:800">Maritime AI Assistant</div></div>
+          <div class="msgs" id="msgs">
+            <div class="ai"><div class="bubble">• Finding contacts for specific regions or issues<br/>• Generating reports and analytics<br/>• Translating messages for global teams<br/>How can I assist you today?</div></div>
+            <div class="user"><div class="bubble">Where is shipment #342 now?</div></div>
+            <div class="ai"><div class="bubble">Shipment #342 is currently at Singapore Port. It's scheduled to depart today at 21:00 local time and is en route to Rotterdam. Status: <b>On Schedule</b>.</div></div>
+          </div>
+          <div class="inputbar"><input id="ask" placeholder="Type your question…" autocomplete="off"/><button onclick="send()"><i class="fa-solid fa-paper-plane"></i></button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="about" class="section">
+    <div class="container about-panel">
+      <h2 style="text-align:center;margin:0 0 8px;font-size:clamp(28px,3.2vw,40px)">About Network Insights</h2>
+      <div class="under"></div>
+      <div class="about-grid">
+        <div>
+          <p style="color:var(--muted);margin:0 0 18px">Network Insights is a cutting‑edge maritime coordination platform built for global shipping companies. We understand the complexities of international logistics and have developed an AI‑powered solution to streamline operations across oceans and borders.</p>
+          <p style="color:var(--muted);margin:0">Through advanced natural language processing, real‑time data analysis, and predictive algorithms, our platform helps shipping companies improve efficiency, reduce delays, and optimize their global networks.</p>
+          <div class="about-kpis">
+            <div class="kpi"><div class="n">24/7</div><div>Global Support</div></div>
+            <div class="kpi"><div class="n">50+</div><div>Languages</div></div>
+            <div class="kpi"><div class="n">99.9%</div><div>Uptime</div></div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:center;align-items:center">
+          <svg class="radar" id="radarCanvas" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-label="radar chart">
+            <defs>
+              <radialGradient id="rg" cx="50%" cy="50%" r="60%">
+                <stop offset="0%" stop-color="#1e4b6d" stop-opacity="0.95"/>
+                <stop offset="100%" stop-color="#103550" stop-opacity="0.95"/>
+              </radialGradient>
+              <linearGradient id="sweepGrad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#e58e26" stop-opacity="0.6"/>
+                <stop offset="100%" stop-color="#e58e26" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <circle cx="100" cy="100" r="95" fill="url(#rg)" stroke="rgba(255,255,255,0.18)" stroke-width="2"/>
+            <g stroke="rgba(255,255,255,0.2)" stroke-width="1">
+              <line x1="100" y1="5" x2="100" y2="195"/>
+              <line x1="5" y1="100" x2="195" y2="100"/>
+            </g>
+            <g id="radarSweep" style="transform-origin:100px 100px">
+              <path d="M100,100 L195,100" stroke="url(#sweepGrad)" stroke-width="4" stroke-linecap="round" opacity="0.9"/>
+            </g>
+            <polygon id="radarPoly" points="100,100 170,100 150,40 95,165 40,140" fill="rgba(229,142,38,0.32)" stroke="#e58e26" stroke-width="2"/>
+            <g id="radarDots" fill="#e58e26">
+              <circle id="dot0" r="4" cx="100" cy="100"/>
+              <circle id="dot1" r="4" cx="170" cy="100"/>
+              <circle id="dot2" r="4" cx="150" cy="40"/>
+              <circle id="dot3" r="4" cx="95" cy="165"/>
+              <circle id="dot4" r="4" cx="40" cy="140"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <footer>
+    <div class="container foot">
+      <div><h4>Network Insights</h4><div style="color:var(--muted)">Navigating global logistics with intelligence</div></div>
+      <div><h4>Quick Links</h4><div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:8px 16px"><a href="#features">Features</a><a href="#chat">AI Assistant</a><a href="#about">About Us</a></div></div>
+      <div><h4>Support</h4><div class="grid" style="grid-template-columns:1fr;gap:8px"><a href="#">Help Center</a><a href="#">Contact Us</a><a href="#">Privacy Policy</a></div></div>
+    </div>
+    <div class="copyright">© 2025 Network Insights. All rights reserved.</div>
+  </footer>
+
+<script>
+  function send(){
+    const input=document.getElementById('ask');
+    const val=input.value.trim(); if(!val) return; const box=document.getElementById('msgs');
+    const u=document.createElement('div');u.className='user';u.innerHTML='<div class="bubble"></div>';u.firstChild.textContent=val;box.appendChild(u);
+    const a=document.createElement('div');a.className='ai';a.innerHTML='<div class="bubble"></div>';a.firstChild.textContent='(Demo) I received: "'+val+'"';box.appendChild(a);
+    input.value=''; box.scrollTop=box.scrollHeight;
+  }
+  (function(){
+    const svg = document.getElementById('radarCanvas');
+    if(!svg) return;
+    const poly = document.getElementById('radarPoly');
+    const dots = [...document.querySelectorAll('#radarDots circle')];
+    const sweep = document.getElementById('radarSweep');
+    const cx=100, cy=100, rMin=28, rMax=90;
+    const angles = [0, 25, 75, 205, 240];
+    const speeds = [0.8, 1.1, 0.9, 1.3, 0.7];
+    const base = [0.35, 0.85, 0.75, 0.35, 0.45];
+    let t0 = performance.now();
+    function frame(now){
+      const t = (now - t0) / 1000;
+      const pts = angles.map((deg, i)=>{
+        const osc = Math.sin(t * speeds[i] + i)*0.08;
+        const rr = (base[i] + osc) * (rMax - rMin) + rMin;
+        const rad = (deg-90) * Math.PI/180;
+        return [cx + rr*Math.cos(rad), cy + rr*Math.sin(rad)];
+      });
+      poly.setAttribute('points', pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' '));
+      dots.forEach((d,i)=>{ d.setAttribute('cx', pts[i][0]); d.setAttribute('cy', pts[i][1]); });
+      const sweepDeg = (t*40)%360; 
+      sweep.style.transform = `rotate(${sweepDeg}deg)`;
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  })();
+</script>
+  <script>
+    // Add subtle moving ships behind everything without changing layout
+    (function(){
+      const already = document.querySelector('[data-bg-ships]');
+      if (already) return; // prevent duplicates on hot reload
+      const styleTag = document.createElement('div');
+      styleTag.setAttribute('data-bg-ships','');
+      document.body.appendChild(styleTag);
+      const rows = [42, 56, 70]; // vertical positions (% of viewport height)
+      rows.forEach((topPct, i) => {
+        const ship = document.createElement('i');
+        ship.className = 'fa-solid fa-ship bg-ship';
+        ship.style.top = topPct + 'vh';
+        ship.style.left = '-12vw';
+        ship.style.animation = `sailX ${38 + i*4}s linear ${i*9}s infinite, floatY 6s ease-in-out ${i*2}s infinite`;
+        document.body.appendChild(ship);
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+/Users/guoxingchen/Emerging/src/main/java/com/networkinsights/ai/controller/ChatController.java
+/Users/guoxingchen/Emerging/src/main/java/com/networkinsights/ai/service/AIService.java
+/Users/guoxingchen/Emerging/src/main/java/com/networkinsights/ai/model/SupportedLanguage.java
+/Users/guoxingchen/Emerging/src/main/java/com/networkinsights/ai/service/TranslationService.java
+/Users/guoxingchen/Emerging/src/main/java/com/networkinsights/ai/model/ChatMessage.java
+/Users/guoxingchen/Emerging/src/main/java/com/networkinsights/ai/config/CorsConfig.java
+/Users/guoxingchen/Emerging/src/main/java/com/networkinsights/ai/NetworkInsightsApplication.java
+/Users/guoxingchen/Emerging/src/main/java/com/networkinsights/ai/model/LanguageRequest.java

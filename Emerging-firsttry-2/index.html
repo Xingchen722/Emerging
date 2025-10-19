@@ -191,6 +191,122 @@
     </div>
   </section>
 
+  <section id="dashboard" class="section">
+  <div class="container">
+    <h2>Global Shipping Dashboard</h2><div class="under"></div>
+
+    <!-- ===== TOP CARD (first two rows blue) ===== -->
+    <div style="background:#fff; color:#1a2230; border-radius:22px; overflow:hidden; box-shadow:0 14px 38px rgba(0,0,0,.15); margin-bottom:40px;">
+
+      <!-- Row 1: BLUE title bar -->
+      <div style="background:#0a2a42; color:#e9f4ff; padding:14px 20px; display:flex; justify-content:space-between; align-items:center; border-bottom:4px solid rgba(255,255,255,.08);">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <i class="fa-solid fa-chart-line"></i>
+          <span style="font-weight:700; font-size:18px;">Vessel Performance Metrics</span>
+        </div>
+        <div>
+          <button style="background:#0d314b; border:1px solid rgba(255,255,255,.18); color:#fff; padding:8px 12px; border-radius:8px; margin-right:10px; cursor:pointer;">
+            <i class="fa-solid fa-rotate"></i> Refresh
+          </button>
+          <button style="background:#f59e0b; border:none; color:#1f1404; padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:800;">
+            <i class="fa-solid fa-download"></i> Export
+          </button>
+        </div>
+      </div>
+
+      <!-- Row 2: BLUE tabs -->
+      <div style="background:#0d2b44; display:flex; border-bottom:1px solid rgba(255,255,255,.12);">
+        <div style="padding:12px 20px; color:#ffb74d; border-bottom:3px solid #ffb74d; font-weight:700;">Vessel Status</div>
+        <div style="padding:12px 20px; color:#b6cbe0; cursor:pointer;">Performance</div>
+        <div style="padding:12px 20px; color:#b6cbe0; cursor:pointer;">Carbon Metrics</div>
+      </div>
+
+      <!-- Content area: WHITE -->
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:20px; padding:22px;">
+        <div style="background:#f7f9fb; border:1px solid #e8edf3; padding:22px; border-radius:16px; text-align:center;">
+          <div style="font-size:36px; font-weight:900; color:#f59e0b; margin-bottom:8px;">78.3%</div>
+          <div style="color:#4b5563;">On-Time Arrivals</div>
+        </div>
+        <div style="background:#f7f9fb; border:1px solid #e8edf3; padding:22px; border-radius:16px; text-align:center;">
+          <div style="font-size:36px; font-weight:900; color:#e05c65; margin-bottom:8px;">21.7%</div>
+          <div style="color:#4b5563;">Delayed Vessels</div>
+        </div>
+        <div style="background:#f7f9fb; border:1px solid #e8edf3; padding:22px; border-radius:16px; text-align:center;">
+          <div style="font-size:36px; font-weight:900; color:#f59e0b; margin-bottom:8px;">$19.4M</div>
+          <div style="color:#4b5563;">Bunker Savings</div>
+        </div>
+      </div>
+
+      <!-- Placeholder -->
+      <div style="border-top:1px dashed #e3e8ef; margin:0 20px 22px; border-radius:16px; padding:40px 20px; text-align:center; background:#fafbfd;">
+        <i class="fa-solid fa-chart-pie" style="font-size:48px; color:#f59e0b; margin-bottom:18px;"></i>
+        <p style="max-width:520px; margin:0 auto 12px; color:#4b5563;">Power BI Dashboard would be embedded here using client credentials:</p>
+        <div style="background:#f1f3f6; padding:12px; border-radius:8px; text-align:left; font-family:monospace; font-size:12px; line-height:1.6; max-width:520px; margin:0 auto 16px;">
+          <div>ClientID: d4513e50-29a7-4f57-a41f-68fae5006b67</div>
+          <div>WorkspaceID: 41675240-7b6e-4163-a0ed-52b5c3b13e01</div>
+          <div>ReportID: 06bdda3d-459c-4632-8784-d43e6b208aab</div>
+        </div>
+        <button style="background:#f59e0b; border:none; color:#1f1404; padding:10px 24px; border-radius:8px; cursor:pointer; font-weight:800;">
+          <i class="fa-solid fa-rotate"></i> Load Dashboard
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== Vessel Tracking (with soft badges) ===== -->
+<div style="background:#0e2a41; border-radius:22px; overflow:hidden; box-shadow:0 14px 38px rgba(0,0,0,.35);">
+  <!-- Title Bar -->
+  <div style="background:#0a2a42; color:#e9f4ff; padding:14px 20px; display:flex; justify-content:space-between; align-items:center; border-bottom:4px solid rgba(255,255,255,.08);">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <i class="fa-solid fa-ship"></i>
+      <span style="font-weight:700; font-size:18px;">Vessel Tracking</span>
+    </div>
+    <div style="position:relative;">
+      <input type="text" placeholder="Search vessels..." style="background:#071c2e; border:1px solid rgba(255,255,255,.18); color:#e9f4ff; padding:9px 14px; border-radius:22px; width:230px; padding-left:34px;">
+      <i class="fa-solid fa-search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#afc7db;"></i>
+    </div>
+  </div>
+
+  <!-- Column Header -->
+  <div style="background:#0d2b44; color:#eaf3fb; display:grid; grid-template-columns:1.8fr 1fr 1fr 1.6fr 1fr 1fr; gap:15px; font-weight:800; padding:12px 20px; border-bottom:1px solid rgba(255,255,255,.12);">
+    <div>Vessel</div><div>Rotation</div><div>Port</div><div>Route</div><div>ETA</div><div>Status</div>
+  </div>
+
+  <!-- Table Body -->
+  <div style="background:#ffffff; color:#1a2230;">
+    <!-- Row 1 -->
+    <div style="display:grid; grid-template-columns:1.8fr 1fr 1fr 1.6fr 1fr 1fr; gap:15px; padding:16px 20px; border-bottom:1px solid #e8edf3; align-items:center;">
+      <div><strong>MV RAPID HORIZON</strong></div><div>20251009</div><div>Singapore</div><div>VNSGN → DEHAM</div><div>2025-08-28</div>
+      <div style="justify-self:end;">
+        <span style="background:#d6f5df; color:#1b8b3c; padding:5px 14px; border-radius:999px; font-weight:700; font-size:13px; display:inline-block; border:1px solid #b8ecc8;">
+          On Time
+        </span>
+      </div>
+    </div>
+
+    <!-- Row 2 -->
+    <div style="display:grid; grid-template-columns:1.8fr 1fr 1fr 1.6fr 1fr 1fr; gap:15px; padding:16px 20px; border-bottom:1px solid #e8edf3; align-items:center;">
+      <div><strong>MV PACIFIC ALBATROSS</strong></div><div>20251018</div><div>Singapore</div><div>TWKHH → NLRTM</div><div>2025-07-08</div>
+      <div style="justify-self:end;">
+        <span style="background:#fde0dd; color:#c62828; padding:5px 14px; border-radius:999px; font-weight:700; font-size:13px; display:inline-block; border:1px solid #f8c5c2;">
+          Delayed
+        </span>
+      </div>
+    </div>
+
+    <!-- Row 3 -->
+    <div style="display:grid; grid-template-columns:1.8fr 1fr 1fr 1.6fr 1fr 1fr; gap:15px; padding:16px 20px; align-items:center;">
+        <div><strong>MV EASTERN GATE</strong></div><div>20251027</div><div>Singapore</div><div>TWKHH → MYPKG</div><div>2025-04-23</div>
+        <div style="justify-self:end;">
+            <span style="background:#d6f5df; color:#1b8b3c; padding:5px 14px; border-radius:999px; font-weight:700; font-size:13px; display:inline-block; border:1px solid #b8ecc8;">
+            On Time
+            </span>
+        </div>
+    </div>
+  </div>
+</section>
+
+
+
   <section id="chat" class="section chat">
     <div class="container">
       <h2>AI Assistant Chat</h2><div class="under"></div>

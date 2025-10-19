@@ -141,6 +141,50 @@
   .search input{background:#071c2e;border:1px solid rgba(255,255,255,.18);color:#e9f4ff;padding:9px 14px;border-radius:22px;width:230px;padding-left:34px}
   .search i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#afc7db}
 
+  /* === Chatbox === */
+.chat-card{
+  background:#fff;color:#0d2235;border-radius:22px;
+  box-shadow:0 18px 50px rgba(0,0,0,.15); overflow:hidden
+}
+.chat-head{
+  background:#0a2a42;color:#eaf3fb; padding:14px 18px;
+  display:flex; align-items:center; gap:10px; border-bottom:4px solid rgba(255,255,255,.08)
+}
+.dot{width:10px;height:10px;border-radius:50%}
+.dot.on{background:#22c55e; box-shadow:0 0 0 4px rgba(34,197,94,.2)}
+.chat-body{
+  padding:18px; max-height:360px; overflow:auto;
+  background:linear-gradient(180deg,#f3f7fb,#f8fafc)
+}
+.bubble{
+  display:inline-block; padding:12px 14px; border-radius:14px; margin:8px 0;
+  max-width:min(640px,92%); line-height:1.55; box-shadow:0 6px 18px rgba(0,0,0,.08)
+}
+.bubble.bot{background:#fff}
+.bubble.user{background:#e6f0ff; margin-left:auto}
+.msg-time{display:block;font-size:12px;opacity:.6;margin-top:6px}
+
+.chat-quick{
+  display:flex; flex-wrap:wrap; gap:8px; padding:0 18px 10px
+}
+.pill{
+  background:#0d2b44; color:#eaf3fb; border:1px solid rgba(255,255,255,.12);
+  padding:8px 12px; border-radius:999px; cursor:pointer
+}
+.pill:hover{opacity:.9}
+
+.chat-input{
+  display:flex; gap:8px; padding:12px; border-top:1px dashed #e5eaf1; background:#f9fbfe
+}
+.chat-input input{
+  flex:1; padding:12px 14px; border-radius:12px; border:1px solid #e3e8ef;
+  outline:none; font:inherit
+}
+.chat-input .send{
+  background:#e58e26; color:#1b1404; border:none; padding:0 14px;
+  border-radius:12px; font-weight:800; cursor:pointer
+}
+
   /* Footer (kept) */
   .about-panel{background:linear-gradient(180deg,rgba(13,41,65,.92),rgba(9,31,49,.92));border:1px solid rgba(255,255,255,.10);border-radius:26px;box-shadow:0 18px 60px rgba(0,0,0,.35);padding:38px 26px}
   .about-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:34px;align-items:center}
@@ -340,6 +384,42 @@
         </div>
       </div>
 
+      <!-- AI Assistant Chat -->
+<section id="assistant" class="section">
+  <div class="container">
+    <h2>AI Assistant Chat</h2>
+    <div class="under"></div>
+
+    <div class="chat-card">
+      <div class="chat-head">
+        <div class="dot on"></div>
+        <b>Maritime AI Assistant</b>
+      </div>
+
+      <div id="chatBody" class="chat-body">
+        <div class="bubble bot">
+          • Finding contacts for specific regions or issues<br/>
+          • Generating reports and analytics<br/>
+          • Translating messages for global teams<br/>
+          How can I assist you today?
+        </div>
+      </div>
+
+      <div class="chat-quick">
+        <button class="pill" data-q="Where is shipment #342 now?">Where is shipment #342 now?</button>
+        <button class="pill" data-q="Weekly delay analysis for Asian routes">Weekly delay analysis for Asian routes</button>
+        <button class="pill" data-q="Translate: Hello team, meeting at 3PM (to Mandarin)">Translate to Mandarin</button>
+      </div>
+
+      <form id="chatForm" class="chat-input" autocomplete="off">
+        <input id="chatText" type="text" placeholder="Type your question..." />
+        <button class="send" type="submit"><i class="fa-solid fa-paper-plane"></i></button>
+      </form>
+    </div>
+  </div>
+</section>
+
+
       <!-- Vessel table -->
       <div class="soft-table">
         <div class="soft-head">
@@ -484,6 +564,8 @@ function fillHeroCards(){
      path:[places['Tokyo, JP'], places['Seattle, US']]}
   ];
 
+  window.fleet = fleet; // make it globally accessible for chatbox
+
   // Colored route polylines + destination flags
   fleet.forEach(v=>{
     const color = /delay/i.test(v.status) ? '#ef4444' : '#22c55e';
@@ -627,6 +709,78 @@ document.getElementById('searchBox').addEventListener('input',e=>{
   const f=!q?sampleData:sampleData.filter(r=>(r.vessel+r.rotation+r.port+r.route+r.eta+r.status).toLowerCase().includes(q));
   renderRows(f);
 });
+
+/* ===== Simple AI Chat (front-end demo) ===== */
+(function(){
+  const body = document.getElementById('chatBody');
+  const form = document.getElementById('chatForm');
+  const input = document.getElementById('chatText');
+  document.querySelectorAll('.pill').forEach(p=>p.addEventListener('click',()=>{ input.value=p.dataset.q; form.dispatchEvent(new Event('submit',{cancelable:true})); }));
+
+  function addBubble(text, who='bot'){
+    const b = document.createElement('div');
+    b.className = 'bubble '+who;
+    b.innerHTML = text + `<span class="msg-time">${new Date().toLocaleTimeString()}</span>`;
+    body.appendChild(b);
+    body.scrollTop = body.scrollHeight;
+  }
+
+  function fmtPct(n){ return (n*100).toFixed(1)+'%'; }
+
+  function answer(q){
+    q = q.trim();
+
+    // 1) Shipment lookup: “Where is shipment #342” or “SHP-219”
+    const mId = q.match(/shp[-\s]?(\d+)/i);
+    const mNum = q.match(/shipment\s*#?\s*(\d+)/i);
+    if(mId || mNum){
+      const key = mId ? ('SHP-'+mId[1]) : ('SHP-'+mNum[1]);
+      const f = (window.fleet||[]).find(v=>v.id.toUpperCase()===key.toUpperCase());
+      if(f){
+        return `Shipment <b>${f.id}</b> (<b>${f.name}</b>) is currently on route <b>${f.origin} → ${f.destination}</b>.<br>
+        ETA: <b>${new Date(f.end).toLocaleString()}</b> · Status: <b>${f.status}</b> · Cargo: <b>${f.cargoTEU.toLocaleString()} TEU</b>`;
+      }
+      return `Sorry, I can't find ${key}. Try #342 or SHP-219 (demo data).`;
+    }
+
+    // 2) Weekly delay analysis (by route or region)
+    if(/weekly|week/i.test(q) && /delay/i.test(q)){
+      const data = (typeof sampleData!=='undefined') ? sampleData : [];
+      const total = data.length;
+      const delayed = data.filter(r=>/delay/i.test(r.status)).length;
+      const byRoute = data.reduce((m,r)=>{const k=r.route; m[k]=m[k]||{t:0,d:0}; m[k].t++; if(/delay/i.test(r.status)) m[k].d++; return m;}, {});
+      let lines = Object.entries(byRoute).map(([k,v])=>`• <b>${k}</b>: ${v.d}/${v.t} delayed (${fmtPct(v.d/v.t)})`).join('<br>');
+      return `Here’s the latest weekly delay snapshot:<br>
+        • Total: <b>${delayed}/${total}</b> delayed (${fmtPct(delayed/total)})<br>${lines}`;
+    }
+
+    // 3) Translation demo (very simple placeholder)
+    const tr = q.match(/translate.*?:?\s*(.+?)\s*\((?:to|→)\s*(mandarin|chinese|中文)\)/i);
+    if(tr){
+      // Simple mock to show UI wiring (not real translation)
+      const text = tr[1];
+      return `（示例）<b>中文</b>翻译：${text}`;
+    }
+
+    // 4) Contacts / ownership
+    if(/who owns|contact|owner/i.test(q) && /europe/i.test(q)){
+      return `Europe Network POC: <b>Ana Müller</b> · Ops Director (EU)<br>Email: ana.muller@example.com · Phone: +49 30 1234 567`;
+    }
+
+    // Default help
+    return `I can help with shipment lookups (e.g., <i>Where is shipment #342?</i>), weekly delay analysis, simple translations, and regional contacts. Try one of the quick prompts above.`;
+  }
+
+  form.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const q = input.value.trim();
+    if(!q) return;
+    addBubble(q, 'user');
+    setTimeout(()=> addBubble(answer(q), 'bot'), 120); // tiny delay for feel
+    input.value='';
+  });
+})();
+
 
 /* -------- init -------- */
 window.addEventListener('load', ()=>{

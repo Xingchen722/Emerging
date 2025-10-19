@@ -1,0 +1,82 @@
+server:
+  port: 8080
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+    context-path: /
+
+spring:
+  application:
+    name: network-insights-ai
+  
+  # 数据库配置（H2内存数据库）
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+  
+  # JPA配置
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+  
+  # H2控制台配置
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+# 日志配置
+logging:
+  level:
+    com.networkinsights.ai: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+
+# Google Cloud配置
+google:
+  cloud:
+    translate:
+      # 这里需要设置你的Google Cloud API密钥
+      # 可以通过环境变量 GOOGLE_APPLICATION_CREDENTIALS 设置
+      api-key: ${GOOGLE_TRANSLATE_API_KEY:your-api-key-here}
+
+# Azure OpenAI配置
+openai:
+  api:
+    primary-key: ${OPENAI_PRIMARY_KEY:your-primary-key-here}
+    secondary-key: ${OPENAI_SECONDARY_KEY:your-secondary-key-here}
+    base-url: ${AZURE_OPENAI_ENDPOINT:https://your-resource.openai.azure.com}
+    api-version: ${AZURE_OPENAI_API_VERSION:2025-01-01-preview}
+    deployment-name: ${AZURE_OPENAI_DEPLOYMENT:gpt-4.1-nano}
+    model: gpt-4.1-nano
+    max-tokens: 1000
+    temperature: 0.7
+
+# Power BI配置
+powerbi:
+  embedded:
+    authentication-mode: ServicePrincipal
+    client-id: ${POWERBI_CLIENT_ID:your-client-id-here}
+    workspace-id: ${POWERBI_WORKSPACE_ID:your-workspace-id-here}
+    report-id: ${POWERBI_REPORT_ID:your-report-id-here}
+    client-secret: ${POWERBI_CLIENT_SECRET:your-client-secret-here}
+    tenant-id: ${POWERBI_TENANT_ID:your-tenant-id-here}
+    authority-url: ${POWERBI_AUTHORITY_URL:https://login.microsoftonline.com/your-tenant-id}
+    scope: https://analysis.windows.net/powerbi/api/.default
+    dashboard-url: ${POWERBI_DASHBOARD_URL:https://your-dashboard-url.com}
+
+# 应用配置
+app:
+  ai:
+    response-delay-min: 1000
+    response-delay-max: 3000
+    use-openai: true
+    use-powerbi: true
+  translation:
+    default-source-language: auto
+    default-target-language: zh

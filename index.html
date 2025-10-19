@@ -24,6 +24,21 @@
   a{color:inherit;text-decoration:none}
   .container{width:min(1100px,92%);margin-inline:auto}
 
+  /* Ensure the card and tooltip float above Leaflet panes */
+#mapStage { position: relative; }               /* already set, but keep */
+#leafletMap { position: relative; z-index: 1; } /* map stays low */
+
+#mapCard,
+#mapTip {
+  position: absolute;
+  z-index: 10000;   /* higher than Leaflet popups/tooltips */
+  pointer-events: auto;
+}
+
+/* Optional: keep Leaflet attribution/controls under the card too */
+.leaflet-control-container { z-index: 500; }    /* lower than 10000 */
+
+
   /* Ocean background */
   .ocean-bg{position:fixed;inset:0;z-index:-10;background:linear-gradient(180deg,var(--ocean-light) 0%,var(--ocean-mid) 50%,var(--ocean-dark) 100%)}
   .wave-container{position:fixed;inset:0;overflow:hidden;z-index:-9}
@@ -198,11 +213,17 @@
   </header>
 
   <!-- Features -->
-  <div class="feature-grid">
-  <div class="feature-card">
-    <div class="feature-top"><i class="fa-solid fa-location-crosshairs" style="font-size:44px;color:#fff"></i></div>
-    <div class="feature-body"><h3>Smart Tracking</h3><p>Query cargo, routes, and ETA in natural language.</p><div class="example"><strong>Example:</strong> “Where is shipment #342 now?”</div></div>
-  </div>
+<section id="features" class="section">
+  <div class="container">
+    <h2>Core Features</h2>
+    <div class="under"></div>
+
+    <div class="feature-grid">
+    <!--  10 feature cards go here -->
+    <div class="feature-card">
+      <div class="feature-top"><i class="fa-solid fa-location-crosshairs" style="font-size:44px;color:#fff"></i></div>
+      <div class="feature-body"><h3>Smart Tracking</h3><p>Query cargo, routes, and ETA in natural language.</p><div class="example"><strong>Example:</strong> “Where is shipment #342 now?”</div></div>
+    </div>
 
   <div class="feature-card">
     <div class="feature-top"><i class="fa-solid fa-users" style="font-size:44px;color:#fff"></i></div>

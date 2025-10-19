@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Network Insights – Global Shipping Coordination AI</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+
+<!-- Leaflet (real map) -->
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+  :root{
+    --ocean-dark:#0a3d62;--ocean-mid:#3c6382;--ocean-light:#60a3bc;
+    --accent:#e58e26;--text:#f5f6fa;--muted:#cfe1ed;
+    --nav:#0a3d62cc;--ink:#0d2235;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;color:var(--text);overflow-x:hidden}
+  a{color:inherit;text-decoration:none}
+  .container{width:min(1100px,92%);margin-inline:auto}
+
+  /* Ocean background */
+  .ocean-bg{position:fixed;inset:0;z-index:-10;background:linear-gradient(180deg,var(--ocean-light) 0%,var(--ocean-mid) 50%,var(--ocean-dark) 100%)}
+  .wave-container{position:fixed;inset:0;overflow:hidden;z-index:-9}
+  .wave{position:absolute;width:200%;height:200px;background:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.2" d="M0,192L48,197.3C96,203,192,213,288,218.7C384,224,480,224,576,202.7C672,181,768,139,864,138.7C960,139,1056,181,1152,186.7C1248,192,1344,160,1392,144L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"/></svg>') repeat-x bottom/200% 100%}
+  .wave-1{bottom:0;animation:wave 15s linear infinite;opacity:.18}
+  .wave-2{bottom:-25px;animation:wave 10s linear reverse infinite;opacity:.14}
+  .wave-3{bottom:-50px;animation:wave 8s linear infinite;opacity:.1}
+  @keyframes wave{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+  /* Navbar */
+  .navbar{position:sticky;top:0;z-index:50;background:var(--nav);backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,.12)}
+  .nav-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
+  .brand{display:flex;gap:10px;align-items:center;font-weight:800}.brand i{color:var(--accent)}
+  .nav-links{display:flex;gap:22px}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:#0d314bb3;cursor:pointer;color:var(--text)}
+
+  /* Hero */
+  .hero{padding:68px 0 32px}
+  .title{font-size:clamp(36px,5vw,56px);font-weight:900;margin:0 0 8px}
+  .title .accent{color:var(--accent)}
+  .subtitle{max-width:820px;color:var(--muted);margin:8px 0 22px}
+  .cta{display:flex;gap:12px;flex-wrap:wrap}
+  .btn-primary{background:var(--accent);border-color:transparent;color:#1b1404}
+
+  /* Snapshot cards (kept) */
+  .hero-cards{display:grid;grid-template-columns:1.15fr 1fr 1fr;gap:16px;margin-top:22px}
+  @media (max-width:980px){.hero-cards{grid-template-columns:1fr}}
+  .snap-card{position:relative;background:#fff;color:#0d2235;border-radius:16px;box-shadow:0 14px 38px rgba(0,0,0,.22);padding:16px 18px}
+  .snap-card .chip{position:absolute;right:14px;top:12px;background:var(--accent);color:#2a1900;padding:6px 10px;border-radius:10px;font-weight:800}
+  .snap-card .row{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px dashed #dde7f3}
+  .snap-card .row:last-child{border-bottom:0}
+  .snap-title{font-weight:800;margin-bottom:6px;display:flex;align-items:center;gap:8px;color:#0d2438}
+  .snap-small{color:#4b6072;font-size:13px}
+  .fade-in{animation:fade .5s ease both}
+  .fade-in:nth-child(2){animation-delay:.08s}.fade-in:nth-child(3){animation-delay:.16s}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+  /* Sections */
+  .section{padding:64px 0}
+  .section h2{text-align:center;margin:0 0 8px;font-size:clamp(28px,3.2vw,40px)}
+  .under{width:70px;height:4px;background:var(--accent);border-radius:999px;margin:0 auto 28px}
+
+  /* Features (kept) */
+  .feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:28px}
+  .feature-card{border-radius:22px;overflow:hidden;background:#0e2a41;box-shadow:0 14px 38px rgba(0,0,0,.35)}
+  .feature-top{background:#0a2a42;display:flex;align-items:center;justify-content:center;height:120px;border-bottom:4px solid rgba(255,255,255,.06)}
+  .feature-body{background:#f5f9fc;color:#0d2235;padding:22px}
+  .example{background:#ffffff;border:1px solid #f0f4f8;border-left:4px solid var(--accent);border-radius:12px;padding:12px;margin-top:8px}
+
+  /* === Fleet Map (Leaflet) === */
+  .map-wrap{background:#0b2a43;border-radius:18px;box-shadow:0 18px 50px rgba(0,0,0,.35);padding:12px}
+  .map-head{display:flex;align-items:center;gap:10px;color:#e9f4ff;background:#0a2a42;border-radius:12px;padding:10px 12px;margin-bottom:10px}
+  #mapStage{position:relative;height:520px;border-radius:14px;overflow:hidden}
+  #leafletMap{height:520px;width:100%}
+  #mapTip{position:absolute;pointer-events:none;background:#0b1f33;color:#eaf3fb;border:1px solid rgba(255,255,255,.14);padding:8px 10px;border-radius:10px;font-size:13px;display:none;box-shadow:0 12px 32px rgba(0,0,0,.35);max-width:260px;z-index:3}
+  #mapCard{position:absolute;left:14px;bottom:14px;z-index:3;min-width:280px;max-width:360px;background:#0b1f33;color:#eaf3fb;border:1px solid rgba(255,255,255,.14);border-radius:14px;box-shadow:0 14px 38px rgba(0,0,0,.35);padding:14px;display:none}
+  #mapCard .stat{background:#0a2238;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px}
+  #mapCard .stat h5{opacity:.75;font-size:11px;margin:0 0 4px}
+  #mapCard .stat b{font-size:14px}
+  .chip{background:#0a1f33;border:1px solid rgba(255,255,255,.14);color:#e9f4ff;border-radius:10px;padding:6px 10px;font-size:12px}
+
+  /* High-contrast ship icons */
+  .ship-icon{
+    background:#0b2a43;
+    color:#fff;
+    border:2px solid #fff;
+    border-radius:16px;
+    padding:2px 6px;
+    font-size:14px;
+    font-weight:900;
+    box-shadow:0 0 0 2px rgba(0,0,0,.15);
+  }
+  .ship-icon.delayed{background:#7a1a1a}
+  .dest-flag{
+    background:#e58e26;color:#1b1404;border-radius:12px;padding:2px 6px;font-weight:800;border:1px solid rgba(0,0,0,.15)
+  }
+
+  /* Dashboard (kept) */
+  .card-white{background:#fff;color:#1a2230;border-radius:22px;overflow:hidden;box-shadow:0 14px 38px rgba(0,0,0,.15);margin-bottom:40px}
+  .card-bar{background:#0a2a42;color:#e9f4ff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:4px solid rgba(255,255,255,.08)}
+  .card-tabs{background:#0d2b44;display:flex;border-bottom:1px solid rgba(255,255,255,.12)}
+  .tab{padding:12px 20px;color:#b6cbe0;cursor:pointer}
+  .tab.active{color:#ffb74d;border-bottom:3px solid #ffb74d;font-weight:700}
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;padding:22px}
+  .kpi-tile{background:#f7f9fb;border:1px solid #e8edf3;padding:22px;border-radius:16px;text-align:center}
+  .kpi-tile .n{font-size:36px;font-weight:900;margin-bottom:8px}
+  .embed-wrap{border-top:1px dashed #e3e8ef;margin:0 20px 22px;border-radius:16px;padding:20px;background:#fafbfd}
+  .miniChart{display:block;margin:0 auto;background:#fff;border-radius:12px;box-shadow:0 6px 16px rgba(0,0,0,.06)}
+
+  /* Table (kept) */
+  .soft-table{background:#0e2a41;border-radius:22px;overflow:hidden;box-shadow:0 14px 38px rgba(0,0,0,.35)}
+  .soft-head{background:#0a2a42;color:#e9f4ff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:4px solid rgba(255,255,255,.08)}
+  .soft-cols{background:#0d2b44;color:#eaf3fb;display:grid;grid-template-columns:1.8fr 1fr 1fr 1.6fr 1fr 1fr;gap:15px;font-weight:800;padding:12px 20px;border-bottom:1px solid rgba(255,255,255,.12)}
+  .soft-row{display:grid;grid-template-columns:1.8fr 1fr 1fr 1.6fr 1fr 1fr;gap:15px;padding:16px 20px;border-bottom:1px solid #e8edf3;align-items:center;background:#ffffff;color:#1a2230}
+  #rows .soft-row:nth-child(even){background:#f8fbfd}
+  .rows-scroll{max-height:520px;overflow-y:auto;background:#fff}
+  .badge{background:#d6f5df;color:#1b8b3c;padding:5px 14px;border-radius:999px;font-weight:700;font-size:13px;border:1px solid #b8ecc8}
+  .badge.badge-red{background:#fde0dd;color:#c62828;border-color:#f8c5c2}
+  .search{position:relative}
+  .search input{background:#071c2e;border:1px solid rgba(255,255,255,.18);color:#e9f4ff;padding:9px 14px;border-radius:22px;width:230px;padding-left:34px}
+  .search i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#afc7db}
+
+  /* Footer (kept) */
+  .about-panel{background:linear-gradient(180deg,rgba(13,41,65,.92),rgba(9,31,49,.92));border:1px solid rgba(255,255,255,.10);border-radius:26px;box-shadow:0 18px 60px rgba(0,0,0,.35);padding:38px 26px}
+  .about-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:34px;align-items:center}
+  @media(max-width:980px){.about-grid{grid-template-columns:1fr}}
+  .about-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:26px}
+  .kpi{background:#0d2134cc;border:1px solid rgba(255,255,255,.1);padding:18px;border-radius:16px;text-align:center}
+  .kpi .n{font-size:28px;font-weight:900;color:var(--accent)}
+  .radar{width:100%;max-width:320px;margin-inline:auto;filter:drop-shadow(0 8px 20px rgba(0,0,0,.35))}
+  .section-divider{height:6px;background:var(--accent);opacity:.9}
+  footer{background:#07131fcc;border-top:1px solid rgba(255,255,255,.06)}
+  .foot{display:grid;gap:26px;padding:26px 0;align-items:start}
+  @media(min-width:860px){.foot{grid-template-columns:repeat(3,1fr)}}
+  .copyright{border-top:1px solid rgba(255,255,255,.06);padding:12px 0;text-align:center;color:#a8bed4}
+</style>
+</head>
+<body>
+  <!-- Background -->
+  <div class="ocean-bg"></div>
+  <div class="wave-container"><div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div></div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container nav-row">
+      <div class="brand"><i class="fa-solid fa-ship"></i><span>Network Insights</span></div>
+      <div class="nav-links"><a href="#home">Home</a><a href="#features">Features</a><a href="#dashboard">Dashboard</a><a href="#about">About</a></div>
+      <button class="btn"><i class="fa-solid fa-globe"></i> Language</button>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <header id="home" class="hero">
+    <div class="container">
+      <h1 class="title"><span class="accent">Network Insights</span><br/>Global Shipping Coordination AI</h1>
+      <p class="subtitle">Navigate global logistics with precision. Our AI-powered platform provides real-time tracking, team coordination, and actionable insights for your global shipping operations.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="#dashboard"><i class="fa-solid fa-chart-line"></i> View Dashboard</a>
+        <a class="btn" href="#features"><i class="fa-solid fa-circle-info"></i> Learn More</a>
+      </div>
+
+      <!-- Snapshot cards -->
+      <div class="hero-cards">
+        <div class="snap-card fade-in" id="card-latest">
+          <div class="chip" id="chip-latest">#342</div>
+          <div class="snap-title"><i class="fa-solid fa-box-open"></i> Latest Shipment</div>
+          <div class="row"><span>Current Location:</span><span id="c1-loc">—</span></div>
+          <div class="row"><span>Departure:</span><span id="c1-dep">—</span></div>
+          <div class="row"><span>Destination:</span><span id="c1-dst">—</span></div>
+          <div class="row"><span>Status:</span><span id="c1-sta">—</span></div>
+          <div class="snap-small">Closest in time. For the rest, see Dashboard.</div>
+        </div>
+
+        <div class="snap-card fade-in">
+          <div class="snap-title"><i class="fa-solid fa-arrow-up-right-from-square"></i> Next Departure</div>
+          <div class="row"><span>Vessel:</span><span id="c2-ves">—</span></div>
+          <div class="row"><span>From → To:</span><span id="c2-rt">—</span></div>
+          <div class="row"><span>ETA:</span><span id="c2-eta">—</span></div>
+          <div class="row"><span>Status:</span><span id="c2-st">—</span></div>
+          <div class="snap-small">Sorted by earliest ETA.</div>
+        </div>
+
+        <div class="snap-card fade-in">
+          <div class="snap-title"><i class="fa-solid fa-leaf"></i> Fuel & Carbon Summary</div>
+          <div class="row"><span>Total Bunker Savings</span><span id="c3-bunk">—</span></div>
+          <div class="row"><span>Avg CO₂ / NM</span><span id="c3-co2">—</span></div>
+          <div class="row"><span>Delay Rate</span><span id="c3-delay">—</span></div>
+          <div class="snap-small">Aggregated from current fleet snapshot.</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Features -->
+  <div class="feature-grid">
+  <div class="feature-card">
+    <div class="feature-top"><i class="fa-solid fa-location-crosshairs" style="font-size:44px;color:#fff"></i></div>
+    <div class="feature-body"><h3>Smart Tracking</h3><p>Query cargo, routes, and ETA in natural language.</p><div class="example"><strong>Example:</strong> “Where is shipment #342 now?”</div></div>
+  </div>
+
+  <div class="feature-card">
+    <div class="feature-top"><i class="fa-solid fa-users" style="font-size:44px;color:#fff"></i></div>
+    <div class="feature-body"><h3>Team Coordination</h3><p>Auto-connect the right people globally.</p><div class="example"><strong>Example:</strong> “Who owns Europe network issues?”</div></div>
+  </div>
+
+  <div class="feature-card">
+    <div class="feature-top"><i class="fa-solid fa-chart-line" style="font-size:44px;color:#fff"></i></div>
+    <div class="feature-body"><h3>Analytics & Reports</h3><p>Generate weekly delay analyses and KPIs.</p><div class="example"><strong>Example:</strong> “Weekly delay analysis for Asian routes.”</div></div>
+  </div>
+
+  <div class="feature-card">
+    <div class="feature-top"><i class="fa-solid fa-language" style="font-size:44px;color:#fff"></i></div>
+    <div class="feature-body"><h3>Language Translation</h3><p>Real-time translation for global teams.</p><div class="example"><strong>Example:</strong> “Translate to Mandarin for Shanghai office.”</div></div>
+  </div>
+
+  <div class="feature-card">
+    <div class="feature-top"><i class="fa-solid fa-brain" style="font-size:44px;color:#fff"></i></div>
+    <div class="feature-body"><h3>Predictive Analytics (AI Forecast)</h3><p>AI predicts berth delays or carbon overruns before they happen.</p><div class="example"><strong>Example:</strong> “Forecast next week’s delay risk for Asia–Europe route.”</div></div>
+  </div>
+
+  <div class="feature-card">
+    <div class="feature-top"><i class="fa-solid fa-database" style="font-size:44px;color:#fff"></i></div>
+    <div class="feature-body"><h3>RAG Historical Memory</h3><p>Recalls similar past cases and provides proven solutions.</p><div class="example"><strong>Example:</strong> “What solved a similar delay at Tuas last year?”</div></div>
+  </div>
+
+  <div class="feature-card">
+    <div class="feature-top"><i class="fa-solid fa-robot" style="font-size:44px;color:#fff"></i></div>
+    <div class="feature-body"><h3>Auto Report Generator</h3><p>Generates daily/weekly reports with key KPIs and summaries.</p><div class="example"><strong>Example:</strong> “Generate this week’s berth utilization report.”</div></div>
+  </div>
+
+  <div class="feature-card">
+    <div class="feature-top"><i class="fa-solid fa-network-wired" style="font-size:44px;color:#fff"></i></div>
+    <div class="feature-body"><h3>Cross-Port Learning Engine (EchoNet)</h3><p>AI network that shares best practices between ports globally.</p><div class="example"><strong>Example:</strong> “Apply Antwerp’s fuel-saving strategy to Tuas.”</div></div>
+  </div>
+
+  <div class="feature-card">
+    <div class="feature-top"><i class="fa-solid fa-leaf" style="font-size:44px;color:#fff"></i></div>
+    <div class="feature-body"><h3>Sustainability AI (Harmony)</h3><p>Balances efficiency with carbon goals for greener operations.</p><div class="example"><strong>Example:</strong> “Cut carbon by 15% with only 10-minute delay.”</div></div>
+  </div>
+
+  <div class="feature-card">
+    <div class="feature-top"><i class="fa-solid fa-comments" style="font-size:44px;color:#fff"></i></div>
+    <div class="feature-body"><h3>Conversational Power BI</h3><p>Ask questions directly in English or 中文 to get instant analytics.</p><div class="example"><strong>Example:</strong> “Why was Tuas delayed today?”</div></div>
+  </div>
+</div>
+
+  <!-- Fleet Map (REAL MAP) -->
+  <section class="section">
+    <div class="container">
+      <h2>Fleet Map (Live Routes)</h2><div class="under"></div>
+
+      <div class="map-wrap">
+        <div class="map-head">
+          <i class="fa-solid fa-earth-americas"></i>
+          <b>World routes</b>
+          <small style="opacity:.75">Click ships or pins for details. Ships move toward their destination.</small>
+          <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+            <span class="chip"><b id="chipOn">—</b> On-Time</span>
+            <span class="chip"><b id="chipDelay">—</b> Delayed</span>
+            <span class="chip"><b id="chipNext">—</b> Next arrival</span>
+          </div>
+        </div>
+
+        <div id="mapStage">
+          <div id="mapTip"></div>
+          <div id="mapCard">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <div id="mcName" style="font-weight:800"></div>
+              <span id="mcStatus" class="badge">On Time</span>
+            </div>
+            <div id="mcRoute" style="font-size:13px;opacity:.85"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+              <div class="stat"><h5>ETA (Arrival)</h5><b id="mcETA">—</b></div>
+              <div class="stat"><h5>Time Left</h5><b id="mcLeft">—</b></div>
+              <div class="stat"><h5>Cargo</h5><b id="mcCargo">—</b></div>
+              <div class="stat"><h5>ID</h5><b id="mcId">—</b></div>
+            </div>
+          </div>
+          <div id="leafletMap"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dashboard -->
+  <section id="dashboard" class="section">
+    <div class="container">
+      <h2>Global Shipping Dashboard</h2><div class="under"></div>
+
+      <div class="card-white">
+        <div class="card-bar">
+          <div style="display:flex;align-items:center;gap:10px"><i class="fa-solid fa-chart-line"></i><span style="font-weight:700;font-size:18px">Vessel Performance Metrics</span></div>
+          <div>
+            <button id="refreshBtn" class="btn"><i class="fa-solid fa-rotate"></i> Refresh</button>
+            <button id="exportBtn" style="background:#f59e0b;border:none;color:#1f1404;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:800"><i class="fa-solid fa-download"></i> Export</button>
+          </div>
+        </div>
+
+        <div class="card-tabs"><div class="tab active">Vessel Status</div><div class="tab">Performance</div><div class="tab">Carbon Metrics</div></div>
+
+        <div class="kpi-grid">
+          <div class="kpi-tile"><div id="kpiOnTime" class="n">—</div><div style="color:#4b5563">On-Time Arrivals</div></div>
+          <div class="kpi-tile"><div id="kpiDelayed" class="n">—</div><div style="color:#4b5563">Delayed Vessels</div></div>
+          <div class="kpi-tile"><div id="kpiBunker" class="n">—</div><div style="color:#4b5563">Bunker Savings</div></div>
+        </div>
+
+        <div class="embed-wrap">
+          <div id="embedStatus" style="text-align:center;margin-bottom:12px;color:#4b5563">Preview: Arrivals vs Delays</div>
+          <svg id="miniChart" class="miniChart" width="100%" height="320" viewBox="0 0 640 320" preserveAspectRatio="xMidYMid meet"></svg>
+          <div style="text-align:center;margin-top:12px">
+            <button id="reloadEmbed" style="background:#f59e0b;border:none;color:#1f1404;padding:10px 18px;border-radius:8px;cursor:pointer;font-weight:800">Reload Dashboard</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vessel table -->
+      <div class="soft-table">
+        <div class="soft-head">
+          <div style="display:flex;align-items:center;gap:10px"><i class="fa-solid fa-ship"></i><span style="font-weight:700;font-size:18px">Vessel Tracking</span></div>
+          <div class="search"><input id="searchBox" type="text" placeholder="Search vessels..."/><i class="fa-solid fa-search"></i></div>
+        </div>
+        <div class="soft-cols"><div>Vessel</div><div>Rotation</div><div>Port</div><div>Route</div><div>ETA</div><div>Status</div></div>
+        <div id="rowsScroller" class="rows-scroll"><div id="rows"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About + footer (kept) -->
+  <section id="about" class="section">
+    <div class="container about-panel">
+      <h2 style="text-align:center;margin:0 0 8px;font-size:clamp(28px,3.2vw,40px)">About Network Insights</h2>
+      <div class="under"></div>
+      <div class="about-grid">
+        <div>
+          <p style="color:var(--muted);margin:0 0 18px">Network Insights is a maritime coordination platform for global shipping. We combine real-time data with predictive analytics to cut delays and costs.</p>
+          <p style="color:var(--muted);margin:0">Through NLP and forecasting, we help operations teams improve on-time arrivals and bunker savings across routes.</p>
+          <div class="about-kpis">
+            <div class="kpi"><div class="n">24/7</div><div>Global Support</div></div>
+            <div class="kpi"><div class="n">50+</div><div>Languages</div></div>
+            <div class="kpi"><div class="n">99.9%</div><div>Uptime</div></div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:center;align-items:center">
+          <svg class="radar" id="radarCanvas" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-label="radar chart">
+            <defs>
+              <radialGradient id="rg" cx="50%" cy="50%" r="60%"><stop offset="0%" stop-color="#1e4b6d" stop-opacity="0.95"/><stop offset="100%" stop-color="#103550" stop-opacity="0.95"/></radialGradient>
+              <linearGradient id="sweepGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#e58e26" stop-opacity="0.6"/><stop offset="100%" stop-color="#e58e26" stop-opacity="0"/></linearGradient>
+            </defs>
+            <circle cx="100" cy="100" r="95" fill="url(#rg)" stroke="rgba(255,255,255,0.18)" stroke-width="2"/>
+            <g stroke="rgba(255,255,255,0.2)" stroke-width="1"><line x1="100" y1="5" x2="100" y2="195"/><line x1="5" y1="100" x2="195" y2="100"/></g>
+            <g id="radarSweep" style="transform-origin:100px 100px"><path d="M100,100 L195,100" stroke="url(#sweepGrad)" stroke-width="4" stroke-linecap="round" opacity="0.9"/></g>
+            <polygon points="100,100 170,100 150,40 95,165 40,140" fill="rgba(229,142,38,0.32)" stroke="#e58e26" stroke-width="2"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+  <footer>
+    <div class="container foot">
+      <div><h4>Network Insights</h4><div style="color:var(--muted)">Navigating global logistics with intelligence</div></div>
+      <div><h4>Quick Links</h4><div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:8px 16px"><a href="#features">Features</a><a href="#dashboard">Dashboard</a><a href="#about">About Us</a></div></div>
+      <div><h4>Support</h4><div class="grid" style="grid-template-columns:1fr;gap:8px"><a href="#">Help Center</a><a href="#">Contact Us</a><a href="#">Privacy Policy</a></div></div>
+    </div>
+    <div class="copyright">© 2025 Network Insights. All rights reserved.</div>
+  </footer>
+
+<script>
+/* -------- demo dataset used across page -------- */
+function genData(N=120){
+  const base=['RAPID HORIZON','PACIFIC ALBATROSS','EASTERN GATE','BRIGHT DOLPHIN','GRAND CORAL','NORTHERN HORIZON','WESTERN AURORA','SILVER HERON','BLUE SEAWAY','TRUST CORAL','OCEAN CONSTELLATION','EMERALD ORCA'];
+  const routes=['Asia-Europe','Transpacific','Intra-America','Europe-Africa','Intra-Asia'];
+  const start=new Date('2025-07-10');const rows=[];
+  for(let i=0;i<N;i++){
+    const n=base[i%base.length],series=Math.floor(i/base.length)+1;
+    const vessel=`MV ${n}${series>1?' '+series:''}`,rotation=n.split(' ')[0].toUpperCase();
+    const port=`Port ${300+((i*37)%500)}`,route=routes[i%routes.length];
+    const d=new Date(start);d.setDate(start.getDate()+(i%18));const eta=d.toISOString().slice(0,10);
+    const delayed=i%4===1;const bunkerUSD=4000+(i*137)%32000;
+    const berthH=18+(i*3%20),waitH=delayed?6+(i%5):2+(i%4),carbon=+(0.08+((i*7)%40)/100).toFixed(3);
+    rows.push({vessel,rotation,port,route,eta,status:delayed?'Delayed':'On Time',bunkerUSD,berthH,waitH,carbon});
+  }
+  return rows;
+}
+const sampleData=genData(120);
+
+/* -------- hero snapshot fill -------- */
+const fmtPct=p=>(p*100).toFixed(1)+'%';
+const fmtMoney=x=>x>=1e6?'$'+(x/1e6).toFixed(1)+'M':x>=1e3?'$'+(x/1e3).toFixed(1)+'k':'$'+x.toFixed(0);
+const calcKPIs=d=>{const t=d.length,on=d.filter(r=>r.status==='On Time').length,b=d.reduce((s,r)=>s+r.bunkerUSD,0);return{on:on/t,delay:(t-on)/t,bunk:b}};
+const calcCarbon=d=>{const c=d.reduce((s,r)=>s+r.carbon,0),fuel=d.reduce((s,r)=>s+r.carbon*1000,0)/d.length;return{carbon:c,fuel}};
+
+function fillHeroCards(){
+  const sorted=[...sampleData].sort((a,b)=>new Date(a.eta)-new Date(b.eta));
+  const latest=sorted[0]; // closest ETA
+  document.getElementById('chip-latest').textContent = latest.vessel.replace('MV ','#');
+  document.getElementById('c1-loc').textContent = latest.port;
+  document.getElementById('c1-dep').textContent = 'Today, 21:00';
+  document.getElementById('c1-dst').textContent = latest.route.includes('Europe') ? 'Rotterdam, NL' : (latest.route.includes('Transpacific') ? 'Los Angeles, US' : 'Singapore');
+  document.getElementById('c1-sta').textContent = latest.status;
+
+  const next=sorted[1];
+  document.getElementById('c2-ves').textContent = next.vessel;
+  document.getElementById('c2-rt').textContent = next.port + ' → ' + (next.route.includes('Europe')?'Rotterdam':next.route.includes('Transpacific')?'LA':'Singapore');
+  document.getElementById('c2-eta').textContent = next.eta;
+  document.getElementById('c2-st').textContent  = next.status;
+
+  const k=calcKPIs(sampleData), c=calcCarbon(sampleData);
+  document.getElementById('c3-bunk').textContent = fmtMoney(k.bunk);
+  document.getElementById('c3-co2').textContent  = Math.round(c.fuel)+' kg';
+  document.getElementById('c3-delay').textContent= fmtPct(k.delay);
+}
+
+/* -------- REAL MAP with Leaflet: routes, pins, moving ships -------- */
+(function(){
+  const stage = document.getElementById('mapStage');
+  const tip = document.getElementById('mapTip');
+
+  // Create map
+  const map = L.map('leafletMap', { zoomControl: true }).setView([20, 0], 2);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution:'&copy; OpenStreetMap'
+  }).addTo(map);
+
+  // Country pins (city anchors)
+  const places = {
+    'Singapore, SG':[1.3521,103.8198],
+    'Rotterdam, NL':[51.9244,4.4777],
+    'Los Angeles, US':[34.0522,-118.2437],
+    'Shanghai, CN':[31.2304,121.4737],
+    'Tokyo, JP':[35.6762,139.6503],
+    'Seattle, US':[47.6062,-122.3321]
+  };
+
+  // Add nice country/city pins with labels
+  Object.entries(places).forEach(([name,latlng])=>{
+    L.marker(latlng,{title:name}).addTo(map)
+      .bindTooltip(name,{permanent:true,direction:'top',offset:[0,-10],opacity:0.9})
+      .openTooltip();
+  });
+
+  // Utility
+  const badge = (txt, delayed) =>
+    `<span class="ship-icon ${delayed?'delayed':''}">🚢</span> <b>${txt}</b>`;
+
+  function offset(h){return new Date(Date.now()+h*3600*1000);}
+  function timeLeft(end){const ms=end-Date.now(); if(ms<=0) return 'Arrived'; const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000); return `${h}h ${m}m`; }
+
+  // Fleet + routes
+  const fleet = [
+    {id:'SHP-342', name:'MV RAPID HORIZON', origin:'Singapore, SG', destination:'Rotterdam, NL', status:'On Time', cargoTEU:3850, start:offset(-10), end:offset(42),
+     path:[places['Singapore, SG'], places['Rotterdam, NL']]},
+    {id:'SHP-501', name:'MV PACIFIC ALBATROSS', origin:'Los Angeles, US', destination:'Shanghai, CN', status:'Delayed', cargoTEU:4100, start:offset(-28), end:offset(60),
+     path:[places['Los Angeles, US'], places['Shanghai, CN']]},
+    {id:'SHP-219', name:'MV EASTERN GATE', origin:'Tokyo, JP', destination:'Seattle, US', status:'On Time', cargoTEU:2900, start:offset(-5), end:offset(36),
+     path:[places['Tokyo, JP'], places['Seattle, US']]}
+  ];
+
+  // Colored route polylines + destination flags
+  fleet.forEach(v=>{
+    const color = /delay/i.test(v.status) ? '#ef4444' : '#22c55e';
+    L.polyline(v.path, {color, weight:4, opacity:0.9}).addTo(map)
+      .bindTooltip(`${v.origin} → ${v.destination}`, {sticky:true});
+
+    L.marker(v.path[1], {
+      icon: L.divIcon({className:'dest-flag', html:'DEST', iconSize:[32,18], iconAnchor:[16,9]})
+    }).addTo(map);
+  });
+
+  // KPI chips
+  function refreshChips(){
+    const delayed = fleet.filter(f=>/delay/i.test(f.status)).length;
+    const ontime = fleet.length - delayed;
+    document.getElementById('chipOn').textContent = `${(ontime/fleet.length*100).toFixed(1)}%`;
+    document.getElementById('chipDelay').textContent = `${(delayed/fleet.length*100).toFixed(1)}%`;
+    const next = fleet.slice().sort((a,b)=>a.end-b.end)[0];
+    document.getElementById('chipNext').textContent = timeLeft(next.end);
+  }
+
+  // Card refs
+  const card = document.getElementById('mapCard');
+  const mcName=document.getElementById('mcName'), mcStatus=document.getElementById('mcStatus'),
+        mcRoute=document.getElementById('mcRoute'), mcETA=document.getElementById('mcETA'),
+        mcLeft=document.getElementById('mcLeft'), mcCargo=document.getElementById('mcCargo'),
+        mcId=document.getElementById('mcId');
+
+  function showCard(v){
+    mcName.textContent=v.name;
+    mcStatus.textContent=v.status;
+    mcStatus.className = /delay/i.test(v.status)?'badge badge-red':'badge';
+    mcRoute.textContent=`${v.origin} → ${v.destination}`;
+    mcETA.textContent=new Date(v.end).toLocaleString();
+    mcLeft.textContent=timeLeft(v.end);
+    mcCargo.textContent=`${v.cargoTEU.toLocaleString()} TEU`;
+    mcId.textContent=v.id;
+    card.style.display='block';
+  }
+
+  // Create moving ship markers
+  function lerp(a,b,t){return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t];}
+  function norm(now,a,b){return Math.max(0,Math.min(1,(now-a)/(b-a))); }
+
+  const shipMarkers = fleet.map(v=>{
+    const delayed = /delay/i.test(v.status);
+    const icon = L.divIcon({
+      className:'ship-icon '+(delayed?'delayed':''),
+      html:'🚢', iconSize:[28,22], iconAnchor:[14,11]
+    });
+    const mk = L.marker(v.path[0], {icon, title:v.name}).addTo(map);
+    mk.bindPopup(`
+      ${badge(v.name, delayed)}<br/>
+      <small>${v.origin} → ${v.destination}</small><br/>
+      <small>Status: <b>${v.status}</b></small><br/>
+      <small>ETA: ${new Date(v.end).toLocaleString()}</small><br/>
+      <small>Cargo: ${v.cargoTEU.toLocaleString()} TEU</small><br/>
+      <small>ID: ${v.id}</small>
+    `);
+    mk.on('click',()=>showCard(v));
+    return {v, mk};
+  });
+
+  // Animate
+  function tick(){
+    const now = Date.now();
+    shipMarkers.forEach(({v,mk})=>{
+      const t = norm(now, v.start.getTime(), v.end.getTime());
+      const p = lerp(v.path[0], v.path[1], t);
+      mk.setLatLng(p);
+      // Update card countdown if this vessel is open
+      if(card.style.display!=='none' && mcId.textContent===v.id){
+        mcLeft.textContent = timeLeft(v.end);
+      }
+    });
+    requestAnimationFrame(tick);
+  }
+
+  // Focus map around all routes
+  const allPts = fleet.flatMap(f=>f.path);
+  const bounds = L.latLngBounds(allPts);
+  map.fitBounds(bounds.pad(0.25));
+
+  // Initialize
+  showCard(fleet.slice().sort((a,b)=>a.end-b.end)[0]);
+  refreshChips();
+  tick();
+
+})();
+
+/* -------- dashboard chart + table (kept) -------- */
+function drawBars(bars){
+  const svg=document.getElementById('miniChart');svg.innerHTML='';
+  const W=640,H=320,p=40,bw=100,gap=70;
+  const axis=document.createElementNS('http://www.w3.org/2000/svg','line');
+  axis.setAttribute('x1',p);axis.setAttribute('y1',H-p);axis.setAttribute('x2',W-p);axis.setAttribute('y2',H-p);axis.setAttribute('stroke','#cbd5e1');
+  svg.appendChild(axis);
+  bars.forEach((b,i)=>{
+    const h=b.value*(H-p*2),x=p+60+i*(bw+gap);
+    const r=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    r.setAttribute('x',x);r.setAttribute('y',H-p-h);r.setAttribute('width',bw);r.setAttribute('height',h);r.setAttribute('fill',b.color);r.setAttribute('rx',8);
+    svg.appendChild(r);
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',x+bw/2);t.setAttribute('y',H-p-h-8);t.setAttribute('text-anchor','middle');t.setAttribute('font-weight','700');t.textContent=b.label;svg.appendChild(t);
+  });
+}
+const calcPerf=d=>{const b=d.reduce((s,r)=>s+r.berthH,0)/d.length,w=d.reduce((s,r)=>s+r.waitH,0)/d.length;return{berth:b,wait:w,eff:100-w/(b+w)*100}};
+function showTab(tab){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));tab.classList.add('active');
+  const id=tab.textContent.trim(),on=document.getElementById('kpiOnTime'),de=document.getElementById('kpiDelayed'),bu=document.getElementById('kpiBunker');
+  const k=calcKPIs(sampleData);
+  if(id==='Vessel Status'){
+    on.textContent=fmtPct(k.on);de.textContent=fmtPct(k.delay);bu.textContent=fmtMoney(k.bunk);
+    on.style.color='#f59e0b';de.style.color='#e05c65';bu.style.color='#f59e0b';
+    drawBars([{value:k.on,label:(k.on*100).toFixed(1)+'%',color:'#f59e0b'},{value:k.delay,label:(k.delay*100).toFixed(1)+'%',color:'#e05c65'}]);
+  }else if(id==='Performance'){
+    const p=calcPerf(sampleData);
+    on.textContent=p.berth.toFixed(1)+' h';de.textContent=p.wait.toFixed(1)+' h';bu.textContent=p.eff.toFixed(1)+' %';
+    on.style.color='#0ea5e9';de.style.color='#22c55e';bu.style.color='#e58e26';
+    drawBars([{value:p.berth/40,label:p.berth.toFixed(1)+' h',color:'#0ea5e9'},{value:p.wait/40,label:p.wait.toFixed(1)+' h',color:'#22c55e'},{value:p.eff/100,label:p.eff.toFixed(1)+' %',color:'#e58e26'}]);
+  }else{
+    const c=calcCarbon(sampleData);
+    on.textContent=c.carbon.toFixed(2)+' t';de.textContent='18.0 %';bu.textContent=Math.round(c.fuel)+' kg CO₂/NM';
+    on.style.color='#16a34a';de.style.color='#e11d48';bu.style.color='#f59e0b';
+    drawBars([{value:c.carbon/3,label:c.carbon.toFixed(2)+' t',color:'#16a34a'},{value:0.18,label:'18.0 %',color:'#e11d48'},{value:c.fuel/1000,label:Math.round(c.fuel)+' kg',color:'#f59e0b'}]);
+  }
+}
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>showTab(t)));
+
+const rowsContainer=document.getElementById('rows');
+function renderRows(data){
+  rowsContainer.innerHTML='';
+  data.forEach(r=>{
+    const div=document.createElement('div');div.className='soft-row';
+    div.innerHTML=`<div><b>${r.vessel}</b></div><div>${r.rotation}</div><div>${r.port}</div><div>${r.route}</div><div>${r.eta}</div><div style="justify-self:end"><span class="badge ${r.status==='Delayed'?'badge-red':''}">${r.status}</span></div>`;
+    rowsContainer.appendChild(div);
+  });
+}
+document.getElementById('searchBox').addEventListener('input',e=>{
+  const q=e.target.value.toLowerCase();
+  const f=!q?sampleData:sampleData.filter(r=>(r.vessel+r.rotation+r.port+r.route+r.eta+r.status).toLowerCase().includes(q));
+  renderRows(f);
+});
+
+/* -------- init -------- */
+window.addEventListener('load', ()=>{
+  fillHeroCards();
+  renderRows(sampleData);
+  showTab(document.querySelector('.tab.active'));
+});
+</script>
+</body>
+</html>

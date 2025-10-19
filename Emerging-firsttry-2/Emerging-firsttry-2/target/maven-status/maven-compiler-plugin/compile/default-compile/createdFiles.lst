@@ -1,0 +1,8 @@
+com/networkinsights/ai/controller/ChatController.class
+com/networkinsights/ai/model/ChatMessage.class
+com/networkinsights/ai/model/SupportedLanguage.class
+com/networkinsights/ai/config/CorsConfig.class
+com/networkinsights/ai/model/LanguageRequest.class
+com/networkinsights/ai/NetworkInsightsApplication.class
+com/networkinsights/ai/service/TranslationService.class
+com/networkinsights/ai/service/AIService.class

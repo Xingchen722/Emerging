@@ -1,0 +1,52 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: network-insights-ai
+  
+  # 数据库配置（H2内存数据库）
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+  
+  # JPA配置
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+  
+  # H2控制台配置
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+# 日志配置
+logging:
+  level:
+    com.networkinsights.ai: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+
+# Google Cloud配置
+google:
+  cloud:
+    translate:
+      # 这里需要设置你的Google Cloud API密钥
+      # 可以通过环境变量 GOOGLE_APPLICATION_CREDENTIALS 设置
+      api-key: ${GOOGLE_TRANSLATE_API_KEY:your-api-key-here}
+
+# 应用配置
+app:
+  ai:
+    response-delay-min: 1000
+    response-delay-max: 3000
+  translation:
+    default-source-language: auto
+    default-target-language: zh

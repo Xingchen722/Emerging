@@ -1,0 +1,38 @@
+# Sensitive files
+config.env
+*.env
+.env
+
+# API keys and secrets
+**/application.yml
+**/application.properties
+
+# Logs
+*.log
+app.log
+
+# Build artifacts
+target/
+*.jar
+*.war
+*.ear
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test files
+test-*.txt
+psa-*.txt
+english-test-data.txt
+
+# Scripts with secrets
+start-with-apis.sh
+start-with-config.sh

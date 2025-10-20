@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聊天测试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .chat-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .chat-header {
+            background: #007bff;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .chat-messages {
+            height: 400px;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f9f9f9;
+        }
+        .chat-message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+        .user-message {
+            justify-content: flex-end;
+        }
+        .ai-message {
+            justify-content: flex-start;
+        }
+        .message-content {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            word-wrap: break-word;
+        }
+        .user-message .message-content {
+            background: #007bff;
+            color: white;
+        }
+        .ai-message .message-content {
+            background: white;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+        .message-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 10px;
+            font-size: 14px;
+        }
+        .ai-avatar {
+            background: #28a745;
+            color: white;
+        }
+        .user-avatar {
+            background: #6c757d;
+            color: white;
+        }
+        .chat-input {
+            display: flex;
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #ddd;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+        }
+        .chat-input button {
+            margin-left: 10px;
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        .chat-input button:hover {
+            background: #0056b3;
+        }
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h2>PSA AI助手 - 测试页面</h2>
+            <p>测试聊天功能是否正常工作</p>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="chat-message ai-message">
+                <div class="message-avatar ai-avatar">🤖</div>
+                <div class="message-content">
+                    你好！我是PSA AI助手。请尝试问我关于港口效率、货物追踪或碳减排的问题。
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-input">
+            <input type="text" id="messageInput" placeholder="输入您的问题..." />
+            <button onclick="sendMessage()">发送</button>
+        </div>
+        
+        <div class="debug-info" id="debugInfo">
+            调试信息将显示在这里...
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8080/api';
+        
+        function addDebugInfo(message) {
+            const debugInfo = document.getElementById('debugInfo');
+            const timestamp = new Date().toLocaleTimeString();
+            debugInfo.innerHTML += `[${timestamp}] ${message}<br>`;
+            debugInfo.scrollTop = debugInfo.scrollHeight;
+        }
+        
+        function addMessageToChat(message, sender) {
+            addDebugInfo(`添加消息: ${sender} - ${message.substring(0, 50)}...`);
+            
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${sender}-message`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            if (sender === 'ai') {
+                avatar.className += ' ai-avatar';
+                avatar.textContent = '🤖';
+            } else {
+                avatar.className += ' user-avatar';
+                avatar.textContent = '👤';
+            }
+            
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            content.textContent = message;
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(content);
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (message === '') return;
+            
+            addDebugInfo(`发送消息: ${message}`);
+            
+            // 添加用户消息
+            addMessageToChat(message, 'user');
+            
+            // 清空输入框
+            messageInput.value = '';
+            
+            try {
+                addDebugInfo('调用API...');
+                const response = await fetch(`${API_BASE_URL}/chat/message?language=zh`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        content: message,
+                        sender: 'user',
+                        language: 'zh'
+                    })
+                });
+                
+                addDebugInfo(`API响应状态: ${response.status}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const aiMessage = await response.json();
+                addDebugInfo(`API响应内容: ${JSON.stringify(aiMessage)}`);
+                
+                // 添加AI回复
+                addMessageToChat(aiMessage.content, 'ai');
+                
+            } catch (error) {
+                addDebugInfo(`API调用失败: ${error.message}`);
+                addMessageToChat('抱歉，服务暂时不可用。请稍后重试。', 'ai');
+            }
+        }
+        
+        // 回车发送消息
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        addDebugInfo('页面加载完成，准备接收消息');
+    </script>
+</body>
+</html>

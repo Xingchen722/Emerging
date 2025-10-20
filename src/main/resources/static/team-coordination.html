@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Coordination Test Page</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #4facfe;
+        }
+        
+        .section h2 {
+            margin: 0 0 20px 0;
+            color: #2c3e50;
+            font-size: 1.5em;
+        }
+        
+        .query-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .query-input:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+        
+        .button {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+        
+        .button.secondary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .response-box {
+            background: white;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
+            min-height: 100px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .example-queries {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .example-query {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e1e8ed;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .example-query:hover {
+            border-color: #4facfe;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .example-query .query-text {
+            font-weight: 500;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .example-query .query-category {
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-indicator.green { background-color: #27ae60; }
+        .status-indicator.red { background-color: #e74c3c; }
+        .status-indicator.yellow { background-color: #f39c12; }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4facfe;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .team-member {
+            background: white;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .team-member h3 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+        
+        .team-member .role {
+            color: #4facfe;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+        
+        .team-member .location {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+        
+        .team-member .expertise {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+        
+        .team-member .contact {
+            font-size: 0.9em;
+        }
+        
+        .team-member .contact strong {
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>👥 Team Coordination</h1>
+            <p>Auto-connect the right people globally</p>
+        </div>
+        
+        <div class="content">
+            <!-- Service Status -->
+            <div class="section">
+                <h2>🔧 Service Status</h2>
+                <button class="button" onclick="getServiceStatus()">Check Service Status</button>
+                <div class="response-box" id="statusResponse"></div>
+            </div>
+            
+            <!-- Team Coordination Query -->
+            <div class="section">
+                <h2>💬 Team Coordination Query</h2>
+                <input type="text" class="query-input" id="teamQueryInput" 
+                       placeholder="Enter your team coordination query (e.g., 'Who owns Europe network issues?')">
+                <div>
+                    <button class="button" onclick="processTeamQuery()">Process Query</button>
+                    <button class="button secondary" onclick="clearResponse()">Clear Response</button>
+                </div>
+                <div class="loading" id="queryLoading">
+                    <div class="spinner"></div>
+                    Processing team coordination query...
+                </div>
+                <div class="response-box" id="queryResponse"></div>
+            </div>
+            
+            <!-- Example Queries -->
+            <div class="section">
+                <h2>💡 Example Queries</h2>
+                <p>Click on any example to try it:</p>
+                <div class="example-queries" id="exampleQueries">
+                    <!-- Examples will be loaded dynamically -->
+                </div>
+            </div>
+            
+            <!-- All Team Members -->
+            <div class="section">
+                <h2>👥 All Team Members</h2>
+                <button class="button" onclick="getAllTeamMembers()">Load All Team Members</button>
+                <div class="loading" id="membersLoading">
+                    <div class="spinner"></div>
+                    Loading team members...
+                </div>
+                <div id="teamMembersList"></div>
+            </div>
+            
+            <!-- Search Team Members -->
+            <div class="section">
+                <h2>🔍 Search Team Members</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                    <input type="text" class="query-input" id="searchRegion" placeholder="Region (e.g., Europe, Asia)">
+                    <input type="text" class="query-input" id="searchIssue" placeholder="Issue Type (e.g., Network, Logistics)">
+                    <input type="text" class="query-input" id="searchRole" placeholder="Role Level (e.g., Manager, Director)">
+                </div>
+                <button class="button" onclick="searchTeamMembers()">Search Team Members</button>
+                <div class="loading" id="searchLoading">
+                    <div class="spinner"></div>
+                    Searching team members...
+                </div>
+                <div id="searchResults"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = 'http://localhost:8080/api/team-coordination';
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadExampleQueries();
+            getServiceStatus();
+        });
+
+        async function callApi(endpoint, method = 'GET', body = null) {
+            const options = { method };
+            if (body) {
+                options.headers = { 'Content-Type': 'application/json' };
+                options.body = JSON.stringify(body);
+            }
+            try {
+                const response = await fetch(`${BASE_URL}${endpoint}`, options);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`API Error: ${response.status} - ${errorText}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error(`Error calling ${endpoint}:`, error);
+                return { error: error.message };
+            }
+        }
+
+        function showLoading(elementId) {
+            document.getElementById(elementId).classList.add('show');
+        }
+
+        function hideLoading(elementId) {
+            document.getElementById(elementId).classList.remove('show');
+        }
+
+        function renderResponse(elementId, data) {
+            const element = document.getElementById(elementId);
+            if (typeof data === 'string') {
+                element.textContent = data;
+            } else {
+                element.textContent = JSON.stringify(data, null, 2);
+            }
+        }
+
+        function renderTeamMembers(elementId, teamMembers) {
+            const element = document.getElementById(elementId);
+            if (!teamMembers || teamMembers.length === 0) {
+                element.innerHTML = '<p>No team members found.</p>';
+                return;
+            }
+
+            let html = '';
+            teamMembers.forEach(member => {
+                html += `
+                    <div class="team-member">
+                        <h3>${member.name}</h3>
+                        <div class="role">${member.role}</div>
+                        <div class="location">📍 ${member.location} (${member.timezone})</div>
+                        <div class="expertise">🎯 ${member.expertise}</div>
+                        <div class="contact">
+                            <strong>📧 Email:</strong> ${member.email}<br>
+                            ${member.contactInfo ? Object.entries(member.contactInfo).map(([key, value]) => 
+                                `<strong>${key}:</strong> ${value}`).join('<br>') : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            element.innerHTML = html;
+        }
+
+        async function getServiceStatus() {
+            const status = await callApi('/status');
+            renderResponse('statusResponse', status);
+        }
+
+        async function processTeamQuery() {
+            const query = document.getElementById('teamQueryInput').value.trim();
+            if (!query) {
+                alert('Please enter a query');
+                return;
+            }
+
+            showLoading('queryLoading');
+            const result = await callApi('/query', 'POST', { query, language: 'en' });
+            hideLoading('queryLoading');
+            renderResponse('queryResponse', result);
+        }
+
+        async function loadExampleQueries() {
+            const examples = await callApi('/examples');
+            const container = document.getElementById('exampleQueries');
+            
+            if (examples.examples) {
+                let html = '';
+                examples.examples.forEach(query => {
+                    html += `
+                        <div class="example-query" onclick="tryExampleQuery('${query}')">
+                            <div class="query-text">${query}</div>
+                            <div class="query-category">Click to try this query</div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            }
+        }
+
+        function tryExampleQuery(query) {
+            document.getElementById('teamQueryInput').value = query;
+            processTeamQuery();
+        }
+
+        async function getAllTeamMembers() {
+            showLoading('membersLoading');
+            const members = await callApi('/members');
+            hideLoading('membersLoading');
+            renderTeamMembers('teamMembersList', members);
+        }
+
+        async function searchTeamMembers() {
+            const region = document.getElementById('searchRegion').value.trim();
+            const issue = document.getElementById('searchIssue').value.trim();
+            const role = document.getElementById('searchRole').value.trim();
+
+            const searchCriteria = {};
+            if (region) searchCriteria.region = region;
+            if (issue) searchCriteria.issueType = issue;
+            if (role) searchCriteria.roleLevel = role;
+
+            showLoading('searchLoading');
+            const results = await callApi('/search', 'POST', searchCriteria);
+            hideLoading('searchLoading');
+            renderTeamMembers('searchResults', results);
+        }
+
+        function clearResponse() {
+            document.getElementById('queryResponse').textContent = '';
+            document.getElementById('teamQueryInput').value = '';
+        }
+    </script>
+</body>
+</html>

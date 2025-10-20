@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translation Undefined Fix Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .test-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .test-button { background: #007acc; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .result { background: #f0f8ff; padding: 15px; border-radius: 8px; border-left: 4px solid #007acc; margin-top: 15px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .chat-simulation { border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin: 10px 0; background: #f9f9f9; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔧 Translation Undefined Fix Test</h1>
+        <p>Testing the fix for "undefined" messages in translation functionality</p>
+        
+        <div class="status success">
+            <strong>✅ Fix Applied:</strong>
+            <ul>
+                <li>Added input validation to generateTranslationResponse()</li>
+                <li>Added mandarin support to generateGenericTranslation()</li>
+                <li>Added safety checks to prevent undefined returns</li>
+                <li>Ensured all functions always return valid strings</li>
+            </ul>
+        </div>
+        
+        <button class="test-button" onclick="testMandarinTranslation()">Test Mandarin Translation</button>
+        <button class="test-button" onclick="testJapaneseTranslation()">Test Japanese Translation</button>
+        <button class="test-button" onclick="testInvalidInput()">Test Invalid Input</button>
+        <button class="test-button" onclick="testUndefinedLanguage()">Test Undefined Language</button>
+        
+        <div id="result" class="result" style="display: none;"></div>
+        
+        <div class="chat-simulation">
+            <h3>Translation Test Results:</h3>
+            <div id="chatSimulation"></div>
+        </div>
+        
+        <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+            <h3>📋 Fix Details:</h3>
+            <p><strong>Root Cause:</strong> generateGenericTranslation() and generateTranslationResponse() could return undefined in certain edge cases.</p>
+            <p><strong>Solution:</strong></p>
+            <ul>
+                <li><strong>Input Validation:</strong> Check if text and targetLang are valid strings</li>
+                <li><strong>Mandarin Support:</strong> Added mandarin to genericTranslations</li>
+                <li><strong>Safety Checks:</strong> Always return a valid string, never undefined</li>
+                <li><strong>Fallback Values:</strong> Default to "[LANGUAGE] original text" format</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Copy the fixed functions from root index.html
+        function generateTranslationResponse(text, targetLang) {
+            // Ensure inputs are valid strings
+            if (!text || typeof text !== 'string') {
+                text = 'Hello team, meeting at 3PM';
+            }
+            if (!targetLang || typeof targetLang !== 'string') {
+                targetLang = 'mandarin';
+            }
+            
+            const translations = {
+                'japanese': 'Japanese',
+                'japan': 'Japanese',
+                'mandarin': 'Chinese (Mandarin)',
+                'chinese': 'Chinese',
+                'english': 'English',
+                'german': 'German',
+                'french': 'French',
+                'spanish': 'Spanish',
+                'korean': 'Korean',
+                'portuguese': 'Portuguese',
+                'italian': 'Italian',
+                'russian': 'Russian',
+                'arabic': 'Arabic',
+                'dutch': 'Dutch',
+                'swedish': 'Swedish',
+                'norwegian': 'Norwegian',
+                'danish': 'Danish',
+                'finnish': 'Finnish',
+                'polish': 'Polish',
+                'turkish': 'Turkish',
+                'greek': 'Greek',
+                'hebrew': 'Hebrew',
+                'thai': 'Thai',
+                'vietnamese': 'Vietnamese',
+                'indonesian': 'Indonesian',
+                'malay': 'Malay',
+                'hindi': 'Hindi',
+                'bengali': 'Bengali',
+                'urdu': 'Urdu',
+                'persian': 'Persian'
+            };
+            
+            const langKey = String(targetLang).toLowerCase();
+            const langName = translations[langKey] || langKey;
+            
+            // Mock translations for demonstration
+            const mockTranslations = {
+                'japanese': {
+                    'Hello team, meeting at 3PM': 'こんにちはチーム、午後3時に会議',
+                    'Good morning, how is the project going?': 'おはようございます、プロジェクトの進捗はいかがですか？',
+                    'Please review the shipment status': '出荷状況をご確認ください',
+                    'The vessel will arrive tomorrow': '船は明日到着予定です',
+                    'Thank you for your cooperation': 'ご協力ありがとうございます'
+                },
+                'chinese': {
+                    'Hello team, meeting at 3PM': '你好团队，下午3点开会',
+                    'Good morning, how is the project going?': '早上好，项目进展如何？',
+                    'Please review the shipment status': '请查看货运状态',
+                    'The vessel will arrive tomorrow': '船舶明天到达',
+                    'Thank you for your cooperation': '感谢您的合作'
+                },
+                'mandarin': {
+                    'Hello team, meeting at 3PM': '你好团队，下午3点开会',
+                    'Good morning, how is the project going?': '早上好，项目进展如何？',
+                    'Please review the shipment status': '请查看货运状态',
+                    'The vessel will arrive tomorrow': '船舶明天到达',
+                    'Thank you for your cooperation': '感谢您的合作'
+                },
+                'english': {
+                    '你好团队，下午3点开会': 'Hello team, meeting at 3PM',
+                    '早上好，项目进展如何？': 'Good morning, how is the project going?',
+                    '请查看货运状态': 'Please review the shipment status',
+                    '船舶明天到达': 'The vessel will arrive tomorrow',
+                    '感谢您的合作': 'Thank you for your cooperation'
+                }
+            };
+            
+            // Find the best match or use a generic translation
+            let translatedText = text;
+            
+            if (mockTranslations[langKey]) {
+                // Try to find exact match first
+                if (mockTranslations[langKey][text]) {
+                    translatedText = mockTranslations[langKey][text];
+                } else {
+                    // Use a generic translation based on common patterns
+                    translatedText = generateGenericTranslation(text, langKey);
+                }
+            } else {
+                translatedText = generateGenericTranslation(text, langKey);
+            }
+            
+            // Ensure translatedText is never undefined
+            if (!translatedText || typeof translatedText !== 'string') {
+                translatedText = `[${langKey.toUpperCase()}] ${text}`;
+            }
+            
+            return `🌐 **${langName} Translation**<br><br>
+              <div style="background:#f0f8ff;padding:12px;border-radius:8px;margin:8px 0;border-left:4px solid #007acc;">
+                <strong>Original:</strong> ${text}<br>
+                <strong>Translation:</strong> ${translatedText}
+              </div>
+              <small style="color:#666;">💡 Note: This is a demo translation. For production deployment, integrate with professional translation APIs like Google Translate, Azure Translator, or DeepL.</small>`;
+        }
+
+        function generateGenericTranslation(text, targetLang) {
+            const genericTranslations = {
+                'japanese': {
+                    'hello': 'こんにちは',
+                    'team': 'チーム',
+                    'meeting': '会議',
+                    'project': 'プロジェクト',
+                    'shipment': '出荷',
+                    'vessel': '船',
+                    'arrive': '到着',
+                    'tomorrow': '明日',
+                    'thank': 'ありがとう',
+                    'cooperation': '協力'
+                },
+                'chinese': {
+                    'hello': '你好',
+                    'team': '团队',
+                    'meeting': '会议',
+                    'project': '项目',
+                    'shipment': '货运',
+                    'vessel': '船舶',
+                    'arrive': '到达',
+                    'tomorrow': '明天',
+                    'thank': '谢谢',
+                    'cooperation': '合作'
+                },
+                'mandarin': {
+                    'hello': '你好',
+                    'team': '团队',
+                    'meeting': '会议',
+                    'project': '项目',
+                    'shipment': '货运',
+                    'vessel': '船舶',
+                    'arrive': '到达',
+                    'tomorrow': '明天',
+                    'thank': '谢谢',
+                    'cooperation': '合作'
+                }
+            };
+            
+            // Ensure targetLang is a string and lowercase
+            const langKey = String(targetLang).toLowerCase();
+            
+            if (genericTranslations[langKey]) {
+                let result = text;
+                Object.entries(genericTranslations[langKey]).forEach(([key, value]) => {
+                    result = result.replace(new RegExp(key, 'gi'), value);
+                });
+                return result;
+            }
+            
+            // Always return a valid string, never undefined
+            return `[${langKey.toUpperCase()}] ${text}`;
+        }
+
+        // Simulate addBubble function
+        function addBubble(text, who='bot') {
+            const chatDiv = document.getElementById('chatSimulation');
+            const bubble = document.createElement('div');
+            bubble.style.cssText = `
+                display: inline-block; 
+                padding: 12px 14px; 
+                border-radius: 14px; 
+                margin: 8px 0;
+                max-width: min(640px, 92%); 
+                line-height: 1.55; 
+                box-shadow: 0 6px 18px rgba(0,0,0,.08);
+                background: ${who === 'user' ? '#e6f0ff' : '#fff'};
+                margin-left: ${who === 'user' ? 'auto' : '0'};
+            `;
+            bubble.innerHTML = text + `<span style="display:block;font-size:12px;opacity:.6;margin-top:6px;">${new Date().toLocaleTimeString()}</span>`;
+            chatDiv.appendChild(bubble);
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+        }
+
+        function testMandarinTranslation() {
+            const query = "Translate: Hello team, meeting at 3PM (to Mandarin)";
+            addBubble(query, 'user');
+            setTimeout(() => {
+                const result = generateTranslationResponse('Hello team, meeting at 3PM', 'mandarin');
+                addBubble(result, 'bot');
+            }, 120);
+        }
+
+        function testJapaneseTranslation() {
+            const query = "Translate: Hello team, meeting at 3PM (to Japanese)";
+            addBubble(query, 'user');
+            setTimeout(() => {
+                const result = generateTranslationResponse('Hello team, meeting at 3PM', 'japanese');
+                addBubble(result, 'bot');
+            }, 120);
+        }
+
+        function testInvalidInput() {
+            const query = "Translate: (to Mandarin)";
+            addBubble(query, 'user');
+            setTimeout(() => {
+                const result = generateTranslationResponse('', 'mandarin');
+                addBubble(result, 'bot');
+            }, 120);
+        }
+
+        function testUndefinedLanguage() {
+            const query = "Translate: Hello team (to UnknownLanguage)";
+            addBubble(query, 'user');
+            setTimeout(() => {
+                const result = generateTranslationResponse('Hello team', 'UnknownLanguage');
+                addBubble(result, 'bot');
+            }, 120);
+        }
+
+        // Test on page load
+        window.onload = function() {
+            console.log('Translation undefined fix test page loaded');
+            addBubble('Testing translation fixes - no more undefined messages!', 'bot');
+        };
+    </script>
+</body>
+</html>

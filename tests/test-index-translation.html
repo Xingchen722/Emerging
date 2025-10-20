@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translation Test - Index.html Integration</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .test-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .test-button { background: #007acc; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .result { background: #f0f8ff; padding: 15px; border-radius: 8px; border-left: 4px solid #007acc; margin-top: 15px; }
+        .chat-simulation { border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin: 10px 0; background: #f9f9f9; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🌐 Translation Test - Index.html Integration</h1>
+        <p>Testing the translation functionality from index.html</p>
+        
+        <button class="test-button" onclick="testJapaneseTranslation()">Test Japanese Translation</button>
+        <button class="test-button" onclick="testChineseTranslation()">Test Chinese Translation</button>
+        <button class="test-button" onclick="testGermanTranslation()">Test German Translation</button>
+        
+        <div id="result" class="result" style="display: none;"></div>
+        
+        <div class="chat-simulation">
+            <h3>Chat Simulation:</h3>
+            <div id="chatSimulation"></div>
+        </div>
+    </div>
+
+    <script>
+        // Copy the translation functions from index.html
+        function generateTranslationResponse(text, targetLang) {
+            const translations = {
+                'japanese': 'Japanese',
+                'japan': 'Japanese',
+                'mandarin': 'Chinese (Mandarin)',
+                'chinese': 'Chinese',
+                'english': 'English',
+                'german': 'German',
+                'french': 'French',
+                'spanish': 'Spanish',
+                'korean': 'Korean',
+                'portuguese': 'Portuguese',
+                'italian': 'Italian',
+                'russian': 'Russian',
+                'arabic': 'Arabic',
+                'dutch': 'Dutch',
+                'swedish': 'Swedish',
+                'norwegian': 'Norwegian',
+                'danish': 'Danish',
+                'finnish': 'Finnish',
+                'polish': 'Polish',
+                'turkish': 'Turkish',
+                'greek': 'Greek',
+                'hebrew': 'Hebrew',
+                'thai': 'Thai',
+                'vietnamese': 'Vietnamese',
+                'indonesian': 'Indonesian',
+                'malay': 'Malay',
+                'hindi': 'Hindi',
+                'bengali': 'Bengali',
+                'urdu': 'Urdu',
+                'persian': 'Persian'
+            };
+            
+            const langName = translations[targetLang] || targetLang;
+            
+            // Mock translations for demonstration
+            const mockTranslations = {
+                'japanese': {
+                    'Hello team, meeting at 3PM': 'こんにちはチーム、午後3時に会議',
+                    'Good morning, how is the project going?': 'おはようございます、プロジェクトの進捗はいかがですか？',
+                    'Please review the shipment status': '出荷状況をご確認ください',
+                    'The vessel will arrive tomorrow': '船は明日到着予定です',
+                    'Thank you for your cooperation': 'ご協力ありがとうございます'
+                },
+                'chinese': {
+                    'Hello team, meeting at 3PM': '你好团队，下午3点开会',
+                    'Good morning, how is the project going?': '早上好，项目进展如何？',
+                    'Please review the shipment status': '请查看货运状态',
+                    'The vessel will arrive tomorrow': '船舶明天到达',
+                    'Thank you for your cooperation': '感谢您的合作'
+                },
+                'german': {
+                    'Hello team, meeting at 3PM': 'Hallo Team, Besprechung um 15 Uhr',
+                    'Good morning, how is the project going?': 'Guten Morgen, wie läuft das Projekt?',
+                    'Please review the shipment status': 'Bitte überprüfen Sie den Sendungsstatus',
+                    'The vessel will arrive tomorrow': 'Das Schiff wird morgen ankommen',
+                    'Thank you for your cooperation': 'Vielen Dank für Ihre Zusammenarbeit'
+                }
+            };
+            
+            // Find the best match or use a generic translation
+            let translatedText = text;
+            const langKey = targetLang.toLowerCase();
+            
+            if (mockTranslations[langKey]) {
+                // Try to find exact match first
+                if (mockTranslations[langKey][text]) {
+                    translatedText = mockTranslations[langKey][text];
+                } else {
+                    // Use a generic translation based on common patterns
+                    translatedText = generateGenericTranslation(text, langKey);
+                }
+            } else {
+                translatedText = generateGenericTranslation(text, langKey);
+            }
+            
+            return `🌐 **${langName} Translation**<br><br>
+                <div style="background:#f0f8ff;padding:12px;border-radius:8px;margin:8px 0;border-left:4px solid #007acc;">
+                    <strong>Original:</strong> ${text}<br>
+                    <strong>Translation:</strong> ${translatedText}
+                </div>
+                <small style="color:#666;">💡 Note: This is a demo translation. For production deployment, integrate with professional translation APIs like Google Translate, Azure Translator, or DeepL.</small>`;
+        }
+
+        function generateGenericTranslation(text, targetLang) {
+            const genericTranslations = {
+                'japanese': {
+                    'hello': 'こんにちは',
+                    'team': 'チーム',
+                    'meeting': '会議',
+                    'project': 'プロジェクト',
+                    'shipment': '出荷',
+                    'vessel': '船',
+                    'arrive': '到着',
+                    'tomorrow': '明日',
+                    'thank': 'ありがとう',
+                    'cooperation': '協力'
+                },
+                'chinese': {
+                    'hello': '你好',
+                    'team': '团队',
+                    'meeting': '会议',
+                    'project': '项目',
+                    'shipment': '货运',
+                    'vessel': '船舶',
+                    'arrive': '到达',
+                    'tomorrow': '明天',
+                    'thank': '谢谢',
+                    'cooperation': '合作'
+                },
+                'german': {
+                    'hello': 'Hallo',
+                    'team': 'Team',
+                    'meeting': 'Besprechung',
+                    'project': 'Projekt',
+                    'shipment': 'Sendung',
+                    'vessel': 'Schiff',
+                    'arrive': 'Ankommen',
+                    'tomorrow': 'Morgen',
+                    'thank': 'Danke',
+                    'cooperation': 'Zusammenarbeit'
+                }
+            };
+            
+            if (genericTranslations[targetLang]) {
+                let result = text;
+                Object.entries(genericTranslations[targetLang]).forEach(([key, value]) => {
+                    result = result.replace(new RegExp(key, 'gi'), value);
+                });
+                return result;
+            }
+            
+            return `[${targetLang.toUpperCase()}] ${text}`;
+        }
+
+        // Simulate addBubble function
+        function addBubble(text, who='bot') {
+            const chatDiv = document.getElementById('chatSimulation');
+            const bubble = document.createElement('div');
+            bubble.style.cssText = `
+                display: inline-block; 
+                padding: 12px 14px; 
+                border-radius: 14px; 
+                margin: 8px 0;
+                max-width: min(640px, 92%); 
+                line-height: 1.55; 
+                box-shadow: 0 6px 18px rgba(0,0,0,.08);
+                background: ${who === 'user' ? '#e6f0ff' : '#fff'};
+                margin-left: ${who === 'user' ? 'auto' : '0'};
+            `;
+            bubble.innerHTML = text + `<span style="display:block;font-size:12px;opacity:.6;margin-top:6px;">${new Date().toLocaleTimeString()}</span>`;
+            chatDiv.appendChild(bubble);
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+        }
+
+        function testJapaneseTranslation() {
+            const text = 'Hello team, meeting at 3PM';
+            const targetLang = 'Japanese';
+            const query = `Translate: ${text} (to ${targetLang})`;
+            
+            addBubble(query, 'user');
+            setTimeout(() => {
+                const result = generateTranslationResponse(text, targetLang.toLowerCase());
+                addBubble(result, 'bot');
+            }, 120);
+        }
+
+        function testChineseTranslation() {
+            const text = 'Good morning, how is the project going?';
+            const targetLang = 'Chinese';
+            const query = `Translate: ${text} (to ${targetLang})`;
+            
+            addBubble(query, 'user');
+            setTimeout(() => {
+                const result = generateTranslationResponse(text, targetLang.toLowerCase());
+                addBubble(result, 'bot');
+            }, 120);
+        }
+
+        function testGermanTranslation() {
+            const text = 'Please review the shipment status';
+            const targetLang = 'German';
+            const query = `Translate: ${text} (to ${targetLang})`;
+            
+            addBubble(query, 'user');
+            setTimeout(() => {
+                const result = generateTranslationResponse(text, targetLang.toLowerCase());
+                addBubble(result, 'bot');
+            }, 120);
+        }
+
+        // Test on page load
+        window.onload = function() {
+            console.log('Translation test page loaded');
+            addBubble('Welcome! Click the buttons above to test different translations.', 'bot');
+        };
+    </script>
+</body>
+</html>

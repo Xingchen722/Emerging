@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language Test - Default English</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #4a90e2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #357abd;
+        }
+        .result {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #4a90e2;
+        }
+        .success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        .error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+    </style>
+</head>
+<body>
+    <h1>🌐 Language Default Test - English</h1>
+    
+    <div class="test-section">
+        <h2>Frontend Language Settings Test</h2>
+        <p>Testing if the frontend defaults to English language.</p>
+        <button class="test-button" onclick="testFrontendLanguage()">Test Frontend Language</button>
+        <div id="frontend-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Mock Response Test</h2>
+        <p>Testing if mock responses are in English.</p>
+        <button class="test-button" onclick="testMockResponses()">Test Mock Responses</button>
+        <div id="mock-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Backend API Test</h2>
+        <p>Testing if backend responses are in English.</p>
+        <button class="test-button" onclick="testBackendAPI()">Test Backend API</button>
+        <div id="backend-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Team Coordination Test</h2>
+        <p>Testing Team Coordination service with English responses.</p>
+        <button class="test-button" onclick="testTeamCoordination()">Test Team Coordination</button>
+        <div id="team-result" class="result"></div>
+    </div>
+
+    <script>
+        // Test frontend language settings
+        function testFrontendLanguage() {
+            const resultDiv = document.getElementById('frontend-result');
+            
+            try {
+                // Simulate the language initialization logic
+                const savedLanguage = localStorage.getItem('language');
+                const browserLanguage = navigator.language.split('-')[0];
+                
+                let currentLanguage;
+                if (savedLanguage && ['zh', 'en', 'de'].includes(savedLanguage)) {
+                    currentLanguage = savedLanguage;
+                } else if (['zh', 'en', 'de'].includes(browserLanguage)) {
+                    currentLanguage = browserLanguage;
+                } else {
+                    currentLanguage = 'en'; // Default English
+                }
+                
+                resultDiv.innerHTML = `
+                    <h4>✅ Frontend Language Test Results:</h4>
+                    <p><strong>Current Language:</strong> ${currentLanguage}</p>
+                    <p><strong>Saved Language:</strong> ${savedLanguage || 'None'}</p>
+                    <p><strong>Browser Language:</strong> ${browserLanguage}</p>
+                    <p><strong>Default Language:</strong> English (en)</p>
+                    <p><strong>Status:</strong> ${currentLanguage === 'en' ? '✅ Defaulting to English' : '⚠️ Not defaulting to English'}</p>
+                `;
+                resultDiv.className = currentLanguage === 'en' ? 'result success' : 'result error';
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<h4>❌ Error:</h4><p>${error.message}</p>`;
+                resultDiv.className = 'result error';
+            }
+        }
+        
+        // Test mock responses
+        function testMockResponses() {
+            const resultDiv = document.getElementById('mock-result');
+            
+            try {
+                // Simulate mock response generation
+                const mockResponses = {
+                    'default': [
+                        'I understand your question. Let me search for relevant information...',
+                        'That\'s a great question! Let me help you analyze this.',
+                        'I\'m processing your request, please wait a moment.',
+                        'Let me provide you with the most accurate information.'
+                    ],
+                    'shipment': [
+                        'Shipment #342 is currently at Singapore port, expected to depart at 9 PM tonight.',
+                        'Shipment #123 has arrived at Hamburg port, Germany, currently in customs clearance.',
+                        'Shipment #456 is currently in the Pacific Ocean, expected to arrive in Los Angeles in 3 days.',
+                        'Shipment #789 has departed from Shanghai port, heading to Rotterdam.'
+                    ],
+                    'contact': [
+                        'For Europe network issues, please contact Anna from the Frankfurt team. I can help you send a message to her.',
+                        'For Asia-Pacific logistics issues, please contact David from the Singapore office.',
+                        'For North America technical support, please contact Sarah from the New York team.',
+                        'For system maintenance issues, please contact Mike, our technical lead.'
+                    ]
+                };
+                
+                let allEnglish = true;
+                let sampleResponses = [];
+                
+                Object.entries(mockResponses).forEach(([category, responses]) => {
+                    responses.forEach(response => {
+                        sampleResponses.push(`<strong>${category}:</strong> ${response}`);
+                        // Check if response contains Chinese characters
+                        if (/[\u4e00-\u9fff]/.test(response)) {
+                            allEnglish = false;
+                        }
+                    });
+                });
+                
+                resultDiv.innerHTML = `
+                    <h4>${allEnglish ? '✅' : '❌'} Mock Response Test Results:</h4>
+                    <p><strong>All Responses in English:</strong> ${allEnglish ? 'Yes' : 'No'}</p>
+                    <h5>Sample Responses:</h5>
+                    ${sampleResponses.slice(0, 6).map(response => `<p>${response}</p>`).join('')}
+                `;
+                resultDiv.className = allEnglish ? 'result success' : 'result error';
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<h4>❌ Error:</h4><p>${error.message}</p>`;
+                resultDiv.className = 'result error';
+            }
+        }
+        
+        // Test backend API
+        async function testBackendAPI() {
+            const resultDiv = document.getElementById('backend-result');
+            
+            try {
+                resultDiv.innerHTML = '<h4>🔄 Testing Backend API...</h4>';
+                
+                // Test team coordination API
+                const response = await fetch('http://localhost:8080/api/team-coordination/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: 'Who owns Europe network issues?',
+                        language: 'en'
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const isEnglish = !/[\u4e00-\u9fff]/.test(data.content);
+                    
+                    resultDiv.innerHTML = `
+                        <h4>${isEnglish ? '✅' : '❌'} Backend API Test Results:</h4>
+                        <p><strong>API Status:</strong> ✅ Working</p>
+                        <p><strong>Response Language:</strong> ${isEnglish ? 'English' : 'Not English'}</p>
+                        <p><strong>Response Preview:</strong></p>
+                        <div style="background: #f8f9fa; padding: 10px; border-radius: 4px; max-height: 200px; overflow-y: auto;">
+                            ${data.content.substring(0, 500)}${data.content.length > 500 ? '...' : ''}
+                        </div>
+                    `;
+                    resultDiv.className = isEnglish ? 'result success' : 'result error';
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <h4>❌ Backend API Test Error:</h4>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                    <p><strong>Note:</strong> Make sure the Spring Boot server is running on port 8080</p>
+                `;
+                resultDiv.className = 'result error';
+            }
+        }
+        
+        // Test team coordination
+        async function testTeamCoordination() {
+            const resultDiv = document.getElementById('team-result');
+            
+            try {
+                resultDiv.innerHTML = '<h4>🔄 Testing Team Coordination...</h4>';
+                
+                const response = await fetch('http://localhost:8080/api/team-coordination/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: 'Who manages North America support?',
+                        language: 'en'
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const isEnglish = !/[\u4e00-\u9fff]/.test(data.content);
+                    
+                    resultDiv.innerHTML = `
+                        <h4>${isEnglish ? '✅' : '❌'} Team Coordination Test Results:</h4>
+                        <p><strong>Service Status:</strong> ✅ Working</p>
+                        <p><strong>Response Language:</strong> ${isEnglish ? 'English' : 'Not English'}</p>
+                        <p><strong>Team Member Found:</strong> ${data.content.includes('Sarah Johnson') ? 'Yes' : 'No'}</p>
+                        <p><strong>Response Preview:</strong></p>
+                        <div style="background: #f8f9fa; padding: 10px; border-radius: 4px; max-height: 200px; overflow-y: auto;">
+                            ${data.content.substring(0, 500)}${data.content.length > 500 ? '...' : ''}
+                        </div>
+                    `;
+                    resultDiv.className = isEnglish ? 'result success' : 'result error';
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <h4>❌ Team Coordination Test Error:</h4>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                    <p><strong>Note:</strong> Make sure the Spring Boot server is running on port 8080</p>
+                `;
+                resultDiv.className = 'result error';
+            }
+        }
+        
+        // Auto-run tests when page loads
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testFrontendLanguage();
+                testMockResponses();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

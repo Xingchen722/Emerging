@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Translation Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .test-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .test-input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px; }
+        .test-button { background: #007acc; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
+        .result { background: #f0f8ff; padding: 15px; border-radius: 8px; border-left: 4px solid #007acc; margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🌐 Quick Translation Test</h1>
+        <input type="text" class="test-input" id="testInput" value="Translate: Hello team, meeting at 3PM (to Japanese)">
+        <button class="test-button" onclick="testTranslation()">Test Translation</button>
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        function testTranslation() {
+            const input = document.getElementById('testInput').value.trim();
+            const resultDiv = document.getElementById('result');
+            
+            console.log('Testing input:', input);
+            
+            if (!input) {
+                resultDiv.innerHTML = '<p style="color: red;">Please enter a translation query.</p>';
+                resultDiv.style.display = 'block';
+                return;
+            }
+            
+            // Enhanced Translation functionality
+            const tr = input.match(/translate.*?:?\s*(.+?)\s*\((?:to|→)\s*(japanese|japan|mandarin|chinese|english|german|french|spanish|korean|portuguese|italian|russian|arabic|dutch|swedish|norwegian|danish|finnish|polish|turkish|greek|hebrew|thai|vietnamese|indonesian|malay|hindi|bengali|urdu|persian)\)/i);
+            
+            console.log('Regex match result:', tr);
+            
+            if (tr) {
+                const text = tr[1];
+                const targetLang = tr[2].toLowerCase();
+                console.log('Extracted text:', text);
+                console.log('Extracted language:', targetLang);
+                
+                // Simple translation for testing
+                const translations = {
+                    'japanese': 'Japanese',
+                    'chinese': 'Chinese',
+                    'english': 'English',
+                    'german': 'German',
+                    'french': 'French',
+                    'spanish': 'Spanish',
+                    'korean': 'Korean'
+                };
+                
+                const langName = translations[targetLang] || targetLang;
+                
+                const mockTranslations = {
+                    'japanese': {
+                        'Hello team, meeting at 3PM': 'こんにちはチーム、午後3時に会議'
+                    },
+                    'chinese': {
+                        'Hello team, meeting at 3PM': '你好团队，下午3点开会'
+                    }
+                };
+                
+                let translatedText = mockTranslations[targetLang]?.[text] || `[${langName}] ${text}`;
+                
+                const result = `🌐 **${langName} Translation**<br><br>
+                    <div style="background:#f0f8ff;padding:12px;border-radius:8px;margin:8px 0;border-left:4px solid #007acc;">
+                        <strong>Original:</strong> ${text}<br>
+                        <strong>Translation:</strong> ${translatedText}
+                    </div>
+                    <small style="color:#666;">💡 Note: This is a demo translation.</small>`;
+                
+                resultDiv.innerHTML = result;
+                resultDiv.style.display = 'block';
+            } else {
+                resultDiv.innerHTML = '<p style="color: red;">❌ Translation query not recognized. Please use format: "Translate: [text] (to [language])"</p>';
+                resultDiv.style.display = 'block';
+            }
+        }
+
+        // Test on page load
+        window.onload = function() {
+            console.log('Page loaded, testing translation...');
+            testTranslation();
+        };
+    </script>
+</body>
+</html>

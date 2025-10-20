@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test New AI Features</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .feature-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: #fafafa;
+        }
+        .feature-title {
+            color: #007acc;
+            font-size: 24px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #007acc;
+            padding-bottom: 10px;
+        }
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .test-button {
+            padding: 12px 16px;
+            background: #007acc;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        .test-button:hover {
+            background: #005a9e;
+        }
+        .test-button.cross-port {
+            background: #4caf50;
+        }
+        .test-button.sustainability {
+            background: #ff9800;
+        }
+        .test-button.conversational {
+            background: #9c27b0;
+        }
+        .result-area {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #007acc;
+            min-height: 200px;
+            overflow-y: auto;
+            max-height: 500px;
+        }
+        .result-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            border-left: 3px solid #28a745;
+        }
+        .result-item h4 {
+            margin: 0 0 8px 0;
+            color: #007acc;
+        }
+        .result-item p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .example-queries {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #2196f3;
+        }
+        .example-queries h4 {
+            margin: 0 0 10px 0;
+            color: #1976d2;
+        }
+        .example-queries ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .example-queries li {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Test New AI Features</h1>
+        <p>Testing the three new AI features: Cross-Port Learning Engine (EchoNet), Sustainability AI (Harmony), and Conversational Power BI.</p>
+        
+        <!-- Cross-Port Learning Engine (EchoNet) -->
+        <div class="feature-section">
+            <h2 class="feature-title">🌐 Cross-Port Learning Engine (EchoNet)</h2>
+            <p>AI network that shares best practices between ports globally.</p>
+            
+            <div class="example-queries">
+                <h4>Example Queries:</h4>
+                <ul>
+                    <li>"Apply Antwerp's fuel-saving strategy to Tuas"</li>
+                    <li>"Transfer Rotterdam's efficiency methods to Singapore"</li>
+                    <li>"Share Hamburg's safety protocols with Tuas"</li>
+                </ul>
+            </div>
+            
+            <div class="button-grid">
+                <button class="test-button cross-port" onclick="testCrossPortLearning('Apply Antwerp\'s fuel-saving strategy to Tuas')">Apply Antwerp Strategy to Tuas</button>
+                <button class="test-button cross-port" onclick="testCrossPortLearning('Transfer Rotterdam efficiency to Singapore')">Rotterdam → Singapore</button>
+                <button class="test-button cross-port" onclick="testCrossPortLearning('Share Hamburg safety protocols')">Hamburg Safety Protocols</button>
+                <button class="test-button cross-port" onclick="testCrossPortLearning('Best practices from multiple ports')">Multi-Port Learning</button>
+            </div>
+        </div>
+        
+        <!-- Sustainability AI (Harmony) -->
+        <div class="feature-section">
+            <h2 class="feature-title">🌱 Sustainability AI (Harmony)</h2>
+            <p>Balances efficiency with carbon goals for greener operations.</p>
+            
+            <div class="example-queries">
+                <h4>Example Queries:</h4>
+                <ul>
+                    <li>"Cut carbon by 15% with only 10-minute delay"</li>
+                    <li>"Reduce emissions by 20% with minimal impact"</li>
+                    <li>"Optimize for green operations"</li>
+                </ul>
+            </div>
+            
+            <div class="button-grid">
+                <button class="test-button sustainability" onclick="testSustainabilityAI('Cut carbon by 15% with only 10-minute delay')">15% Carbon Cut</button>
+                <button class="test-button sustainability" onclick="testSustainabilityAI('Reduce emissions by 20% with minimal impact')">20% Emission Reduction</button>
+                <button class="test-button sustainability" onclick="testSustainabilityAI('Optimize for green operations')">Green Optimization</button>
+                <button class="test-button sustainability" onclick="testSustainabilityAI('Balance efficiency and sustainability')">Efficiency Balance</button>
+            </div>
+        </div>
+        
+        <!-- Conversational Power BI -->
+        <div class="feature-section">
+            <h2 class="feature-title">💬 Conversational Power BI</h2>
+            <p>Ask questions directly in English or 中文 to get instant analytics.</p>
+            
+            <div class="example-queries">
+                <h4>Example Queries:</h4>
+                <ul>
+                    <li>"Why was Tuas delayed today?"</li>
+                    <li>"Show Singapore port performance this week"</li>
+                    <li>"Analyze vessel utilization trends"</li>
+                </ul>
+            </div>
+            
+            <div class="button-grid">
+                <button class="test-button conversational" onclick="testConversationalPowerBI('Why was Tuas delayed today?')">Tuas Delay Analysis</button>
+                <button class="test-button conversational" onclick="testConversationalPowerBI('Show Singapore port performance this week')">Singapore Performance</button>
+                <button class="test-button conversational" onclick="testConversationalPowerBI('Analyze vessel utilization trends')">Vessel Utilization</button>
+                <button class="test-button conversational" onclick="testConversationalPowerBI('What caused delays yesterday?')">Yesterday's Delays</button>
+            </div>
+        </div>
+        
+        <div class="result-area" id="resultArea">
+            <h3>Test Results:</h3>
+            <p>Click any button above to see the test results here...</p>
+        </div>
+        
+        <button class="test-button" onclick="clearResults()" style="background: #6c757d;">Clear Results</button>
+        <button class="test-button" onclick="testAllNewFeatures()" style="background: #28a745;">Test All New Features</button>
+    </div>
+
+    <script>
+        // Mock functions for testing
+        function addBubble(content, sender) {
+            const resultArea = document.getElementById('resultArea');
+            const resultItem = document.createElement('div');
+            resultItem.className = 'result-item';
+            
+            const timestamp = new Date().toLocaleTimeString();
+            resultItem.innerHTML = `
+                <h4>${sender === 'user' ? '👤 User' : '🤖 Bot'} - ${timestamp}</h4>
+                <div style="white-space: pre-wrap;">${content}</div>
+            `;
+            
+            resultArea.appendChild(resultItem);
+            resultArea.scrollTop = resultArea.scrollHeight;
+        }
+
+        // Test Cross-Port Learning Engine
+        function testCrossPortLearning(query) {
+            const resultArea = document.getElementById('resultArea');
+            const testItem = document.createElement('div');
+            testItem.className = 'result-item';
+            
+            const timestamp = new Date().toLocaleTimeString();
+            testItem.innerHTML = `
+                <h4>🧪 Testing Cross-Port Learning Engine - ${timestamp}</h4>
+                <p><span class="status success">RUNNING</span> Executing: "${query}"</p>
+            `;
+            resultArea.appendChild(testItem);
+            
+            try {
+                addBubble(query, 'user');
+                setTimeout(() => {
+                    const result = generateCrossPortLearningResponse(query);
+                    addBubble(result, 'bot');
+                    testItem.innerHTML = `
+                        <h4>🧪 Testing Cross-Port Learning Engine - ${timestamp}</h4>
+                        <p><span class="status success">SUCCESS</span> Cross-Port Learning Engine executed successfully!</p>
+                    `;
+                }, 120);
+            } catch (error) {
+                testItem.innerHTML = `
+                    <h4>🧪 Testing Cross-Port Learning Engine - ${timestamp}</h4>
+                    <p><span class="status error">ERROR</span> ${error.message}</p>
+                `;
+            }
+            
+            resultArea.scrollTop = resultArea.scrollHeight;
+        }
+
+        // Test Sustainability AI
+        function testSustainabilityAI(query) {
+            const resultArea = document.getElementById('resultArea');
+            const testItem = document.createElement('div');
+            testItem.className = 'result-item';
+            
+            const timestamp = new Date().toLocaleTimeString();
+            testItem.innerHTML = `
+                <h4>🧪 Testing Sustainability AI - ${timestamp}</h4>
+                <p><span class="status success">RUNNING</span> Executing: "${query}"</p>
+            `;
+            resultArea.appendChild(testItem);
+            
+            try {
+                addBubble(query, 'user');
+                setTimeout(() => {
+                    const result = generateSustainabilityAIResponse(query);
+                    addBubble(result, 'bot');
+                    testItem.innerHTML = `
+                        <h4>🧪 Testing Sustainability AI - ${timestamp}</h4>
+                        <p><span class="status success">SUCCESS</span> Sustainability AI executed successfully!</p>
+                    `;
+                }, 120);
+            } catch (error) {
+                testItem.innerHTML = `
+                    <h4>🧪 Testing Sustainability AI - ${timestamp}</h4>
+                    <p><span class="status error">ERROR</span> ${error.message}</p>
+                `;
+            }
+            
+            resultArea.scrollTop = resultArea.scrollHeight;
+        }
+
+        // Test Conversational Power BI
+        function testConversationalPowerBI(query) {
+            const resultArea = document.getElementById('resultArea');
+            const testItem = document.createElement('div');
+            testItem.className = 'result-item';
+            
+            const timestamp = new Date().toLocaleTimeString();
+            testItem.innerHTML = `
+                <h4>🧪 Testing Conversational Power BI - ${timestamp}</h4>
+                <p><span class="status success">RUNNING</span> Executing: "${query}"</p>
+            `;
+            resultArea.appendChild(testItem);
+            
+            try {
+                addBubble(query, 'user');
+                setTimeout(() => {
+                    const result = generateConversationalPowerBIResponse(query);
+                    addBubble(result, 'bot');
+                    testItem.innerHTML = `
+                        <h4>🧪 Testing Conversational Power BI - ${timestamp}</h4>
+                        <p><span class="status success">SUCCESS</span> Conversational Power BI executed successfully!</p>
+                    `;
+                }, 120);
+            } catch (error) {
+                testItem.innerHTML = `
+                    <h4>🧪 Testing Conversational Power BI - ${timestamp}</h4>
+                    <p><span class="status error">ERROR</span> ${error.message}</p>
+                `;
+            }
+            
+            resultArea.scrollTop = resultArea.scrollHeight;
+        }
+
+        // Test all new features
+        function testAllNewFeatures() {
+            clearResults();
+            
+            const tests = [
+                { func: testCrossPortLearning, query: "Apply Antwerp's fuel-saving strategy to Tuas" },
+                { func: testSustainabilityAI, query: "Cut carbon by 15% with only 10-minute delay" },
+                { func: testConversationalPowerBI, query: "Why was Tuas delayed today?" }
+            ];
+            
+            tests.forEach((test, index) => {
+                setTimeout(() => {
+                    test.func(test.query);
+                }, index * 1000); // Stagger tests by 1 second
+            });
+        }
+
+        // Clear results
+        function clearResults() {
+            const resultArea = document.getElementById('resultArea');
+            resultArea.innerHTML = '<h3>Test Results:</h3><p>Results cleared. Click any button above to test...</p>';
+        }
+
+        // Mock response generators (simplified versions for testing)
+        function generateCrossPortLearningResponse(query) {
+            const queryLower = query.toLowerCase();
+            let sourcePort = 'Antwerp';
+            let targetPort = 'Tuas';
+            let strategy = 'fuel-saving optimization';
+            
+            if(/antwerp/i.test(queryLower)) sourcePort = 'Antwerp';
+            if(/tuas/i.test(queryLower)) targetPort = 'Tuas';
+            if(/rotterdam/i.test(queryLower)) sourcePort = 'Rotterdam';
+            if(/singapore/i.test(queryLower)) targetPort = 'Singapore';
+            if(/fuel.*saving/i.test(queryLower)) strategy = 'fuel-saving optimization';
+            if(/efficiency/i.test(queryLower)) strategy = 'operational efficiency';
+            if(/safety/i.test(queryLower)) strategy = 'safety protocols';
+            
+            return `🌐 **Cross-Port Learning Engine (EchoNet)**<br><br>
+<div style="background:#e8f5e8;padding:15px;border-radius:8px;margin:10px 0;border-left:4px solid #4caf50;">
+  <h3 style="margin:0 0 10px 0;color:#2e7d32;">🔄 Best Practice Transfer</h3>
+  <strong>Source Port:</strong> ${sourcePort}<br>
+  <strong>Target Port:</strong> ${targetPort}<br>
+  <strong>Strategy:</strong> ${strategy}<br>
+  <strong>Success Rate:</strong> 95% (proven at 8 ports)
+</div>
+<div style="background:#e3f2fd;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #2196f3;">
+  <strong>📊 ${sourcePort}'s Strategy:</strong><br>
+  • Dynamic speed optimization: 12% fuel savings<br>
+  • Berth allocation algorithm: 8% efficiency gain<br>
+  • Weather-based routing: 15% reduction in delays<br>
+  • Vessel coordination system: 20% faster turnaround
+</div>
+<div style="background:#fff3e0;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #ff9800;">
+  <strong>🎯 Implementation Plan for ${targetPort}:</strong><br>
+  • Phase 1: Speed optimization (Week 1-2)<br>
+  • Phase 2: Berth algorithm deployment (Week 3-4)<br>
+  • Phase 3: Weather integration (Week 5-6)<br>
+  • Phase 4: Full coordination system (Week 7-8)<br>
+  <strong>Expected Results:</strong> 10-15% fuel savings, 5-8% efficiency gain
+</div>`;
+        }
+
+        function generateSustainabilityAIResponse(query) {
+            const queryLower = query.toLowerCase();
+            let carbonTarget = '15%';
+            let delayLimit = '10 minutes';
+            
+            const carbonMatch = queryLower.match(/(\d+)%.*carbon|carbon.*(\d+)%/);
+            if (carbonMatch) {
+                carbonTarget = (carbonMatch[1] || carbonMatch[2]) + '%';
+            }
+            
+            const delayMatch = queryLower.match(/(\d+).*minute|minute.*(\d+)/);
+            if (delayMatch) {
+                delayLimit = (delayMatch[1] || delayMatch[2]) + ' minutes';
+            }
+            
+            const carbonValue = parseInt(carbonTarget);
+            const delayValue = parseInt(delayLimit);
+            
+            return `🌱 **Sustainability AI (Harmony)**<br><br>
+<div style="background:#e8f5e8;padding:15px;border-radius:8px;margin:10px 0;border-left:4px solid #4caf50;">
+  <h3 style="margin:0 0 10px 0;color:#2e7d32;">⚖️ Efficiency vs Carbon Balance</h3>
+  <strong>Target:</strong> ${carbonTarget} carbon reduction<br>
+  <strong>Acceptable Delay:</strong> ≤${delayLimit}<br>
+  <strong>Current Carbon:</strong> 2,450 tons/month<br>
+  <strong>Target Carbon:</strong> ${Math.round(2450 * (1 - carbonValue/100))} tons/month<br>
+  <strong>Savings:</strong> ${Math.round(2450 * carbonValue/100)} tons/month
+</div>
+<div style="background:#e3f2fd;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #2196f3;">
+  <strong>🎯 Optimized Strategy:</strong><br>
+  • Vessel Speed Reduction: ${Math.round(carbonValue * 0.6)}% carbon cut (${Math.round(delayValue * 0.5)} min delay)<br>
+  • Electric Crane Usage: ${Math.round(carbonValue * 0.25)}% carbon cut (${Math.round(delayValue * 0.2)} min delay)<br>
+  • Solar Power Integration: ${Math.round(carbonValue * 0.1)}% carbon cut (${Math.round(delayValue * 0.1)} min delay)<br>
+  • Route Optimization: ${Math.round(carbonValue * 0.05)}% carbon cut (${Math.round(delayValue * 0.2)} min delay)<br>
+  <strong>Total Impact:</strong> ${carbonTarget} carbon reduction, ${delayLimit} delay
+</div>`;
+        }
+
+        function generateConversationalPowerBIResponse(query) {
+            const queryLower = query.toLowerCase();
+            let analysisType = 'delay analysis';
+            let port = 'Tuas';
+            let timeFrame = 'today';
+            
+            if(/delay/i.test(queryLower)) analysisType = 'delay analysis';
+            if(/performance/i.test(queryLower)) analysisType = 'performance analysis';
+            if(/utilization/i.test(queryLower)) analysisType = 'utilization analysis';
+            if(/tuas/i.test(queryLower)) port = 'Tuas';
+            if(/singapore/i.test(queryLower)) port = 'Singapore';
+            if(/antwerp/i.test(queryLower)) port = 'Antwerp';
+            if(/today/i.test(queryLower)) timeFrame = 'today';
+            if(/yesterday/i.test(queryLower)) timeFrame = 'yesterday';
+            if(/week/i.test(queryLower)) timeFrame = 'this week';
+            
+            return `💬 **Conversational Power BI**<br><br>
+<div style="background:#e8f5e8;padding:15px;border-radius:8px;margin:10px 0;border-left:4px solid #4caf50;">
+  <h3 style="margin:0 0 10px 0;color:#2e7d32;">📊 ${port} ${analysisType.charAt(0).toUpperCase() + analysisType.slice(1)}</h3>
+  <strong>Date:</strong> ${new Date().toLocaleDateString()}<br>
+  <strong>Port:</strong> ${port}<br>
+  <strong>Analysis:</strong> ${analysisType}<br>
+  <strong>Time Frame:</strong> ${timeFrame}
+</div>
+<div style="background:#e3f2fd;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #2196f3;">
+  <strong>📈 Key Metrics:</strong><br>
+  • Total Vessels: 8 scheduled<br>
+  • On-time Performance: 75%<br>
+  • Average Delay: 2.3 hours<br>
+  • Primary Cause: Weather conditions
+</div>
+<div style="background:#fff3e0;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #ff9800;">
+  <strong>📊 Performance Comparison:</strong><br>
+  • Today vs Yesterday: +45% delays<br>
+  • Today vs Last Week: +23% delays<br>
+  • Today vs Last Month: +12% delays<br>
+  • Weather Severity: High (Level 3/5)
+</div>`;
+        }
+    </script>
+</body>
+</html>

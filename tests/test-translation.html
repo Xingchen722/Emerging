@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translation Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .test-button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .test-button:hover {
+            background: #005a9e;
+        }
+        .result {
+            background: #f0f8ff;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #007acc;
+            margin-top: 15px;
+        }
+        .examples {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .example {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        .example h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .example-text {
+            font-family: monospace;
+            background: #f0f0f0;
+            padding: 8px;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+    </style>
+</style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🌐 Language Translation Test</h1>
+        <p>Test the enhanced translation functionality with various languages and formats.</p>
+        
+        <input type="text" class="test-input" id="testInput" placeholder="Enter translation query (e.g., Translate: Hello team, meeting at 3PM (to Japanese))" value="Translate: Hello team, meeting at 3PM (to Japanese)">
+        <button class="test-button" onclick="testTranslation()">Test Translation</button>
+        
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="test-container">
+        <h2>📝 Supported Translation Examples</h2>
+        <div class="examples">
+            <div class="example">
+                <h4>English → Japanese</h4>
+                <div class="example-text">Translate: Hello team, meeting at 3PM (to Japanese)</div>
+                <div class="example-text">Translate: Good morning, how is the project going? (to Japanese)</div>
+            </div>
+            
+            <div class="example">
+                <h4>English → Chinese</h4>
+                <div class="example-text">Translate: Please review the shipment status (to Mandarin)</div>
+                <div class="example-text">Translate: The vessel will arrive tomorrow (to Chinese)</div>
+            </div>
+            
+            <div class="example">
+                <h4>English → German</h4>
+                <div class="example-text">Translate: Thank you for your cooperation (to German)</div>
+                <div class="example-text">Translate: Hello team, meeting at 3PM (to German)</div>
+            </div>
+            
+            <div class="example">
+                <h4>English → French</h4>
+                <div class="example-text">Translate: Good morning, how is the project going? (to French)</div>
+                <div class="example-text">Translate: Please review the shipment status (to French)</div>
+            </div>
+            
+            <div class="example">
+                <h4>English → Spanish</h4>
+                <div class="example-text">Translate: The vessel will arrive tomorrow (to Spanish)</div>
+                <div class="example-text">Translate: Thank you for your cooperation (to Spanish)</div>
+            </div>
+            
+            <div class="example">
+                <h4>English → Korean</h4>
+                <div class="example-text">Translate: Hello team, meeting at 3PM (to Korean)</div>
+                <div class="example-text">Translate: Good morning, how is the project going? (to Korean)</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Include the translation functions from the main application
+        function generateTranslationResponse(text, targetLang) {
+            const translations = {
+                'mandarin': 'Chinese (Mandarin)',
+                'chinese': 'Chinese',
+                '中文': 'Chinese',
+                'english': 'English',
+                '英文': 'English',
+                'german': 'German',
+                '德文': 'German',
+                'french': 'French',
+                '法文': 'French',
+                'spanish': 'Spanish',
+                '西班牙文': 'Spanish',
+                'japanese': 'Japanese',
+                'japan': 'Japanese',
+                '日文': 'Japanese',
+                'korean': 'Korean',
+                '韩文': 'Korean',
+                'korea': 'Korean',
+                'portuguese': 'Portuguese',
+                'português': 'Portuguese',
+                'portugal': 'Portuguese',
+                'italian': 'Italian',
+                'italiano': 'Italian',
+                'italy': 'Italian',
+                'russian': 'Russian',
+                'русский': 'Russian',
+                'russia': 'Russian',
+                'arabic': 'Arabic',
+                'العربية': 'Arabic',
+                'arab': 'Arabic',
+                'dutch': 'Dutch',
+                'nederlands': 'Dutch',
+                'netherlands': 'Dutch',
+                'swedish': 'Swedish',
+                'svenska': 'Swedish',
+                'sweden': 'Swedish',
+                'norwegian': 'Norwegian',
+                'norsk': 'Norwegian',
+                'norway': 'Norwegian',
+                'danish': 'Danish',
+                'dansk': 'Danish',
+                'denmark': 'Danish',
+                'finnish': 'Finnish',
+                'suomi': 'Finnish',
+                'finland': 'Finnish',
+                'polish': 'Polish',
+                'polski': 'Polish',
+                'poland': 'Polish',
+                'turkish': 'Turkish',
+                'türkçe': 'Turkish',
+                'turkey': 'Turkish',
+                'greek': 'Greek',
+                'ελληνικά': 'Greek',
+                'greece': 'Greek',
+                'hebrew': 'Hebrew',
+                'עברית': 'Hebrew',
+                'israel': 'Hebrew',
+                'thai': 'Thai',
+                'ไทย': 'Thai',
+                'thailand': 'Thai',
+                'vietnamese': 'Vietnamese',
+                'tiếng việt': 'Vietnamese',
+                'vietnam': 'Vietnamese',
+                'indonesian': 'Indonesian',
+                'bahasa indonesia': 'Indonesian',
+                'indonesia': 'Indonesian',
+                'malay': 'Malay',
+                'bahasa melayu': 'Malay',
+                'malaysia': 'Malay',
+                'hindi': 'Hindi',
+                'हिन्दी': 'Hindi',
+                'india': 'Hindi',
+                'bengali': 'Bengali',
+                'বাংলা': 'Bengali',
+                'bangladesh': 'Bengali',
+                'urdu': 'Urdu',
+                'اردو': 'Urdu',
+                'pakistan': 'Urdu',
+                'persian': 'Persian',
+                'فارسی': 'Persian',
+                'iran': 'Persian'
+            };
+            
+            const langName = translations[targetLang] || targetLang;
+            
+            // Mock translations for demonstration
+            const mockTranslations = {
+                'mandarin': {
+                    'Hello team, meeting at 3PM': '你好团队，下午3点开会',
+                    'Good morning, how is the project going?': '早上好，项目进展如何？',
+                    'Please review the shipment status': '请查看货运状态',
+                    'The vessel will arrive tomorrow': '船舶明天到达',
+                    'Thank you for your cooperation': '感谢您的合作'
+                },
+                'chinese': {
+                    'Hello team, meeting at 3PM': '你好团队，下午3点开会',
+                    'Good morning, how is the project going?': '早上好，项目进展如何？',
+                    'Please review the shipment status': '请查看货运状态',
+                    'The vessel will arrive tomorrow': '船舶明天到达',
+                    'Thank you for your cooperation': '感谢您的合作'
+                },
+                'japanese': {
+                    'Hello team, meeting at 3PM': 'こんにちはチーム、午後3時に会議',
+                    'Good morning, how is the project going?': 'おはようございます、プロジェクトの進捗はいかがですか？',
+                    'Please review the shipment status': '出荷状況をご確認ください',
+                    'The vessel will arrive tomorrow': '船は明日到着予定です',
+                    'Thank you for your cooperation': 'ご協力ありがとうございます'
+                },
+                'english': {
+                    '你好团队，下午3点开会': 'Hello team, meeting at 3PM',
+                    '早上好，项目进展如何？': 'Good morning, how is the project going?',
+                    '请查看货运状态': 'Please review the shipment status',
+                    '船舶明天到达': 'The vessel will arrive tomorrow',
+                    '感谢您的合作': 'Thank you for your cooperation'
+                },
+                'german': {
+                    'Hello team, meeting at 3PM': 'Hallo Team, Besprechung um 15 Uhr',
+                    'Good morning, how is the project going?': 'Guten Morgen, wie läuft das Projekt?',
+                    'Please review the shipment status': 'Bitte überprüfen Sie den Sendungsstatus',
+                    'The vessel will arrive tomorrow': 'Das Schiff wird morgen ankommen',
+                    'Thank you for your cooperation': 'Vielen Dank für Ihre Zusammenarbeit'
+                },
+                'french': {
+                    'Hello team, meeting at 3PM': 'Bonjour l\'équipe, réunion à 15h',
+                    'Good morning, how is the project going?': 'Bonjour, comment va le projet ?',
+                    'Please review the shipment status': 'Veuillez vérifier le statut de l\'expédition',
+                    'The vessel will arrive tomorrow': 'Le navire arrivera demain',
+                    'Thank you for your cooperation': 'Merci pour votre coopération'
+                },
+                'spanish': {
+                    'Hello team, meeting at 3PM': 'Hola equipo, reunión a las 3 PM',
+                    'Good morning, how is the project going?': 'Buenos días, ¿cómo va el proyecto?',
+                    'Please review the shipment status': 'Por favor revise el estado del envío',
+                    'The vessel will arrive tomorrow': 'El barco llegará mañana',
+                    'Thank you for your cooperation': 'Gracias por su cooperación'
+                },
+                'korean': {
+                    'Hello team, meeting at 3PM': '안녕하세요 팀, 오후 3시 회의',
+                    'Good morning, how is the project going?': '좋은 아침입니다, 프로젝트는 어떻게 진행되고 있나요?',
+                    'Please review the shipment status': '배송 상태를 확인해 주세요',
+                    'The vessel will arrive tomorrow': '선박이 내일 도착할 예정입니다',
+                    'Thank you for your cooperation': '협력해 주셔서 감사합니다'
+                }
+            };
+            
+            // Find the best match or use a generic translation
+            let translatedText = text;
+            const langKey = targetLang.toLowerCase();
+            
+            if (mockTranslations[langKey]) {
+                // Try to find exact match first
+                if (mockTranslations[langKey][text]) {
+                    translatedText = mockTranslations[langKey][text];
+                } else {
+                    // Use a generic translation based on common patterns
+                    translatedText = generateGenericTranslation(text, langKey);
+                }
+            } else {
+                translatedText = generateGenericTranslation(text, langKey);
+            }
+            
+            return `🌐 **${langName} Translation**<br><br>
+                <div style="background:#f0f8ff;padding:12px;border-radius:8px;margin:8px 0;border-left:4px solid #007acc;">
+                    <strong>Original:</strong> ${text}<br>
+                    <strong>Translation:</strong> ${translatedText}
+                </div>
+                <small style="color:#666;">💡 Note: This is a demo translation. For production deployment, integrate with professional translation APIs like Google Translate, Azure Translator, or DeepL.</small>`;
+        }
+
+        function generateGenericTranslation(text, targetLang) {
+            const genericTranslations = {
+                'mandarin': {
+                    'hello': '你好',
+                    'team': '团队',
+                    'meeting': '会议',
+                    'project': '项目',
+                    'shipment': '货运',
+                    'vessel': '船舶',
+                    'arrive': '到达',
+                    'tomorrow': '明天',
+                    'thank': '谢谢',
+                    'cooperation': '合作'
+                },
+                'english': {
+                    '你好': 'Hello',
+                    '团队': 'Team',
+                    '会议': 'Meeting',
+                    '项目': 'Project',
+                    '货运': 'Shipment',
+                    '船舶': 'Vessel',
+                    '到达': 'Arrive',
+                    '明天': 'Tomorrow',
+                    '谢谢': 'Thank',
+                    '合作': 'Cooperation'
+                },
+                'german': {
+                    'hello': 'Hallo',
+                    'team': 'Team',
+                    'meeting': 'Besprechung',
+                    'project': 'Projekt',
+                    'shipment': 'Sendung',
+                    'vessel': 'Schiff',
+                    'arrive': 'Ankommen',
+                    'tomorrow': 'Morgen',
+                    'thank': 'Danke',
+                    'cooperation': 'Zusammenarbeit'
+                }
+            };
+            
+            if (genericTranslations[targetLang]) {
+                let result = text;
+                Object.entries(genericTranslations[targetLang]).forEach(([key, value]) => {
+                    result = result.replace(new RegExp(key, 'gi'), value);
+                });
+                return result;
+            }
+            
+            return `[${targetLang.toUpperCase()}] ${text}`;
+        }
+
+        function testTranslation() {
+            const input = document.getElementById('testInput').value.trim();
+            const resultDiv = document.getElementById('result');
+            
+            if (!input) {
+                resultDiv.innerHTML = '<p style="color: red;">Please enter a translation query.</p>';
+                resultDiv.style.display = 'block';
+                return;
+            }
+            
+            // Enhanced Translation functionality
+            const tr = input.match(/translate.*?:?\s*(.+?)\s*\((?:to|→)\s*(mandarin|chinese|中文|english|英文|german|德文|french|法文|spanish|西班牙文|japanese|japan|日文|korean|韩文|korea|portuguese|português|portugal|italian|italiano|italy|russian|русский|russia|arabic|العربية|arab|dutch|nederlands|netherlands|swedish|svenska|sweden|norwegian|norsk|norway|danish|dansk|denmark|finnish|suomi|finland|polish|polski|poland|turkish|türkçe|turkey|greek|ελληνικά|greece|hebrew|עברית|israel|thai|ไทย|thailand|vietnamese|tiếng việt|vietnam|indonesian|bahasa indonesia|indonesia|malay|bahasa melayu|malaysia|hindi|हिन्दी|india|bengali|বাংলা|bangladesh|urdu|اردو|pakistan|persian|فارسی|iran|korean|한국어|korea)\)/i);
+            
+            if (tr) {
+                const text = tr[1];
+                const targetLang = tr[2].toLowerCase();
+                const result = generateTranslationResponse(text, targetLang);
+                resultDiv.innerHTML = result;
+                resultDiv.style.display = 'block';
+            } else {
+                resultDiv.innerHTML = '<p style="color: red;">❌ Translation query not recognized. Please use format: "Translate: [text] (to [language])"</p>';
+                resultDiv.style.display = 'block';
+            }
+        }
+
+        // Test on page load
+        window.onload = function() {
+            testTranslation();
+        };
+    </script>
+</body>
+</html>

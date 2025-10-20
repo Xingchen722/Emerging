@@ -1,0 +1,2610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Network Insights – Global Shipping Coordination AI</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+
+<!-- Leaflet (real map) -->
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+  :root{
+    --ocean-dark:#0B1426;--ocean-mid:#0b5197;--ocean-light:#0183b2;
+    --accent:#ff8c00;--text:#ffffff;--muted:#e8f4f8;
+    --nav:#0a3d62cc;--ink:#ffffff;
+    --gradient-primary: linear-gradient(135deg, #0d2235 0%, #0d2235 100%);
+    --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --gradient-accent: linear-gradient(135deg, #ff8c00 0%, #ff8800 100%);
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --shadow-medium: 0 16px 64px rgba(0, 0, 0, 0.15);
+    --shadow-strong: 0 24px 96px rgba(0, 0, 0, 0.2);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;color:var(--text);overflow-x:hidden}
+  a{color:inherit;text-decoration:none}
+  .container{width:min(1100px,92%);margin-inline:auto}
+
+  /* Ensure the card and tooltip float above Leaflet panes */
+#mapStage { position: relative; }               /* already set, but keep */
+#leafletMap { position: relative; z-index: 1; } /* map stays low */
+
+#mapCard,
+#mapTip {
+  position: absolute;
+  z-index: 10000;   /* higher than Leaflet popups/tooltips */
+  pointer-events: auto;
+}
+
+/* Optional: keep Leaflet attribution/controls under the card too */
+.leaflet-control-container { z-index: 500; }    /* lower than 10000 */
+
+
+  /* Ocean background */
+  .ocean-bg{position:fixed;inset:0;z-index:-10;background:linear-gradient(180deg,var(--ocean-light) 0%,var(--ocean-mid) 50%,var(--ocean-dark) 100%)}
+  .wave-container{position:fixed;inset:0;overflow:hidden;z-index:-9}
+  .wave{position:absolute;width:200%;height:200px;background:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.2" d="M0,192L48,197.3C96,203,192,213,288,218.7C384,224,480,224,576,202.7C672,181,768,139,864,138.7C960,139,1056,181,1152,186.7C1248,192,1344,160,1392,144L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"/></svg>') repeat-x bottom/200% 100%}
+  .wave-1{bottom:0;animation:wave 15s linear infinite;opacity:.18}
+  .wave-2{bottom:-25px;animation:wave 10s linear reverse infinite;opacity:.14}
+  .wave-3{bottom:-50px;animation:wave 8s linear infinite;opacity:.1}
+  @keyframes wave{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+  /* Floating Ships */
+  .ships-container{position:fixed;inset:0;z-index:-8;pointer-events:none;overflow:hidden}
+  .ship{position:absolute;opacity:0.6;transition:all 0.3s ease}
+  .ship svg{filter:drop-shadow(0 4px 8px rgba(0,0,0,0.3))}
+  
+  /* Ship animations */
+  .ship-1{top:20%;left:-100px;animation:sailRight 25s linear infinite;animation-delay:0s}
+  .ship-2{top:35%;right:-100px;animation:sailLeft 30s linear infinite;animation-delay:5s}
+  .ship-3{top:60%;left:-100px;animation:sailRight 35s linear infinite;animation-delay:10s}
+  .ship-4{top:45%;right:-100px;animation:sailLeft 28s linear infinite;animation-delay:15s}
+  .ship-5{top:75%;left:-100px;animation:sailRight 32s linear infinite;animation-delay:20s}
+  .ship-6{top:15%;right:-100px;animation:sailLeft 26s linear infinite;animation-delay:8s}
+  
+  @keyframes sailRight{0%{transform:translateX(0) rotate(0deg)}50%{transform:translateX(50vw) rotate(2deg)}100%{transform:translateX(100vw) rotate(0deg)}}
+  @keyframes sailLeft{0%{transform:translateX(0) rotate(0deg)}50%{transform:translateX(-50vw) rotate(-2deg)}100%{transform:translateX(-100vw) rotate(0deg)}}
+  
+  /* Ship hover effects */
+  .ship:hover{opacity:0.8;transform:scale(1.1)}
+  
+  /* Responsive ship adjustments */
+  @media (max-width: 768px) {
+    .ship svg{transform:scale(0.7)}
+    .ship-1{top:15%;}
+    .ship-2{top:30%;}
+    .ship-3{top:55%;}
+    .ship-4{top:40%;}
+    .ship-5{top:70%;}
+    .ship-6{top:10%;}
+  }
+  
+  @media (max-width: 480px) {
+    .ship svg{transform:scale(0.5)}
+    .ships-container{opacity:0.4}
+  }
+  
+  /* Ship visibility on different backgrounds */
+  .ship svg{filter:drop-shadow(0 4px 8px rgba(0,0,0,0.3)) brightness(1.1)}
+
+  /* Navbar */
+  .navbar{position:sticky;top:0;z-index:50;background:rgba(10,61,98,0.8);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.12);transition:all 0.3s ease}
+  .navbar:hover{background:rgba(10,61,98,0.9)}
+  .nav-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
+  .brand{display:flex;gap:10px;align-items:center;font-weight:800;font-size:20px;transition:transform 0.3s ease;color:#ffffff;text-shadow:0 1px 2px rgba(0,0,0,0.3)}
+  .brand:hover{transform:scale(1.05)}
+  .brand i{color:var(--accent);font-size:24px;animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.7}}
+  .nav-links{display:flex;gap:22px}
+  .nav-links a{position:relative;padding:8px 16px;border-radius:20px;transition:all 0.3s ease;font-weight:500;color:#ffffff;text-shadow:0 1px 2px rgba(0,0,0,0.3)}
+  .nav-links a:hover{background:var(--glass-bg);transform:translateY(-2px);color:#ffffff}
+  .nav-links a::after{content:'';position:absolute;bottom:0;left:50%;width:0;height:2px;background:var(--accent);transition:all 0.3s ease;transform:translateX(-50%)}
+  .nav-links a:hover::after{width:80%}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:#0d314bb3;cursor:pointer;color:#ffffff;transition:all 0.3s ease;position:relative;overflow:hidden;text-shadow:0 1px 2px rgba(0,0,0,0.3)}
+  .btn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent);transition:left 0.5s ease}
+  .btn:hover::before{left:100%}
+  .btn:hover{transform:translateY(-2px);box-shadow:var(--shadow-medium)}
+
+  /* Hero */
+  .hero{padding:68px 0 32px;position:relative}
+  .hero::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(circle at 30% 20%, rgba(229,142,38,0.1) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(96,163,188,0.1) 0%, transparent 50%);pointer-events:none}
+  .title{font-size:clamp(36px,5vw,56px);font-weight:900;margin:0 0 8px;position:relative;color:#ffffff;text-shadow:0 2px 4px rgba(0,0,0,0.5);animation:titleGlow 3s ease-in-out infinite alternate}
+  @keyframes titleGlow{0%{filter:drop-shadow(0 0 20px rgba(255,255,255,0.3))}100%{filter:drop-shadow(0 0 30px rgba(255,255,255,0.5))}}
+  .title .accent{color:var(--accent);text-shadow:0 2px 4px rgba(0,0,0,0.5);animation:accentPulse 2s ease-in-out infinite}
+  @keyframes accentPulse{0%,100%{filter:drop-shadow(0 0 15px rgba(229,142,38,0.6))}50%{filter:drop-shadow(0 0 25px rgba(229,142,38,0.8))}}
+  .subtitle{max-width:820px;color:#ffffff;margin:8px 0 22px;font-size:18px;line-height:1.7;opacity:0.95;text-shadow:0 1px 2px rgba(0,0,0,0.3)}
+  .cta{display:flex;gap:12px;flex-wrap:wrap}
+  .btn-primary{background:var(--gradient-accent);border-color:transparent;color:#fff;font-weight:700;position:relative;overflow:hidden;box-shadow:var(--shadow-medium)}
+  .btn-primary::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);transition:left 0.6s ease}
+  .btn-primary:hover::before{left:100%}
+  .btn-primary:hover{transform:translateY(-3px);box-shadow:var(--shadow-strong)}
+
+  /* Snapshot cards (enhanced) */
+  .hero-cards{display:grid;grid-template-columns:1.15fr 1fr 1fr;gap:16px;margin-top:22px}
+  @media (max-width:980px){.hero-cards{grid-template-columns:1fr}}
+  .snap-card{position:relative;background:rgba(255,255,255,0.95);color:#0d2235;border-radius:20px;box-shadow:var(--shadow-medium);padding:20px 22px;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.2);transition:all 0.3s ease;overflow:hidden}
+  .snap-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--gradient-accent);opacity:0;transition:opacity 0.3s ease}
+  .snap-card:hover::before{opacity:1}
+  .snap-card:hover{transform:translateY(-8px);box-shadow:var(--shadow-strong)}
+  .snap-card .chip{position:absolute;right:14px;top:12px;background:var(--gradient-accent);color:#fff;padding:8px 12px;border-radius:12px;font-weight:800;font-size:12px;box-shadow:var(--shadow-soft)}
+  .snap-card .row{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px dashed rgba(13,34,53,0.1);transition:all 0.3s ease}
+  .snap-card .row:hover{background:rgba(79,172,254,0.05);border-radius:8px;padding-left:8px;padding-right:8px}
+  .snap-card .row:last-child{border-bottom:0}
+  .snap-title{font-weight:800;margin-bottom:8px;display:flex;align-items:center;gap:8px;color:#1a1a1a;font-size:16px}
+  .snap-title i{color:var(--accent);font-size:18px}
+  .snap-small{color:#333333;font-size:13px;font-style:italic;opacity:0.9}
+  .fade-in{animation:fadeInUp 0.6s ease both}
+  .fade-in:nth-child(2){animation-delay:.1s}.fade-in:nth-child(3){animation-delay:.2s}
+  @keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+
+  /* Sections */
+  .section{padding:64px 0}
+  .section h2{text-align:center;margin:0 0 8px;font-size:clamp(28px,3.2vw,40px)}
+  .under{width:70px;height:4px;background:var(--accent);border-radius:999px;margin:0 auto 28px}
+
+  /* Features (enhanced) */
+  .feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:28px}
+  .feature-card{border-radius:24px;overflow:hidden;background:rgba(14,42,65,0.8);box-shadow:var(--shadow-medium);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.1);transition:all 0.4s ease;position:relative}
+  .feature-card::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:var(--gradient-primary);opacity:0;transition:opacity 0.3s ease;z-index:-1}
+  .feature-card:hover::before{opacity:0.1}
+  .feature-card:hover{transform:translateY(-12px) scale(1.02);box-shadow:var(--shadow-strong)}
+  .feature-top{background:rgba(10,42,66,0.9);display:flex;align-items:center;justify-content:center;height:120px;border-bottom:4px solid rgba(255,255,255,.06);position:relative;overflow:hidden}
+  .feature-top::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent);transition:left 0.8s ease}
+  .feature-card:hover .feature-top::before{left:100%}
+  .feature-top i{font-size:48px;color:#fff;transition:all 0.3s ease;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.3))}
+  .feature-card:hover .feature-top i{transform:scale(1.1) rotate(5deg);filter:drop-shadow(0 8px 16px rgba(0,0,0,0.4))}
+  .feature-body{background:rgba(245,249,252,0.95);color:#0d2235;padding:24px;backdrop-filter:blur(5px)}
+  .feature-body h3{font-size:20px;font-weight:800;margin:0 0 12px;color:#1a1a1a;position:relative}
+  .feature-body h3::after{content:'';position:absolute;bottom:-4px;left:0;width:40px;height:3px;background:var(--gradient-accent);border-radius:2px}
+  .feature-body p{line-height:1.6;margin:0 0 16px;opacity:0.9;color:#333333}
+  .example{background:rgba(255,255,255,0.8);border:1px solid rgba(240,244,248,0.8);border-left:4px solid var(--accent);border-radius:12px;padding:14px;margin-top:12px;position:relative;overflow:hidden}
+  .example::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--gradient-accent);opacity:0.8}
+  .example strong{color:#1a1a1a;font-weight:700}
+
+  /* === Fleet Map (Leaflet) === */
+  .map-wrap{background:#0b2a43;border-radius:18px;box-shadow:0 18px 50px rgba(0,0,0,.35);padding:12px}
+  .map-head{display:flex;align-items:center;gap:10px;color:#e9f4ff;background:#0a2a42;border-radius:12px;padding:10px 12px;margin-bottom:10px}
+  #mapStage{position:relative;height:520px;border-radius:14px;overflow:hidden}
+  #leafletMap{height:520px;width:100%}
+  #mapTip{position:absolute;pointer-events:none;background:#0b1f33;color:#eaf3fb;border:1px solid rgba(255,255,255,.14);padding:8px 10px;border-radius:10px;font-size:13px;display:none;box-shadow:0 12px 32px rgba(0,0,0,.35);max-width:260px;z-index:3}
+  #mapCard{position:absolute;left:14px;bottom:14px;z-index:3;min-width:280px;max-width:360px;background:#0b1f33;color:#eaf3fb;border:1px solid rgba(255,255,255,.14);border-radius:14px;box-shadow:0 14px 38px rgba(0,0,0,.35);padding:14px;display:none}
+  #mapCard .stat{background:#0a2238;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px}
+  #mapCard .stat h5{opacity:.75;font-size:11px;margin:0 0 4px}
+  #mapCard .stat b{font-size:14px}
+  .chip{background:#0a1f33;border:1px solid rgba(255,255,255,.14);color:#e9f4ff;border-radius:10px;padding:6px 10px;font-size:12px}
+
+  /* High-contrast ship icons */
+  .ship-icon{
+    background:#0b2a43;
+    color:#fff;
+    border:2px solid #fff;
+    border-radius:16px;
+    padding:2px 6px;
+    font-size:14px;
+    font-weight:900;
+    box-shadow:0 0 0 2px rgba(0,0,0,.15);
+  }
+  .ship-icon.delayed{background:#7a1a1a}
+  .dest-flag{
+    background:#e58e26;color:#1b1404;border-radius:12px;padding:2px 6px;font-weight:800;border:1px solid rgba(0,0,0,.15)
+  }
+
+  /* Dashboard (kept) */
+  .card-white{background:#fff;color:#1a2230;border-radius:22px;overflow:hidden;box-shadow:0 14px 38px rgba(0,0,0,.15);margin-bottom:40px}
+  .card-bar{background:#0a2a42;color:#e9f4ff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:4px solid rgba(255,255,255,.08)}
+  .card-tabs{background:#0d2b44;display:flex;border-bottom:1px solid rgba(255,255,255,.12)}
+  .tab{padding:12px 20px;color:#b6cbe0;cursor:pointer}
+  .tab.active{color:#ffb74d;border-bottom:3px solid #ffb74d;font-weight:700}
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;padding:22px}
+  .kpi-tile{background:#f7f9fb;border:1px solid #e8edf3;padding:22px;border-radius:16px;text-align:center}
+  .kpi-tile .n{font-size:36px;font-weight:900;margin-bottom:8px}
+  .embed-wrap{border-top:1px dashed #e3e8ef;margin:0 20px 22px;border-radius:16px;padding:20px;background:#fafbfd}
+  .miniChart{display:block;margin:0 auto;background:#fff;border-radius:12px;box-shadow:0 6px 16px rgba(0,0,0,.06)}
+
+  /* Table (kept) */
+  .soft-table{background:#0e2a41;border-radius:22px;overflow:hidden;box-shadow:0 14px 38px rgba(0,0,0,.35)}
+  .soft-head{background:#0a2a42;color:#e9f4ff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:4px solid rgba(255,255,255,.08)}
+  .soft-cols{background:#0d2b44;color:#eaf3fb;display:grid;grid-template-columns:1.8fr 1fr 1fr 1.6fr 1fr 1fr;gap:15px;font-weight:800;padding:12px 20px;border-bottom:1px solid rgba(255,255,255,.12)}
+  .soft-row{display:grid;grid-template-columns:1.8fr 1fr 1fr 1.6fr 1fr 1fr;gap:15px;padding:16px 20px;border-bottom:1px solid #e8edf3;align-items:center;background:#ffffff;color:#1a2230}
+  #rows .soft-row:nth-child(even){background:#f8fbfd}
+  .rows-scroll{max-height:520px;overflow-y:auto;background:#fff}
+  .badge{background:#d6f5df;color:#1b8b3c;padding:5px 14px;border-radius:999px;font-weight:700;font-size:13px;border:1px solid #b8ecc8}
+  .badge.badge-red{background:#fde0dd;color:#c62828;border-color:#f8c5c2}
+  .search{position:relative}
+  .search input{background:#071c2e;border:1px solid rgba(255,255,255,.18);color:#e9f4ff;padding:9px 14px;border-radius:22px;width:230px;padding-left:34px}
+  .search i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#afc7db}
+
+  /* === Chatbox (Enhanced) === */
+.chat-card{
+  background:rgba(255,255,255,0.95);color:#0d2235;border-radius:24px;
+  box-shadow:var(--shadow-strong);overflow:hidden;backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.2);transition:all 0.3s ease
+}
+.chat-card:hover{box-shadow:0 32px 128px rgba(0,0,0,0.15)}
+.chat-head{
+  background:var(--gradient-primary);color:#fff;padding:16px 20px;
+  display:flex;align-items:center;gap:12px;border-bottom:4px solid rgba(255,255,255,.1);position:relative;overflow:hidden
+}
+.chat-head::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent);animation:shimmer 3s infinite}
+@keyframes shimmer{0%{left:-100%}50%{left:100%}100%{left:100%}}
+.dot{width:12px;height:12px;border-radius:50%;position:relative}
+.dot.on{background:#22c55e;box-shadow:0 0 0 4px rgba(34,197,94,.2);animation:pulse 2s infinite}
+.dot.on::before{content:'';position:absolute;top:50%;left:50%;width:20px;height:20px;border:2px solid #22c55e;border-radius:50%;transform:translate(-50%,-50%);animation:ripple 2s infinite}
+@keyframes ripple{0%{width:20px;height:20px;opacity:1}100%{width:40px;height:40px;opacity:0}}
+.chat-head b{font-size:18px;font-weight:700;text-shadow:0 2px 4px rgba(0,0,0,0.3)}
+.chat-body{
+  padding:20px;max-height:400px;overflow:auto;
+  background:linear-gradient(180deg,rgba(243,247,251,0.9),rgba(248,250,252,0.9));backdrop-filter:blur(10px)
+}
+.bubble{
+  display:block;padding:14px 16px;border-radius:18px;margin:10px 0;
+  max-width:min(640px,92%);line-height:1.6;box-shadow:var(--shadow-soft);
+  word-wrap:break-word;white-space:normal;overflow-wrap:break-word;transition:all 0.3s ease;position:relative;color:#1a1a1a
+}
+.bubble:hover{transform:translateY(-2px);box-shadow:var(--shadow-medium)}
+.bubble.bot{background:rgba(255,255,255,0.9);border:1px solid rgba(0,0,0,0.05);backdrop-filter:blur(5px);color:#1a1a1a}
+.bubble.user{background:var(--gradient-accent);color:#fff;margin-left:auto;border:1px solid rgba(255,255,255,0.2)}
+.bubble.user::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.1);opacity:0;transition:opacity 0.3s ease;border-radius:18px}
+.bubble.user:hover::before{opacity:1}
+.msg-time{display:block;font-size:11px;opacity:.6;margin-top:8px;font-weight:500;color:#666666}
+.chat-quick{
+  display:flex;flex-wrap:wrap;gap:8px;padding:12px 20px 16px;max-height:120px;overflow-y:auto;background:rgba(248,250,252,0.8);backdrop-filter:blur(5px)
+}
+.pill{
+  background:var(--gradient-primary);color:#fff;border:1px solid rgba(255,255,255,.2);
+  padding:8px 14px;border-radius:20px;cursor:pointer;font-size:12px;white-space:nowrap;font-weight:600;transition:all 0.3s ease;position:relative;overflow:hidden
+}
+.pill::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);transition:left 0.5s ease}
+.pill:hover::before{left:100%}
+.pill:hover{transform:translateY(-2px);box-shadow:var(--shadow-medium)}
+.chat-input{
+  display:flex;gap:10px;padding:16px;border-top:1px dashed rgba(229,234,241,0.6);background:rgba(249,251,254,0.9);backdrop-filter:blur(5px)
+}
+.chat-input input{
+  flex:1;padding:14px 16px;border-radius:16px;border:1px solid rgba(227,232,239,0.8);
+  outline:none;font:inherit;background:rgba(255,255,255,0.8);transition:all 0.3s ease;backdrop-filter:blur(5px)
+}
+.chat-input input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(229,142,38,0.1);background:rgba(255,255,255,0.95)}
+.chat-input .send{
+  background:var(--gradient-accent);color:#fff;border:none;padding:0 18px;
+  border-radius:16px;font-weight:800;cursor:pointer;transition:all 0.3s ease;position:relative;overflow:hidden
+}
+.chat-input .send::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);transition:left 0.5s ease}
+.chat-input .send:hover::before{left:100%}
+.chat-input .send:hover{transform:translateY(-2px);box-shadow:var(--shadow-medium)}
+
+/* Fullscreen styles */
+.chat-card.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.chat-card.fullscreen .chat-body {
+  max-height: calc(100vh - 120px);
+  height: calc(100vh - 120px);
+  padding: 20px;
+}
+
+.chat-card.fullscreen .bubble {
+  max-width: min(800px, 95%);
+  margin: 12px 0;
+  padding: 16px 20px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.chat-card.fullscreen .bubble.bot {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.chat-card.fullscreen .bubble.user {
+  margin-left: auto;
+  margin-right: 0;
+}
+
+/* Ensure proper HTML content display */
+.bubble h3, .bubble h4, .bubble h5 {
+  margin: 0 0 8px 0;
+  font-weight: bold;
+}
+
+.bubble div {
+  margin: 8px 0;
+}
+
+.bubble strong {
+  font-weight: bold;
+}
+
+.bubble ul, .bubble ol {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.bubble li {
+  margin: 4px 0;
+}
+
+.fullscreen-btn {
+  background: var(--gradient-accent);
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-left: auto;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-soft);
+}
+
+.fullscreen-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.fullscreen-btn:hover::before {
+  left: 100%;
+}
+
+.fullscreen-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+.fullscreen-btn.fullscreen {
+  background: var(--gradient-secondary);
+}
+
+.fullscreen-btn.fullscreen:hover {
+  transform: translateY(-2px) scale(1.05);
+}
+
+  /* Footer (kept) */
+  .about-panel{background:linear-gradient(180deg,rgba(13,41,65,.92),rgba(9,31,49,.92));border:1px solid rgba(255,255,255,.10);border-radius:26px;box-shadow:0 18px 60px rgba(0,0,0,.35);padding:38px 26px}
+  .about-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:34px;align-items:center}
+  @media(max-width:980px){.about-grid{grid-template-columns:1fr}}
+  .about-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:26px}
+  .kpi{background:#0d2134cc;border:1px solid rgba(255,255,255,.1);padding:18px;border-radius:16px;text-align:center}
+  .kpi .n{font-size:28px;font-weight:900;color:var(--accent)}
+  .radar{width:100%;max-width:320px;margin-inline:auto;filter:drop-shadow(0 8px 20px rgba(0,0,0,.35))}
+  .section-divider{height:6px;background:var(--accent);opacity:.9}
+  footer{background:#07131fcc;border-top:1px solid rgba(255,255,255,.06)}
+  .foot{display:grid;gap:26px;padding:26px 0;align-items:start}
+  @media(min-width:860px){.foot{grid-template-columns:repeat(3,1fr)}}
+  .copyright{border-top:1px solid rgba(255,255,255,.06);padding:12px 0;text-align:center;color:#ffffff;opacity:0.8}
+
+  /* Enhanced Scrollbar */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:rgba(0,0,0,0.1);border-radius:4px}
+  ::-webkit-scrollbar-thumb{background:var(--gradient-accent);border-radius:4px;transition:all 0.3s ease}
+  ::-webkit-scrollbar-thumb:hover{background:var(--gradient-primary)}
+  ::-webkit-scrollbar-corner{background:transparent}
+
+  /* Loading Animation */
+  .loading{position:relative;overflow:hidden}
+  .loading::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent);animation:loading 1.5s infinite}
+  @keyframes loading{0%{left:-100%}100%{left:100%}}
+
+  /* Floating Elements */
+  .floating{animation:float 6s ease-in-out infinite}
+  @keyframes float{0%,100%{transform:translateY(0px)}50%{transform:translateY(-20px)}}
+
+  /* Glow Effects */
+  .glow{filter:drop-shadow(0 0 20px rgba(79,172,254,0.5))}
+  .glow:hover{filter:drop-shadow(0 0 30px rgba(79,172,254,0.8))}
+
+  /* Interactive Elements */
+  .interactive{transition:all 0.3s cubic-bezier(0.4,0,0.2,1)}
+  .interactive:hover{transform:translateY(-4px) scale(1.02)}
+</style>
+</head>
+<body>
+  <!-- Background -->
+  <div class="ocean-bg"></div>
+  <div class="wave-container"><div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div></div>
+  
+  <!-- Floating Ships -->
+  <div class="ships-container">
+    <div class="ship ship-1">
+      <svg width="60" height="40" viewBox="0 0 60 40" fill="none">
+        <path d="M5 35 L55 35 L50 25 L10 25 Z" fill="#8B4513" stroke="#654321" stroke-width="1"/>
+        <path d="M30 25 L30 5 L35 10 L35 25" fill="#D2691E" stroke="#A0522D" stroke-width="1"/>
+        <path d="M25 25 L25 8 L30 5 L30 25" fill="#F4A460" stroke="#D2691E" stroke-width="1"/>
+        <circle cx="15" cy="30" r="2" fill="#2F4F4F"/>
+        <circle cx="45" cy="30" r="2" fill="#2F4F4F"/>
+      </svg>
+    </div>
+    
+    <div class="ship ship-2">
+      <svg width="50" height="35" viewBox="0 0 50 35" fill="none">
+        <path d="M3 30 L47 30 L42 22 L8 22 Z" fill="#8B4513" stroke="#654321" stroke-width="1"/>
+        <path d="M25 22 L25 3 L30 8 L30 22" fill="#D2691E" stroke="#A0522D" stroke-width="1"/>
+        <path d="M20 22 L20 6 L25 3 L25 22" fill="#F4A460" stroke="#D2691E" stroke-width="1"/>
+        <circle cx="12" cy="26" r="1.5" fill="#2F4F4F"/>
+        <circle cx="38" cy="26" r="1.5" fill="#2F4F4F"/>
+      </svg>
+    </div>
+    
+    <div class="ship ship-3">
+      <svg width="70" height="45" viewBox="0 0 70 45" fill="none">
+        <path d="M8 40 L62 40 L55 28 L15 28 Z" fill="#8B4513" stroke="#654321" stroke-width="1"/>
+        <path d="M35 28 L35 2 L42 8 L42 28" fill="#D2691E" stroke="#A0522D" stroke-width="1"/>
+        <path d="M28 28 L28 5 L35 2 L35 28" fill="#F4A460" stroke="#D2691E" stroke-width="1"/>
+        <circle cx="20" cy="35" r="2.5" fill="#2F4F4F"/>
+        <circle cx="50" cy="35" r="2.5" fill="#2F4F4F"/>
+        <rect x="30" y="15" width="10" height="8" fill="#4682B4" stroke="#2E8B57" stroke-width="1"/>
+      </svg>
+    </div>
+    
+    <div class="ship ship-4">
+      <svg width="45" height="30" viewBox="0 0 45 30" fill="none">
+        <path d="M2 25 L43 25 L38 18 L7 18 Z" fill="#8B4513" stroke="#654321" stroke-width="1"/>
+        <path d="M22 18 L22 2 L27 7 L27 18" fill="#D2691E" stroke="#A0522D" stroke-width="1"/>
+        <path d="M17 18 L17 4 L22 2 L22 18" fill="#F4A460" stroke="#D2691E" stroke-width="1"/>
+        <circle cx="10" cy="22" r="1.2" fill="#2F4F4F"/>
+        <circle cx="35" cy="22" r="1.2" fill="#2F4F4F"/>
+      </svg>
+    </div>
+    
+    <div class="ship ship-5">
+      <svg width="55" height="38" viewBox="0 0 55 38" fill="none">
+        <path d="M6 33 L49 33 L44 24 L11 24 Z" fill="#8B4513" stroke="#654321" stroke-width="1"/>
+        <path d="M27 24 L27 4 L33 9 L33 24" fill="#D2691E" stroke="#A0522D" stroke-width="1"/>
+        <path d="M21 24 L21 6 L27 4 L27 24" fill="#F4A460" stroke="#D2691E" stroke-width="1"/>
+        <circle cx="14" cy="29" r="1.8" fill="#2F4F4F"/>
+        <circle cx="41" cy="29" r="1.8" fill="#2F4F4F"/>
+        <rect x="22" y="12" width="8" height="6" fill="#4682B4" stroke="#2E8B57" stroke-width="1"/>
+      </svg>
+    </div>
+    
+    <div class="ship ship-6">
+      <svg width="40" height="28" viewBox="0 0 40 28" fill="none">
+        <path d="M2 23 L38 23 L34 17 L6 17 Z" fill="#8B4513" stroke="#654321" stroke-width="1"/>
+        <path d="M20 17 L20 1 L25 6 L25 17" fill="#D2691E" stroke="#A0522D" stroke-width="1"/>
+        <path d="M15 17 L15 3 L20 1 L20 17" fill="#F4A460" stroke="#D2691E" stroke-width="1"/>
+        <circle cx="8" cy="20" r="1" fill="#2F4F4F"/>
+        <circle cx="32" cy="20" r="1" fill="#2F4F4F"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container nav-row">
+      <div class="brand interactive"><i class="fa-solid fa-ship glow"></i><span>Network Insights</span></div>
+      <div class="nav-links"><a href="#home">Home</a><a href="#features">Features</a><a href="dashboard.html">Dashboard</a><a href="#about">About</a></div>
+      <button class="btn"><i class="fa-solid fa-globe"></i> Language</button>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <header id="home" class="hero">
+    <div class="container">
+      <h1 class="title"><span class="accent">Network Insights</span><br/>Global Shipping Coordination AI</h1>
+      <p class="subtitle">Navigate global logistics with precision. Our AI-powered platform provides real-time tracking, team coordination, and actionable insights for your global shipping operations.</p>
+      <div class="cta">
+        <a class="btn btn-primary interactive" href="dashboard.html"><i class="fa-solid fa-chart-line"></i> View Dashboard</a>
+        <a class="btn interactive" href="#features"><i class="fa-solid fa-circle-info"></i> Learn More</a>
+      </div>
+
+      <!-- Snapshot cards -->
+      <div class="hero-cards">
+        <div class="snap-card fade-in floating" id="card-latest" style="animation-delay: 0s;">
+          <div class="chip" id="chip-latest">#342</div>
+          <div class="snap-title"><i class="fa-solid fa-box-open"></i> Latest Shipment</div>
+          <div class="row"><span>Current Location:</span><span id="c1-loc">—</span></div>
+          <div class="row"><span>Departure:</span><span id="c1-dep">—</span></div>
+          <div class="row"><span>Destination:</span><span id="c1-dst">—</span></div>
+          <div class="row"><span>Status:</span><span id="c1-sta">—</span></div>
+          <div class="snap-small">Closest in time. For the rest, see Dashboard.</div>
+        </div>
+
+        <div class="snap-card fade-in floating" style="animation-delay: 2s;">
+          <div class="snap-title"><i class="fa-solid fa-arrow-up-right-from-square"></i> Next Departure</div>
+          <div class="row"><span>Vessel:</span><span id="c2-ves">—</span></div>
+          <div class="row"><span>From → To:</span><span id="c2-rt">—</span></div>
+          <div class="row"><span>ETA:</span><span id="c2-eta">—</span></div>
+          <div class="row"><span>Status:</span><span id="c2-st">—</span></div>
+          <div class="snap-small">Sorted by earliest ETA.</div>
+        </div>
+
+        <div class="snap-card fade-in floating" style="animation-delay: 4s;">
+          <div class="snap-title"><i class="fa-solid fa-leaf"></i> Fuel & Carbon Summary</div>
+          <div class="row"><span>Total Bunker Savings</span><span id="c3-bunk">—</span></div>
+          <div class="row"><span>Avg CO₂ / NM</span><span id="c3-co2">—</span></div>
+          <div class="row"><span>Delay Rate</span><span id="c3-delay">—</span></div>
+          <div class="snap-small">Aggregated from current fleet snapshot.</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Features -->
+<section id="features" class="section">
+  <div class="container">
+    <h2>Core Features</h2>
+    <div class="under"></div>
+
+    <div class="feature-grid">
+    <!--  10 feature cards go here -->
+  <div class="feature-card">
+    <div class="feature-top"><i class="fa-solid fa-chart-line" style="font-size:44px;color:#fff"></i></div>
+    <div class="feature-body"><h3>Real-time Data Visualization</h3><p>Dynamic KPI dashboard with global heatmaps, timeline analysis, and multi-dimensional drill-down capabilities.</p><div class="example"><strong>Example:</strong> "Show me Asia-Pacific port efficiency trends"</div></div>
+  </div>
+
+  <div class="feature-card">
+    <div class="feature-top"><i class="fa-solid fa-location-crosshairs" style="font-size:44px;color:#fff"></i></div>
+    <div class="feature-body"><h3>Smart Tracking</h3><p>Query cargo, routes, and ETA in natural language.</p><div class="example"><strong>Example:</strong> "Where is shipment #342 now?"</div></div>
+  </div>
+
+  <div class="feature-card">
+    <div class="feature-top"><i class="fa-solid fa-users" style="font-size:44px;color:#fff"></i></div>
+    <div class="feature-body"><h3>Team Coordination</h3><p>Auto-connect the right people globally.</p><div class="example"><strong>Example:</strong> “Who owns Europe network issues?”</div></div>
+  </div>
+
+  <div class="feature-card">
+    <div class="feature-top"><i class="fa-solid fa-chart-line" style="font-size:44px;color:#fff"></i></div>
+    <div class="feature-body"><h3>Analytics & Reports</h3><p>Generate weekly delay analyses and KPIs.</p><div class="example"><strong>Example:</strong> “Weekly delay analysis for Asian routes.”</div></div>
+  </div>
+
+  <div class="feature-card">
+    <div class="feature-top"><i class="fa-solid fa-language" style="font-size:44px;color:#fff"></i></div>
+    <div class="feature-body"><h3>Language Translation</h3><p>Real-time translation for global teams.</p><div class="example"><strong>Example:</strong> “Translate to Mandarin for Shanghai office.”</div></div>
+  </div>
+
+  <div class="feature-card">
+    <div class="feature-top"><i class="fa-solid fa-brain" style="font-size:44px;color:#fff"></i></div>
+    <div class="feature-body"><h3>Predictive Analytics (AI Forecast)</h3><p>AI predicts berth delays or carbon overruns before they happen.</p><div class="example"><strong>Example:</strong> “Forecast next week’s delay risk for Asia–Europe route.”</div></div>
+  </div>
+
+  <div class="feature-card">
+    <div class="feature-top"><i class="fa-solid fa-database" style="font-size:44px;color:#fff"></i></div>
+    <div class="feature-body"><h3>RAG Historical Memory</h3><p>Recalls similar past cases and provides proven solutions.</p><div class="example"><strong>Example:</strong> “What solved a similar delay at Tuas last year?”</div></div>
+  </div>
+
+  <div class="feature-card">
+    <div class="feature-top"><i class="fa-solid fa-robot" style="font-size:44px;color:#fff"></i></div>
+    <div class="feature-body"><h3>Auto Report Generator</h3><p>Generates daily/weekly reports with key KPIs and summaries.</p><div class="example"><strong>Example:</strong> “Generate this week’s berth utilization report.”</div></div>
+  </div>
+
+  <div class="feature-card">
+    <div class="feature-top"><i class="fa-solid fa-network-wired" style="font-size:44px;color:#fff"></i></div>
+    <div class="feature-body"><h3>Cross-Port Learning Engine (EchoNet)</h3><p>AI network that shares best practices between ports globally.</p><div class="example"><strong>Example:</strong> “Apply Antwerp’s fuel-saving strategy to Tuas.”</div></div>
+  </div>
+
+  <div class="feature-card">
+    <div class="feature-top"><i class="fa-solid fa-leaf" style="font-size:44px;color:#fff"></i></div>
+    <div class="feature-body"><h3>Sustainability AI (Harmony)</h3><p>Balances efficiency with carbon goals for greener operations.</p><div class="example"><strong>Example:</strong> “Cut carbon by 15% with only 10-minute delay.”</div></div>
+  </div>
+
+  <div class="feature-card">
+    <div class="feature-top"><i class="fa-solid fa-comments" style="font-size:44px;color:#fff"></i></div>
+    <div class="feature-body"><h3>Conversational Power BI</h3><p>Ask questions directly in English or 中文 to get instant analytics.</p><div class="example"><strong>Example:</strong> “Why was Tuas delayed today?”</div></div>
+  </div>
+</div>
+
+  <!-- Fleet Map (REAL MAP) -->
+  <section class="section">
+    <div class="container">
+      <h2>Fleet Map (Live Routes)</h2><div class="under"></div>
+
+      <div class="map-wrap">
+        <div class="map-head">
+          <i class="fa-solid fa-earth-americas"></i>
+          <b>World routes</b>
+          <small style="opacity:.75">Click ships or pins for details. Ships move toward their destination.</small>
+          <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+            <span class="chip"><b id="chipOn">—</b> On-Time</span>
+            <span class="chip"><b id="chipDelay">—</b> Delayed</span>
+            <span class="chip"><b id="chipNext">—</b> Next arrival</span>
+          </div>
+        </div>
+
+        <div id="mapStage">
+          <div id="mapTip"></div>
+          <div id="mapCard">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <div id="mcName" style="font-weight:800"></div>
+              <span id="mcStatus" class="badge">On Time</span>
+            </div>
+            <div id="mcRoute" style="font-size:13px;opacity:.85"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+              <div class="stat"><h5>ETA (Arrival)</h5><b id="mcETA">—</b></div>
+              <div class="stat"><h5>Time Left</h5><b id="mcLeft">—</b></div>
+              <div class="stat"><h5>Cargo</h5><b id="mcCargo">—</b></div>
+              <div class="stat"><h5>ID</h5><b id="mcId">—</b></div>
+            </div>
+          </div>
+          <div id="leafletMap"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dashboard -->
+  <section id="dashboard" class="section">
+    <div class="container">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2>Global Shipping Dashboard</h2>
+        <a class="btn interactive" href="dashboard.html" style="background: var(--gradient-accent); color: white; border: none; padding: 12px 20px; border-radius: 12px; text-decoration: none; font-weight: 600; box-shadow: var(--shadow-medium); transition: all 0.3s ease;">
+          <i class="fa-solid fa-tachometer-alt"></i> Real-time Analytics
+        </a>
+      </div>
+      <div class="under"></div>
+
+      <div class="card-white">
+        <div class="card-bar">
+          <div style="display:flex;align-items:center;gap:10px"><i class="fa-solid fa-chart-line"></i><span style="font-weight:700;font-size:18px">Vessel Performance Metrics</span></div>
+          <div>
+            <button id="refreshBtn" class="btn"><i class="fa-solid fa-rotate"></i> Refresh</button>
+            <button id="exportBtn" style="background:#f59e0b;border:none;color:#1f1404;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:800"><i class="fa-solid fa-download"></i> Export</button>
+          </div>
+        </div>
+
+        <div class="card-tabs"><div class="tab active">Vessel Status</div><div class="tab">Performance</div><div class="tab">Carbon Metrics</div></div>
+
+        <div class="kpi-grid">
+          <div class="kpi-tile"><div id="kpiOnTime" class="n">—</div><div style="color:#4b5563">On-Time Arrivals</div></div>
+          <div class="kpi-tile"><div id="kpiDelayed" class="n">—</div><div style="color:#4b5563">Delayed Vessels</div></div>
+          <div class="kpi-tile"><div id="kpiBunker" class="n">—</div><div style="color:#4b5563">Bunker Savings</div></div>
+        </div>
+
+        <div class="embed-wrap">
+          <div id="embedStatus" style="text-align:center;margin-bottom:12px;color:#4b5563">Preview: Arrivals vs Delays</div>
+          <svg id="miniChart" class="miniChart" width="100%" height="320" viewBox="0 0 640 320" preserveAspectRatio="xMidYMid meet"></svg>
+          <div style="text-align:center;margin-top:12px">
+            <button id="reloadEmbed" style="background:#f59e0b;border:none;color:#1f1404;padding:10px 18px;border-radius:8px;cursor:pointer;font-weight:800">Reload Dashboard</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Assistant Chat -->
+<section id="assistant" class="section">
+  <div class="container">
+    <h2>AI Assistant Chat</h2>
+    <div class="under"></div>
+
+    <div class="chat-card">
+      <div class="chat-head">
+        <div class="dot on"></div>
+        <b>Maritime AI Assistant</b>
+        <button class="fullscreen-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">
+          <i class="fa-solid fa-expand"></i>
+        </button>
+      </div>
+
+      <div id="chatBody" class="chat-body">
+        <div class="bubble bot">
+          • Finding contacts for specific regions or issues<br/>
+          • Generating reports and analytics<br/>
+          • AI forecasting for delays and carbon emissions<br/>
+          • Translating messages for global teams<br/>
+          • Recalling similar past cases and proven solutions<br/>
+          • Auto-generating daily/weekly reports with KPIs<br/>
+          • Cross-port learning and best practice sharing<br/>
+          • Sustainability optimization with carbon goals<br/>
+          • Conversational analytics in English and 中文<br/>
+          How can I assist you today?
+        </div>
+      </div>
+
+      <div class="chat-quick">
+        <button class="pill" onclick="openDashboard()"><i class="fa-solid fa-chart-line"></i> Open Dashboard</button>
+        <button class="pill" data-q="Where is shipment #342 now?">Where is shipment #342 now?</button>
+        <button class="pill" data-q="Weekly delay analysis for Asian routes" onclick="generateAnalyticsReport()">Weekly delay analysis for Asian routes</button>
+        <button class="pill" onclick="askTranslation()">Translate to Mandarin</button>
+        <button class="pill" data-q="Who owns Europe network issues?" onclick="askTeamCoordination()">Who owns Europe network issues?</button>
+        <button class="pill" onclick="askPredictiveAnalytics()">AI Forecast</button>
+        <button class="pill" onclick="askRAGMemory()">RAG Historical Memory</button>
+        <button class="pill" onclick="askAutoReport()">Auto Report Generator</button>
+        <button class="pill" onclick="askSmartTracking()">Smart Tracking</button>
+        <button class="pill" onclick="askPowerBI()">Power BI Dashboard</button>
+        <button class="pill" onclick="askCarbonAnalysis()">Carbon Analysis</button>
+        <button class="pill" onclick="askPortStatus()">Port Status</button>
+        <button class="pill" onclick="askVesselSchedule()">Vessel Schedule</button>
+        <button class="pill" onclick="askCostOptimization()">Cost Optimization</button>
+        <button class="pill" onclick="askEmergencyResponse()">Emergency Response</button>
+        <button class="pill" onclick="askComplianceCheck()">Compliance Check</button>
+        <button class="pill" onclick="askCrossPortLearning()">Cross-Port Learning</button>
+        <button class="pill" onclick="askSustainabilityAI()">Sustainability AI</button>
+        <button class="pill" onclick="askConversationalPowerBI()">Conversational Power BI</button>
+      </div>
+
+      <form id="chatForm" class="chat-input" autocomplete="off">
+        <input id="chatText" type="text" placeholder="Type your question..." />
+        <button class="send" type="submit"><i class="fa-solid fa-paper-plane"></i></button>
+      </form>
+    </div>
+  </div>
+</section>
+
+
+      <!-- Vessel table -->
+      <div class="soft-table">
+        <div class="soft-head">
+          <div style="display:flex;align-items:center;gap:10px"><i class="fa-solid fa-ship"></i><span style="font-weight:700;font-size:18px">Vessel Tracking</span></div>
+          <div class="search"><input id="searchBox" type="text" placeholder="Search vessels..."/><i class="fa-solid fa-search"></i></div>
+        </div>
+        <div class="soft-cols"><div>Vessel</div><div>Rotation</div><div>Port</div><div>Route</div><div>ETA</div><div>Status</div></div>
+        <div id="rowsScroller" class="rows-scroll"><div id="rows"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About + footer (kept) -->
+  <section id="about" class="section">
+    <div class="container about-panel">
+      <h2 style="text-align:center;margin:0 0 8px;font-size:clamp(28px,3.2vw,40px)">About Network Insights</h2>
+      <div class="under"></div>
+      <div class="about-grid">
+        <div>
+          <p style="color:var(--muted);margin:0 0 18px">Network Insights is a maritime coordination platform for global shipping. We combine real-time data with predictive analytics to cut delays and costs.</p>
+          <p style="color:var(--muted);margin:0">Through NLP and forecasting, we help operations teams improve on-time arrivals and bunker savings across routes.</p>
+          <div class="about-kpis">
+            <div class="kpi"><div class="n">24/7</div><div>Global Support</div></div>
+            <div class="kpi"><div class="n">50+</div><div>Languages</div></div>
+            <div class="kpi"><div class="n">99.9%</div><div>Uptime</div></div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:center;align-items:center">
+          <svg class="radar" id="radarCanvas" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-label="radar chart">
+            <defs>
+              <radialGradient id="rg" cx="50%" cy="50%" r="60%"><stop offset="0%" stop-color="#1e4b6d" stop-opacity="0.95"/><stop offset="100%" stop-color="#103550" stop-opacity="0.95"/></radialGradient>
+              <linearGradient id="sweepGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#e58e26" stop-opacity="0.6"/><stop offset="100%" stop-color="#e58e26" stop-opacity="0"/></linearGradient>
+            </defs>
+            <circle cx="100" cy="100" r="95" fill="url(#rg)" stroke="rgba(255,255,255,0.18)" stroke-width="2"/>
+            <g stroke="rgba(255,255,255,0.2)" stroke-width="1"><line x1="100" y1="5" x2="100" y2="195"/><line x1="5" y1="100" x2="195" y2="100"/></g>
+            <g id="radarSweep" style="transform-origin:100px 100px"><path d="M100,100 L195,100" stroke="url(#sweepGrad)" stroke-width="4" stroke-linecap="round" opacity="0.9"/></g>
+            <polygon points="100,100 170,100 150,40 95,165 40,140" fill="rgba(229,142,38,0.32)" stroke="#e58e26" stroke-width="2"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+  <footer>
+    <div class="container foot">
+      <div><h4>Network Insights</h4><div style="color:var(--muted)">Navigating global logistics with intelligence</div></div>
+      <div><h4>Quick Links</h4><div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:8px 16px"><a href="#features">Features</a><a href="#dashboard">Dashboard</a><a href="#about">About Us</a></div></div>
+      <div><h4>Support</h4><div class="grid" style="grid-template-columns:1fr;gap:8px"><a href="#">Help Center</a><a href="#">Contact Us</a><a href="#">Privacy Policy</a></div></div>
+    </div>
+    <div class="copyright">© 2025 Network Insights. All rights reserved.</div>
+  </footer>
+
+<script>
+/* -------- demo dataset used across page -------- */
+function genData(N=120){
+  const base=['RAPID HORIZON','PACIFIC ALBATROSS','EASTERN GATE','BRIGHT DOLPHIN','GRAND CORAL','NORTHERN HORIZON','WESTERN AURORA','SILVER HERON','BLUE SEAWAY','TRUST CORAL','OCEAN CONSTELLATION','EMERALD ORCA'];
+  const routes=['Asia-Europe','Transpacific','Intra-America','Europe-Africa','Intra-Asia'];
+  const start=new Date('2025-07-10');const rows=[];
+  for(let i=0;i<N;i++){
+    const n=base[i%base.length],series=Math.floor(i/base.length)+1;
+    const vessel=`MV ${n}${series>1?' '+series:''}`,rotation=n.split(' ')[0].toUpperCase();
+    const port=`Port ${300+((i*37)%500)}`,route=routes[i%routes.length];
+    const d=new Date(start);d.setDate(start.getDate()+(i%18));const eta=d.toISOString().slice(0,10);
+    const delayed=i%4===1;const bunkerUSD=4000+(i*137)%32000;
+    const berthH=18+(i*3%20),waitH=delayed?6+(i%5):2+(i%4),carbon=+(0.08+((i*7)%40)/100).toFixed(3);
+    rows.push({vessel,rotation,port,route,eta,status:delayed?'Delayed':'On Time',bunkerUSD,berthH,waitH,carbon});
+  }
+  return rows;
+}
+const sampleData=genData(120);
+
+/* -------- hero snapshot fill -------- */
+const fmtPct=p=>(p*100).toFixed(1)+'%';
+const fmtMoney=x=>x>=1e6?'$'+(x/1e6).toFixed(1)+'M':x>=1e3?'$'+(x/1e3).toFixed(1)+'k':'$'+x.toFixed(0);
+const calcKPIs=d=>{const t=d.length,on=d.filter(r=>r.status==='On Time').length,b=d.reduce((s,r)=>s+r.bunkerUSD,0);return{on:on/t,delay:(t-on)/t,bunk:b}};
+const calcCarbon=d=>{const c=d.reduce((s,r)=>s+r.carbon,0),fuel=d.reduce((s,r)=>s+r.carbon*1000,0)/d.length;return{carbon:c,fuel}};
+
+function fillHeroCards(){
+  const sorted=[...sampleData].sort((a,b)=>new Date(a.eta)-new Date(b.eta));
+  const latest=sorted[0]; // closest ETA
+  document.getElementById('chip-latest').textContent = latest.vessel.replace('MV ','#');
+  document.getElementById('c1-loc').textContent = latest.port;
+  document.getElementById('c1-dep').textContent = 'Today, 21:00';
+  document.getElementById('c1-dst').textContent = latest.route.includes('Europe') ? 'Rotterdam, NL' : (latest.route.includes('Transpacific') ? 'Los Angeles, US' : 'Singapore');
+  document.getElementById('c1-sta').textContent = latest.status;
+
+  const next=sorted[1];
+  document.getElementById('c2-ves').textContent = next.vessel;
+  document.getElementById('c2-rt').textContent = next.port + ' → ' + (next.route.includes('Europe')?'Rotterdam':next.route.includes('Transpacific')?'LA':'Singapore');
+  document.getElementById('c2-eta').textContent = next.eta;
+  document.getElementById('c2-st').textContent  = next.status;
+
+  const k=calcKPIs(sampleData), c=calcCarbon(sampleData);
+  document.getElementById('c3-bunk').textContent = fmtMoney(k.bunk);
+  document.getElementById('c3-co2').textContent  = Math.round(c.fuel)+' kg';
+  document.getElementById('c3-delay').textContent= fmtPct(k.delay);
+}
+
+/* -------- REAL MAP with Leaflet: routes, pins, moving ships -------- */
+(function(){
+  const stage = document.getElementById('mapStage');
+  const tip = document.getElementById('mapTip');
+
+  // Create map
+  const map = L.map('leafletMap', { zoomControl: true }).setView([20, 0], 2);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution:'&copy; OpenStreetMap'
+  }).addTo(map);
+
+  // Country pins (city anchors)
+  const places = {
+    'Singapore, SG':[1.3521,103.8198],
+    'Rotterdam, NL':[51.9244,4.4777],
+    'Los Angeles, US':[34.0522,-118.2437],
+    'Shanghai, CN':[31.2304,121.4737],
+    'Tokyo, JP':[35.6762,139.6503],
+    'Seattle, US':[47.6062,-122.3321]
+  };
+
+  // Add nice country/city pins with labels
+  Object.entries(places).forEach(([name,latlng])=>{
+    L.marker(latlng,{title:name}).addTo(map)
+      .bindTooltip(name,{permanent:true,direction:'top',offset:[0,-10],opacity:0.9})
+      .openTooltip();
+  });
+
+  // Utility
+  const badge = (txt, delayed) =>
+    `<span class="ship-icon ${delayed?'delayed':''}">🚢</span> <b>${txt}</b>`;
+
+  function offset(h){return new Date(Date.now()+h*3600*1000);}
+  function timeLeft(end){const ms=end-Date.now(); if(ms<=0) return 'Arrived'; const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000); return `${h}h ${m}m`; }
+
+  // Fleet + routes
+  const fleet = [
+    {id:'SHP-342', name:'MV RAPID HORIZON', origin:'Singapore, SG', destination:'Rotterdam, NL', status:'On Time', cargoTEU:3850, start:offset(-10), end:offset(42),
+     path:[places['Singapore, SG'], places['Rotterdam, NL']]},
+    {id:'SHP-501', name:'MV PACIFIC ALBATROSS', origin:'Los Angeles, US', destination:'Shanghai, CN', status:'Delayed', cargoTEU:4100, start:offset(-28), end:offset(60),
+     path:[places['Los Angeles, US'], places['Shanghai, CN']]},
+    {id:'SHP-219', name:'MV EASTERN GATE', origin:'Tokyo, JP', destination:'Seattle, US', status:'On Time', cargoTEU:2900, start:offset(-5), end:offset(36),
+     path:[places['Tokyo, JP'], places['Seattle, US']]}
+  ];
+
+  window.fleet = fleet; // make it globally accessible for chatbox
+
+  // Colored route polylines + destination flags
+  fleet.forEach(v=>{
+    const color = /delay/i.test(v.status) ? '#ef4444' : '#22c55e';
+    L.polyline(v.path, {color, weight:4, opacity:0.9}).addTo(map)
+      .bindTooltip(`${v.origin} → ${v.destination}`, {sticky:true});
+
+    L.marker(v.path[1], {
+      icon: L.divIcon({className:'dest-flag', html:'DEST', iconSize:[32,18], iconAnchor:[16,9]})
+    }).addTo(map);
+  });
+
+  // KPI chips
+  function refreshChips(){
+    const delayed = fleet.filter(f=>/delay/i.test(f.status)).length;
+    const ontime = fleet.length - delayed;
+    document.getElementById('chipOn').textContent = `${(ontime/fleet.length*100).toFixed(1)}%`;
+    document.getElementById('chipDelay').textContent = `${(delayed/fleet.length*100).toFixed(1)}%`;
+    const next = fleet.slice().sort((a,b)=>a.end-b.end)[0];
+    document.getElementById('chipNext').textContent = timeLeft(next.end);
+  }
+
+  // Card refs
+  const card = document.getElementById('mapCard');
+  const mcName=document.getElementById('mcName'), mcStatus=document.getElementById('mcStatus'),
+        mcRoute=document.getElementById('mcRoute'), mcETA=document.getElementById('mcETA'),
+        mcLeft=document.getElementById('mcLeft'), mcCargo=document.getElementById('mcCargo'),
+        mcId=document.getElementById('mcId');
+
+  function showCard(v){
+    mcName.textContent=v.name;
+    mcStatus.textContent=v.status;
+    mcStatus.className = /delay/i.test(v.status)?'badge badge-red':'badge';
+    mcRoute.textContent=`${v.origin} → ${v.destination}`;
+    mcETA.textContent=new Date(v.end).toLocaleString();
+    mcLeft.textContent=timeLeft(v.end);
+    mcCargo.textContent=`${v.cargoTEU.toLocaleString()} TEU`;
+    mcId.textContent=v.id;
+    card.style.display='block';
+  }
+
+  // Create moving ship markers
+  function lerp(a,b,t){return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t];}
+  function norm(now,a,b){return Math.max(0,Math.min(1,(now-a)/(b-a))); }
+
+  const shipMarkers = fleet.map(v=>{
+    const delayed = /delay/i.test(v.status);
+    const icon = L.divIcon({
+      className:'ship-icon '+(delayed?'delayed':''),
+      html:'🚢', iconSize:[28,22], iconAnchor:[14,11]
+    });
+    const mk = L.marker(v.path[0], {icon, title:v.name}).addTo(map);
+    mk.bindPopup(`
+      ${badge(v.name, delayed)}<br/>
+      <small>${v.origin} → ${v.destination}</small><br/>
+      <small>Status: <b>${v.status}</b></small><br/>
+      <small>ETA: ${new Date(v.end).toLocaleString()}</small><br/>
+      <small>Cargo: ${v.cargoTEU.toLocaleString()} TEU</small><br/>
+      <small>ID: ${v.id}</small>
+    `);
+    mk.on('click',()=>showCard(v));
+    return {v, mk};
+  });
+
+  // Animate
+  function tick(){
+    const now = Date.now();
+    shipMarkers.forEach(({v,mk})=>{
+      const t = norm(now, v.start.getTime(), v.end.getTime());
+      const p = lerp(v.path[0], v.path[1], t);
+      mk.setLatLng(p);
+      // Update card countdown if this vessel is open
+      if(card.style.display!=='none' && mcId.textContent===v.id){
+        mcLeft.textContent = timeLeft(v.end);
+      }
+    });
+    requestAnimationFrame(tick);
+  }
+
+  // Focus map around all routes
+  const allPts = fleet.flatMap(f=>f.path);
+  const bounds = L.latLngBounds(allPts);
+  map.fitBounds(bounds.pad(0.25));
+
+  // Initialize
+  showCard(fleet.slice().sort((a,b)=>a.end-b.end)[0]);
+  refreshChips();
+  tick();
+
+})();
+
+/* -------- dashboard chart + table (kept) -------- */
+function drawBars(bars){
+  const svg=document.getElementById('miniChart');svg.innerHTML='';
+  const W=640,H=320,p=40,bw=100,gap=70;
+  const axis=document.createElementNS('http://www.w3.org/2000/svg','line');
+  axis.setAttribute('x1',p);axis.setAttribute('y1',H-p);axis.setAttribute('x2',W-p);axis.setAttribute('y2',H-p);axis.setAttribute('stroke','#cbd5e1');
+  svg.appendChild(axis);
+  bars.forEach((b,i)=>{
+    const h=b.value*(H-p*2),x=p+60+i*(bw+gap);
+    const r=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    r.setAttribute('x',x);r.setAttribute('y',H-p-h);r.setAttribute('width',bw);r.setAttribute('height',h);r.setAttribute('fill',b.color);r.setAttribute('rx',8);
+    svg.appendChild(r);
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',x+bw/2);t.setAttribute('y',H-p-h-8);t.setAttribute('text-anchor','middle');t.setAttribute('font-weight','700');t.textContent=b.label;svg.appendChild(t);
+  });
+}
+const calcPerf=d=>{const b=d.reduce((s,r)=>s+r.berthH,0)/d.length,w=d.reduce((s,r)=>s+r.waitH,0)/d.length;return{berth:b,wait:w,eff:100-w/(b+w)*100}};
+function showTab(tab){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));tab.classList.add('active');
+  const id=tab.textContent.trim(),on=document.getElementById('kpiOnTime'),de=document.getElementById('kpiDelayed'),bu=document.getElementById('kpiBunker');
+  const k=calcKPIs(sampleData);
+  if(id==='Vessel Status'){
+    on.textContent=fmtPct(k.on);de.textContent=fmtPct(k.delay);bu.textContent=fmtMoney(k.bunk);
+    on.style.color='#f59e0b';de.style.color='#e05c65';bu.style.color='#f59e0b';
+    drawBars([{value:k.on,label:(k.on*100).toFixed(1)+'%',color:'#f59e0b'},{value:k.delay,label:(k.delay*100).toFixed(1)+'%',color:'#e05c65'}]);
+  }else if(id==='Performance'){
+    const p=calcPerf(sampleData);
+    on.textContent=p.berth.toFixed(1)+' h';de.textContent=p.wait.toFixed(1)+' h';bu.textContent=p.eff.toFixed(1)+' %';
+    on.style.color='#0ea5e9';de.style.color='#22c55e';bu.style.color='#e58e26';
+    drawBars([{value:p.berth/40,label:p.berth.toFixed(1)+' h',color:'#0ea5e9'},{value:p.wait/40,label:p.wait.toFixed(1)+' h',color:'#22c55e'},{value:p.eff/100,label:p.eff.toFixed(1)+' %',color:'#e58e26'}]);
+  }else{
+    const c=calcCarbon(sampleData);
+    on.textContent=c.carbon.toFixed(2)+' t';de.textContent='18.0 %';bu.textContent=Math.round(c.fuel)+' kg CO₂/NM';
+    on.style.color='#16a34a';de.style.color='#e11d48';bu.style.color='#f59e0b';
+    drawBars([{value:c.carbon/3,label:c.carbon.toFixed(2)+' t',color:'#16a34a'},{value:0.18,label:'18.0 %',color:'#e11d48'},{value:c.fuel/1000,label:Math.round(c.fuel)+' kg',color:'#f59e0b'}]);
+  }
+}
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>showTab(t)));
+
+const rowsContainer=document.getElementById('rows');
+function renderRows(data){
+  rowsContainer.innerHTML='';
+  data.forEach(r=>{
+    const div=document.createElement('div');div.className='soft-row';
+    div.innerHTML=`<div><b>${r.vessel}</b></div><div>${r.rotation}</div><div>${r.port}</div><div>${r.route}</div><div>${r.eta}</div><div style="justify-self:end"><span class="badge ${r.status==='Delayed'?'badge-red':''}">${r.status}</span></div>`;
+    rowsContainer.appendChild(div);
+  });
+}
+document.getElementById('searchBox').addEventListener('input',e=>{
+  const q=e.target.value.toLowerCase();
+  const f=!q?sampleData:sampleData.filter(r=>(r.vessel+r.rotation+r.port+r.route+r.eta+r.status).toLowerCase().includes(q));
+  renderRows(f);
+});
+
+/* ===== Simple AI Chat (front-end demo) ===== */
+(function(){
+  const body = document.getElementById('chatBody');
+  const form = document.getElementById('chatForm');
+  const input = document.getElementById('chatText');
+  // Only add event listeners to pills that have data-q attribute (not onclick handlers)
+  document.querySelectorAll('.pill[data-q]').forEach(p=>p.addEventListener('click',()=>{ input.value=p.dataset.q; form.dispatchEvent(new Event('submit',{cancelable:true})); }));
+
+  function addBubble(text, who='bot'){
+    const b = document.createElement('div');
+    b.className = 'bubble '+who;
+    b.innerHTML = text + `<span class="msg-time">${new Date().toLocaleTimeString()}</span>`;
+    body.appendChild(b);
+    body.scrollTop = body.scrollHeight;
+  }
+
+  // Make addBubble globally accessible
+  window.addBubble = addBubble;
+
+  function fmtPct(n){ return (n*100).toFixed(1)+'%'; }
+
+  /* -------- Translation Response Generator -------- */
+  function generateTranslationResponse(text, targetLang) {
+    // Ensure inputs are valid strings
+    if (!text || typeof text !== 'string') {
+      text = 'Hello team, meeting at 3PM';
+    }
+    if (!targetLang || typeof targetLang !== 'string') {
+      targetLang = 'mandarin';
+    }
+    
+    const translations = {
+      'japanese': 'Japanese',
+      'japan': 'Japanese',
+      'mandarin': 'Chinese (Mandarin)',
+      'chinese': 'Chinese',
+      'english': 'English',
+      'german': 'German',
+      'french': 'French',
+      'spanish': 'Spanish',
+      'korean': 'Korean',
+      'portuguese': 'Portuguese',
+      'italian': 'Italian',
+      'russian': 'Russian',
+      'arabic': 'Arabic',
+      'dutch': 'Dutch',
+      'swedish': 'Swedish',
+      'norwegian': 'Norwegian',
+      'danish': 'Danish',
+      'finnish': 'Finnish',
+      'polish': 'Polish',
+      'turkish': 'Turkish',
+      'greek': 'Greek',
+      'hebrew': 'Hebrew',
+      'thai': 'Thai',
+      'vietnamese': 'Vietnamese',
+      'indonesian': 'Indonesian',
+      'malay': 'Malay',
+      'hindi': 'Hindi',
+      'bengali': 'Bengali',
+      'urdu': 'Urdu',
+      'persian': 'Persian'
+    };
+    
+    const langKey = String(targetLang).toLowerCase();
+    const langName = translations[langKey] || langKey;
+    
+    // Mock translations for demonstration
+    const mockTranslations = {
+      'japanese': {
+        'Hello team, meeting at 3PM': 'こんにちはチーム、午後3時に会議',
+        'Good morning, how is the project going?': 'おはようございます、プロジェクトの進捗はいかがですか？',
+        'Please review the shipment status': '出荷状況をご確認ください',
+        'The vessel will arrive tomorrow': '船は明日到着予定です',
+        'Thank you for your cooperation': 'ご協力ありがとうございます'
+      },
+      'chinese': {
+        'Hello team, meeting at 3PM': '你好团队，下午3点开会',
+        'Good morning, how is the project going?': '早上好，项目进展如何？',
+        'Please review the shipment status': '请查看货运状态',
+        'The vessel will arrive tomorrow': '船舶明天到达',
+        'Thank you for your cooperation': '感谢您的合作'
+      },
+      'mandarin': {
+        'Hello team, meeting at 3PM': '你好团队，下午3点开会',
+        'Good morning, how is the project going?': '早上好，项目进展如何？',
+        'Please review the shipment status': '请查看货运状态',
+        'The vessel will arrive tomorrow': '船舶明天到达',
+        'Thank you for your cooperation': '感谢您的合作'
+      },
+      'english': {
+        '你好团队，下午3点开会': 'Hello team, meeting at 3PM',
+        '早上好，项目进展如何？': 'Good morning, how is the project going?',
+        '请查看货运状态': 'Please review the shipment status',
+        '船舶明天到达': 'The vessel will arrive tomorrow',
+        '感谢您的合作': 'Thank you for your cooperation'
+      }
+    };
+    
+    // Find the best match or use a generic translation
+    let translatedText = text;
+    
+    if (mockTranslations[langKey]) {
+      // Try to find exact match first
+      if (mockTranslations[langKey][text]) {
+        translatedText = mockTranslations[langKey][text];
+      } else {
+        // Use a generic translation based on common patterns
+        translatedText = generateGenericTranslation(text, langKey);
+      }
+    } else {
+      translatedText = generateGenericTranslation(text, langKey);
+    }
+    
+    // Ensure translatedText is never undefined
+    if (!translatedText || typeof translatedText !== 'string') {
+      translatedText = `[${langKey.toUpperCase()}] ${text}`;
+    }
+    
+    return `🌐 **${langName} Translation**<br><br>
+      <div style="background:#f0f8ff;padding:12px;border-radius:8px;margin:8px 0;border-left:4px solid #007acc;">
+        <strong>Original:</strong> ${text}<br>
+        <strong>Translation:</strong> ${translatedText}
+      </div>
+      <small style="color:#666;">💡 Note: This is a demo translation. For production deployment, integrate with professional translation APIs like Google Translate, Azure Translator, or DeepL.</small>`;
+  }
+
+  // Make generateTranslationResponse globally accessible
+  window.generateTranslationResponse = generateTranslationResponse;
+
+  function generateGenericTranslation(text, targetLang) {
+    const genericTranslations = {
+      'japanese': {
+        'hello': 'こんにちは',
+        'team': 'チーム',
+        'meeting': '会議',
+        'project': 'プロジェクト',
+        'shipment': '出荷',
+        'vessel': '船',
+        'arrive': '到着',
+        'tomorrow': '明日',
+        'thank': 'ありがとう',
+        'cooperation': '協力'
+      },
+      'chinese': {
+        'hello': '你好',
+        'team': '团队',
+        'meeting': '会议',
+        'project': '项目',
+        'shipment': '货运',
+        'vessel': '船舶',
+        'arrive': '到达',
+        'tomorrow': '明天',
+        'thank': '谢谢',
+        'cooperation': '合作'
+      },
+      'mandarin': {
+        'hello': '你好',
+        'team': '团队',
+        'meeting': '会议',
+        'project': '项目',
+        'shipment': '货运',
+        'vessel': '船舶',
+        'arrive': '到达',
+        'tomorrow': '明天',
+        'thank': '谢谢',
+        'cooperation': '合作'
+      }
+    };
+    
+    // Ensure targetLang is a string and lowercase
+    const langKey = String(targetLang).toLowerCase();
+    
+    if (genericTranslations[langKey]) {
+      let result = text;
+      Object.entries(genericTranslations[langKey]).forEach(([key, value]) => {
+        result = result.replace(new RegExp(key, 'gi'), value);
+      });
+      return result;
+    }
+    
+    // Always return a valid string, never undefined
+    return `[${langKey.toUpperCase()}] ${text}`;
+  }
+
+  function answer(q){
+    q = q.trim();
+
+    // 1) Shipment lookup: “Where is shipment #342” or “SHP-219”
+    const mId = q.match(/shp[-\s]?(\d+)/i);
+    const mNum = q.match(/shipment\s*#?\s*(\d+)/i);
+    if(mId || mNum){
+      const key = mId ? ('SHP-'+mId[1]) : ('SHP-'+mNum[1]);
+      const f = (window.fleet||[]).find(v=>v.id.toUpperCase()===key.toUpperCase());
+      if(f){
+        return `Shipment <b>${f.id}</b> (<b>${f.name}</b>) is currently on route <b>${f.origin} → ${f.destination}</b>.<br>
+        ETA: <b>${new Date(f.end).toLocaleString()}</b> · Status: <b>${f.status}</b> · Cargo: <b>${f.cargoTEU.toLocaleString()} TEU</b>`;
+      }
+      return `Sorry, I can't find ${key}. Try #342 or SHP-219 (demo data).`;
+    }
+
+    // 2) Weekly delay analysis (by route or region)
+    if(/weekly|week/i.test(q) && /delay/i.test(q)){
+      const data = (typeof sampleData!=='undefined') ? sampleData : [];
+      const total = data.length;
+      const delayed = data.filter(r=>/delay/i.test(r.status)).length;
+      const byRoute = data.reduce((m,r)=>{const k=r.route; m[k]=m[k]||{t:0,d:0}; m[k].t++; if(/delay/i.test(r.status)) m[k].d++; return m;}, {});
+      let lines = Object.entries(byRoute).map(([k,v])=>`• <b>${k}</b>: ${v.d}/${v.t} delayed (${fmtPct(v.d/v.t)})`).join('<br>');
+      return `Here’s the latest weekly delay snapshot:<br>
+        • Total: <b>${delayed}/${total}</b> delayed (${fmtPct(delayed/total)})<br>${lines}`;
+    }
+
+    // 3) Enhanced Translation functionality
+    const tr = q.match(/translate.*?:?\s*(.+?)\s*\((?:to|→)\s*(japanese|japan|mandarin|chinese|english|german|french|spanish|korean|portuguese|italian|russian|arabic|dutch|swedish|norwegian|danish|finnish|polish|turkish|greek|hebrew|thai|vietnamese|indonesian|malay|hindi|bengali|urdu|persian)\)/i);
+    if(tr){
+      const text = tr[1];
+      const targetLang = tr[2].toLowerCase();
+      return generateTranslationResponse(text, targetLang);
+    }
+
+    // 4) Predictive Analytics / AI Forecast
+    if(/forecast|predict|ai forecast|predictive|analytics|delay risk|carbon|berth delay/i.test(q)){
+      return generatePredictiveAnalyticsResponse();
+    }
+
+    // 5) RAG Historical Memory
+    if(/rag|historical|memory|past cases|similar|tuas|last year|proven solutions|solved|case study/i.test(q)){
+      return generateRAGMemoryResponse(q);
+    }
+
+    // 6) Auto Report Generator
+    if(/auto report|report generator|generate.*report|daily report|weekly report|berth utilization|kpi|summary/i.test(q)){
+      return generateAutoReportResponse(q);
+    }
+    
+    // 7) Cross-Port Learning Engine (EchoNet)
+    if(/cross port|learning engine|echonet|apply.*strategy|best practice|port.*strategy|antwerp|fuel.*saving|strategy.*transfer/i.test(q)){
+      return generateCrossPortLearningResponse(q);
+    }
+    
+    // 8) Sustainability AI (Harmony)
+    if(/sustainability|harmony|carbon.*cut|carbon.*reduction|green.*operation|environmental|eco.*friendly|carbon.*goal/i.test(q)){
+      return generateSustainabilityAIResponse(q);
+    }
+    
+    // 9) Conversational Power BI
+    if(/why.*delay|why.*delayed|tuas.*delay|power bi|conversational|analytics.*question|delay.*analysis/i.test(q)){
+      return generateConversationalPowerBIResponse(q);
+    }
+
+    // 5) Contacts / ownership
+    if(/who owns|contact|owner/i.test(q) && /europe/i.test(q)){
+      return `Europe Network POC: <b>Ana Müller</b> · Ops Director (EU)<br>Email: ana.muller@example.com · Phone: +49 30 1234 567`;
+    }
+
+    // Default help
+    return `I can help with shipment lookups (e.g., <i>Where is shipment #342?</i>), weekly delay analysis, AI forecasting, simple translations, regional contacts, historical case studies, and auto-generated reports. Try one of the quick prompts above.`;
+  }
+
+  form.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const q = input.value.trim();
+    if(!q) return;
+    addBubble(q, 'user');
+    setTimeout(()=> {
+      const response = answer(q);
+      if(response && response !== 'undefined') {
+        addBubble(response, 'bot');
+      } else {
+        addBubble('I can help with shipment lookups, analytics, AI forecasting, translations, and more. Try one of the quick prompts above.', 'bot');
+      }
+    }, 120); // tiny delay for feel
+    input.value='';
+  });
+})();
+
+
+/* -------- Analytics & Reports Quick Action -------- */
+async function generateAnalyticsReport() {
+  try {
+    // Show loading state
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating Report...';
+    button.disabled = true;
+
+    // Call the Analytics API
+    const response = await fetch('/api/analytics/weekly-delay-analysis', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        region: 'Asian routes',
+        period: 'weekly',
+        language: 'en'
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    
+    // Ensure result.content is valid
+    const content = result.content || 'Analytics report generated successfully.';
+    addBubble(content, 'bot');
+    
+  } catch (error) {
+    console.error('Analytics report generation failed:', error);
+    // Fallback to mock data if API is not available
+    const mockReport = generateMockAnalyticsReport();
+    // Ensure mockReport is valid
+    const safeReport = mockReport || 'Unable to generate analytics report at this time.';
+    addBubble(safeReport, 'bot');
+  } finally {
+    // Restore button state
+    const button = event.target;
+    button.innerHTML = 'Weekly delay analysis for Asian routes';
+    button.disabled = false;
+  }
+}
+
+/* -------- Team Coordination Quick Action -------- */
+async function askTeamCoordination() {
+  try {
+    // Show loading state
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Loading...';
+    button.disabled = true;
+
+    // Call the Team Coordination API
+    const response = await fetch('/api/team-coordination/query', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: 'Who owns Europe network issues?',
+        language: 'en'
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    
+    // Ensure result.content is valid
+    const content = result.content || 'Team coordination information retrieved successfully.';
+    addBubble(content, 'bot');
+    
+  } catch (error) {
+    console.error('Team Coordination query failed:', error);
+    // Provide a fallback response instead of generic error
+    const fallbackResponse = `Europe Network POC: <b>Ana Müller</b> · Ops Director (EU)<br>Email: ana.muller@example.com · Phone: +49 30 1234 567<br><br><small style="color:#666;">Note: This is fallback data. API connection unavailable.</small>`;
+    addBubble(fallbackResponse, 'bot');
+  } finally {
+    // Restore button state
+    const button = event.target;
+    button.innerHTML = 'Who owns Europe network issues?';
+    button.disabled = false;
+  }
+}
+
+/* -------- Translation Quick Action -------- */
+function askTranslation() {
+  const text = 'Hello team, meeting at 3PM';
+  const targetLang = 'Mandarin';
+  const query = `Translate: ${text} (to ${targetLang})`;
+  
+  // Add user message
+  addBubble(query, 'user');
+  
+  // Process translation
+  setTimeout(() => {
+    const result = generateTranslationResponse(text, targetLang.toLowerCase());
+    // Ensure result is valid
+    const safeResult = result || `🌐 **${targetLang} Translation**<br><br><div style="background:#f0f8ff;padding:12px;border-radius:8px;margin:8px 0;border-left:4px solid #007acc;"><strong>Original:</strong> ${text}<br><strong>Translation:</strong> Translation service temporarily unavailable</div>`;
+    addBubble(safeResult, 'bot');
+  }, 120);
+}
+
+/* -------- Auto Report Generator Quick Action -------- */
+function askAutoReport() {
+  const query = "Generate this week's berth utilization report.";
+  
+  // Add user message
+  addBubble(query, 'user');
+  
+  // Process auto report generation
+  setTimeout(() => {
+    const result = generateAutoReportResponse(query);
+    // Ensure result is valid
+    const safeResult = result || `📊 **Auto Report Generator**<br><br><div style="background:#f0f8ff;padding:12px;border-radius:8px;margin:8px 0;border-left:4px solid #007acc;">Report generation service temporarily unavailable. Please try again later.</div>`;
+    addBubble(safeResult, 'bot');
+  }, 120);
+}
+
+/* -------- Smart Tracking Quick Action -------- */
+function askSmartTracking() {
+  const query = "Track shipment #342 status";
+  
+  // Add user message
+  addBubble(query, 'user');
+  
+  // Process smart tracking
+  setTimeout(() => {
+    const result = `📦 **Smart Tracking**<br><br>
+<div style="background:#e8f5e8;padding:15px;border-radius:8px;margin:10px 0;border-left:4px solid #4caf50;">
+  <h3 style="margin:0 0 10px 0;color:#2e7d32;">📋 Shipment #342 Status</h3>
+  <strong>Current Location:</strong> Singapore Port<br>
+  <strong>Status:</strong> In Transit<br>
+  <strong>ETA:</strong> 2024-10-25 14:30<br>
+  <strong>Next Port:</strong> Rotterdam<br>
+  <strong>Vessel:</strong> MSC LORETO<br>
+  <strong>Progress:</strong> 65% Complete
+</div>
+<div style="background:#e3f2fd;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #2196f3;">
+  <strong>📊 Tracking Details:</strong><br>
+  • Last Update: 2 hours ago<br>
+  • Distance Remaining: 1,200 nm<br>
+  • Weather: Fair conditions<br>
+  • Estimated Delay: None
+</div>`;
+    addBubble(result, 'bot');
+  }, 120);
+}
+
+/* -------- Power BI Dashboard Quick Action -------- */
+function askPowerBI() {
+  const query = "Show me the Power BI dashboard";
+  
+  // Add user message
+  addBubble(query, 'user');
+  
+  // Process Power BI request
+  setTimeout(() => {
+    const result = `📊 **Power BI Dashboard**<br><br>
+<div style="background:#f0f8ff;padding:15px;border-radius:8px;margin:10px 0;border-left:4px solid #007acc;">
+  <h3 style="margin:0 0 10px 0;color:#1976d2;">📈 Interactive Dashboard</h3>
+  <strong>Available Dashboards:</strong><br>
+  • 📊 Port Performance Metrics<br>
+  • 🚢 Vessel Operations Overview<br>
+  • 📦 Cargo Flow Analysis<br>
+  • 💰 Financial Performance<br>
+  • 🌍 Environmental Impact<br>
+  • ⚡ Real-time Operations
+</div>
+<div style="background:#fff3e0;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #ff9800;">
+  <strong>🔗 Access Links:</strong><br>
+  • <a href="#" style="color:#007acc;">Port Analytics Dashboard</a><br>
+  • <a href="#" style="color:#007acc;">Vessel Tracking Dashboard</a><br>
+  • <a href="#" style="color:#007acc;">Financial Reports Dashboard</a>
+</div>`;
+    addBubble(result, 'bot');
+  }, 120);
+}
+
+/* -------- Carbon Analysis Quick Action -------- */
+function askCarbonAnalysis() {
+  const query = "Analyze carbon emissions for this month";
+  
+  // Add user message
+  addBubble(query, 'user');
+  
+  // Process carbon analysis
+  setTimeout(() => {
+    const result = `🌍 **Carbon Analysis**<br><br>
+<div style="background:#e8f5e8;padding:15px;border-radius:8px;margin:10px 0;border-left:4px solid #4caf50;">
+  <h3 style="margin:0 0 10px 0;color:#2e7d32;">📊 Monthly Carbon Emissions</h3>
+  <strong>Total CO₂ Emissions:</strong> 2,450 tons<br>
+  <strong>Target:</strong> 2,200 tons<br>
+  <strong>Variance:</strong> +11.4% (Over target)<br>
+  <strong>Trend:</strong> 📈 Increasing
+</div>
+<div style="background:#fff3e0;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #ff9800;">
+  <strong>🎯 Key Sources:</strong><br>
+  • Vessel Operations: 1,850 tons (75.5%)<br>
+  • Port Equipment: 320 tons (13.1%)<br>
+  • Ground Transport: 280 tons (11.4%)
+</div>
+<div style="background:#e3f2fd;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #2196f3;">
+  <strong>💡 Recommendations:</strong><br>
+  • Implement fuel-efficient routing<br>
+  • Upgrade to electric port equipment<br>
+  • Optimize vessel speeds<br>
+  • Use alternative fuels
+</div>`;
+    addBubble(result, 'bot');
+  }, 120);
+}
+
+/* -------- Port Status Quick Action -------- */
+function askPortStatus() {
+  const query = "What's the current port status?";
+  
+  // Add user message
+  addBubble(query, 'user');
+  
+  // Process port status
+  setTimeout(() => {
+    const result = `⚓ **Port Status**<br><br>
+<div style="background:#e8f5e8;padding:15px;border-radius:8px;margin:10px 0;border-left:4px solid #4caf50;">
+  <h3 style="margin:0 0 10px 0;color:#2e7d32;">🌊 Current Port Conditions</h3>
+  <strong>Overall Status:</strong> 🟢 Operational<br>
+  <strong>Weather:</strong> Clear, 15°C<br>
+  <strong>Wind:</strong> 8 knots NW<br>
+  <strong>Visibility:</strong> 10+ miles<br>
+  <strong>Tide:</strong> High (+2.1m)
+</div>
+<div style="background:#e3f2fd;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #2196f3;">
+  <strong>🚢 Berth Availability:</strong><br>
+  • Berth 1: 🟢 Available<br>
+  • Berth 2: 🔴 Occupied (MSC LORETO)<br>
+  • Berth 3: 🟡 Maintenance<br>
+  • Berth 4: 🟢 Available<br>
+  • Berth 5: 🟢 Available
+</div>
+<div style="background:#fff3e0;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #ff9800;">
+  <strong>⚠️ Alerts:</strong><br>
+  • Berth 3 maintenance until 18:00<br>
+  • Expected vessel arrival at 16:30<br>
+  • Crane 2 scheduled maintenance tomorrow
+</div>`;
+    addBubble(result, 'bot');
+  }, 120);
+}
+
+/* -------- Vessel Schedule Quick Action -------- */
+function askVesselSchedule() {
+  const query = "Show me today's vessel schedule";
+  
+  // Add user message
+  addBubble(query, 'user');
+  
+  // Process vessel schedule
+  setTimeout(() => {
+    const result = `🚢 **Vessel Schedule**<br><br>
+<div style="background:#e8f5e8;padding:15px;border-radius:8px;margin:10px 0;border-left:4px solid #4caf50;">
+  <h3 style="margin:0 0 10px 0;color:#2e7d32;">📅 Today's Schedule</h3>
+  <strong>Date:</strong> ${new Date().toLocaleDateString()}<br>
+  <strong>Total Vessels:</strong> 8 scheduled<br>
+  <strong>Status:</strong> On schedule
+</div>
+<div style="background:#e3f2fd;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #2196f3;">
+  <strong>🕐 Arrivals:</strong><br>
+  • 08:30 - MSC LORETO (Berth 2)<br>
+  • 12:15 - EVER GIVEN (Berth 4)<br>
+  • 16:30 - COSCO SHIPPING (Berth 1)<br>
+  • 20:45 - MAERSK SINGAPORE (Berth 5)
+</div>
+<div style="background:#fff3e0;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #ff9800;">
+  <strong>🚪 Departures:</strong><br>
+  • 10:00 - HAPAG LLOYD BERLIN<br>
+  • 14:30 - CMA CGM MARCO POLO<br>
+  • 18:00 - OOCL HONG KONG<br>
+  • 22:15 - YANG MING UNIVERSE
+</div>`;
+    addBubble(result, 'bot');
+  }, 120);
+}
+
+/* -------- Cost Optimization Quick Action -------- */
+function askCostOptimization() {
+  const query = "Analyze cost optimization opportunities";
+  
+  // Add user message
+  addBubble(query, 'user');
+  
+  // Process cost optimization
+  setTimeout(() => {
+    const result = `💰 **Cost Optimization Analysis**<br><br>
+<div style="background:#e8f5e8;padding:15px;border-radius:8px;margin:10px 0;border-left:4px solid #4caf50;">
+  <h3 style="margin:0 0 10px 0;color:#2e7d32;">📊 Current Cost Analysis</h3>
+  <strong>Monthly Operating Cost:</strong> $2.4M<br>
+  <strong>Target Reduction:</strong> 15% ($360K)<br>
+  <strong>Potential Savings:</strong> $420K<br>
+  <strong>ROI:</strong> 175%
+</div>
+<div style="background:#e3f2fd;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #2196f3;">
+  <strong>🎯 Top Opportunities:</strong><br>
+  • Fuel Optimization: $180K savings<br>
+  • Berth Utilization: $120K savings<br>
+  • Labor Efficiency: $80K savings<br>
+  • Equipment Maintenance: $40K savings
+</div>
+<div style="background:#fff3e0;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #ff9800;">
+  <strong>💡 Implementation Plan:</strong><br>
+  • Phase 1: Fuel optimization (Month 1-2)<br>
+  • Phase 2: Berth scheduling (Month 3-4)<br>
+  • Phase 3: Labor optimization (Month 5-6)<br>
+  • Phase 4: Equipment upgrades (Month 7-8)
+</div>`;
+    addBubble(result, 'bot');
+  }, 120);
+}
+
+/* -------- Emergency Response Quick Action -------- */
+function askEmergencyResponse() {
+  const query = "Show emergency response procedures";
+  
+  // Add user message
+  addBubble(query, 'user');
+  
+  // Process emergency response
+  setTimeout(() => {
+    const result = `🚨 **Emergency Response**<br><br>
+<div style="background:#ffebee;padding:15px;border-radius:8px;margin:10px 0;border-left:4px solid #f44336;">
+  <h3 style="margin:0 0 10px 0;color:#c62828;">⚠️ Emergency Procedures</h3>
+  <strong>Emergency Hotline:</strong> +65 9999-8888<br>
+  <strong>Response Time:</strong> < 15 minutes<br>
+  <strong>Status:</strong> 🟢 All systems operational<br>
+  <strong>Last Drill:</strong> 2024-10-15
+</div>
+<div style="background:#e3f2fd;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #2196f3;">
+  <strong>📞 Emergency Contacts:</strong><br>
+  • Port Control: Ext. 911<br>
+  • Fire Department: Ext. 999<br>
+  • Medical Emergency: Ext. 995<br>
+  • Security: Ext. 888<br>
+  • Environmental: Ext. 777
+</div>
+<div style="background:#fff3e0;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #ff9800;">
+  <strong>🔄 Response Teams:</strong><br>
+  • Incident Commander: John Smith<br>
+  • Safety Officer: Sarah Johnson<br>
+  • Communications: Mike Chen<br>
+  • Logistics: Lisa Wang<br>
+  • Environmental: David Lee
+</div>`;
+    addBubble(result, 'bot');
+  }, 120);
+}
+
+/* -------- Compliance Check Quick Action -------- */
+function askComplianceCheck() {
+  const query = "Run compliance check for all operations";
+  
+  // Add user message
+  addBubble(query, 'user');
+  
+  // Process compliance check
+  setTimeout(() => {
+    const result = `✅ **Compliance Check**<br><br>
+<div style="background:#e8f5e8;padding:15px;border-radius:8px;margin:10px 0;border-left:4px solid #4caf50;">
+  <h3 style="margin:0 0 10px 0;color:#2e7d32;">📋 Compliance Status</h3>
+  <strong>Overall Compliance:</strong> 🟢 98.5%<br>
+  <strong>Last Audit:</strong> 2024-10-10<br>
+  <strong>Next Audit:</strong> 2024-11-10<br>
+  <strong>Critical Issues:</strong> 0
+</div>
+<div style="background:#e3f2fd;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #2196f3;">
+  <strong>📊 Compliance Areas:</strong><br>
+  • Safety Standards: ✅ 100%<br>
+  • Environmental: ✅ 98%<br>
+  • Security: ✅ 99%<br>
+  • Labor Standards: ✅ 97%<br>
+  • Documentation: ✅ 99%
+</div>
+<div style="background:#fff3e0;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #ff9800;">
+  <strong>⚠️ Minor Issues:</strong><br>
+  • Training records need updating<br>
+  • Safety equipment inspection due<br>
+  • Environmental monitoring calibration<br>
+  • Documentation review pending
+</div>`;
+    addBubble(result, 'bot');
+  }, 120);
+}
+
+/* -------- Cross-Port Learning Engine (EchoNet) Quick Action -------- */
+function askCrossPortLearning() {
+  const query = "Apply Antwerp's fuel-saving strategy to Tuas";
+  
+  // Add user message
+  addBubble(query, 'user');
+  
+  // Process cross-port learning
+  setTimeout(() => {
+    const result = `🌐 **Cross-Port Learning Engine (EchoNet)**<br><br>
+<div style="background:#e8f5e8;padding:15px;border-radius:8px;margin:10px 0;border-left:4px solid #4caf50;">
+  <h3 style="margin:0 0 10px 0;color:#2e7d32;">🔄 Best Practice Transfer</h3>
+  <strong>Source Port:</strong> Antwerp<br>
+  <strong>Target Port:</strong> Tuas<br>
+  <strong>Strategy:</strong> Fuel-saving optimization<br>
+  <strong>Success Rate:</strong> 95% (proven at 8 ports)
+</div>
+<div style="background:#e3f2fd;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #2196f3;">
+  <strong>📊 Antwerp's Strategy:</strong><br>
+  • Dynamic speed optimization: 12% fuel savings<br>
+  • Berth allocation algorithm: 8% efficiency gain<br>
+  • Weather-based routing: 15% reduction in delays<br>
+  • Vessel coordination system: 20% faster turnaround
+</div>
+<div style="background:#fff3e0;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #ff9800;">
+  <strong>🎯 Implementation Plan for Tuas:</strong><br>
+  • Phase 1: Speed optimization (Week 1-2)<br>
+  • Phase 2: Berth algorithm deployment (Week 3-4)<br>
+  • Phase 3: Weather integration (Week 5-6)<br>
+  • Phase 4: Full coordination system (Week 7-8)<br>
+  <strong>Expected Results:</strong> 10-15% fuel savings, 5-8% efficiency gain
+</div>
+<div style="background:#f3e5f5;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #9c27b0;">
+  <strong>🔗 Learning Network:</strong><br>
+  • Connected Ports: 24 globally<br>
+  • Active Strategies: 156 best practices<br>
+  • Success Stories: 342 implementations<br>
+  • Real-time Updates: Every 4 hours
+</div>`;
+    addBubble(result, 'bot');
+  }, 120);
+}
+
+/* -------- Sustainability AI (Harmony) Quick Action -------- */
+function askSustainabilityAI() {
+  const query = "Cut carbon by 15% with only 10-minute delay";
+  
+  // Add user message
+  addBubble(query, 'user');
+  
+  // Process sustainability AI
+  setTimeout(() => {
+    const result = `🌱 **Sustainability AI (Harmony)**<br><br>
+<div style="background:#e8f5e8;padding:15px;border-radius:8px;margin:10px 0;border-left:4px solid #4caf50;">
+  <h3 style="margin:0 0 10px 0;color:#2e7d32;">⚖️ Efficiency vs Carbon Balance</h3>
+  <strong>Target:</strong> 15% carbon reduction<br>
+  <strong>Acceptable Delay:</strong> ≤10 minutes<br>
+  <strong>Current Carbon:</strong> 2,450 tons/month<br>
+  <strong>Target Carbon:</strong> 2,083 tons/month<br>
+  <strong>Savings:</strong> 367 tons/month
+</div>
+<div style="background:#e3f2fd;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #2196f3;">
+  <strong>🎯 Optimized Strategy:</strong><br>
+  • Vessel Speed Reduction: 8% carbon cut (5 min delay)<br>
+  • Electric Crane Usage: 4% carbon cut (2 min delay)<br>
+  • Solar Power Integration: 2% carbon cut (1 min delay)<br>
+  • Route Optimization: 1% carbon cut (2 min delay)<br>
+  <strong>Total Impact:</strong> 15% carbon reduction, 10 min delay
+</div>
+<div style="background:#fff3e0;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #ff9800;">
+  <strong>📊 Environmental Metrics:</strong><br>
+  • CO₂ Reduction: 367 tons/month<br>
+  • Energy Savings: 1,200 MWh/month<br>
+  • Fuel Efficiency: +18% improvement<br>
+  • Green Score: 85/100 (excellent)
+</div>
+<div style="background:#f3e5f5;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #9c27b0;">
+  <strong>🔄 Real-time Monitoring:</strong><br>
+  • Carbon Tracking: Live updates every 15 min<br>
+  • Efficiency Alerts: Automatic optimization<br>
+  • Performance Dashboard: 24/7 monitoring<br>
+  • Sustainability Score: Real-time calculation
+</div>`;
+    addBubble(result, 'bot');
+  }, 120);
+}
+
+/* -------- Conversational Power BI Quick Action -------- */
+function askConversationalPowerBI() {
+  const query = "Why was Tuas delayed today?";
+  
+  // Add user message
+  addBubble(query, 'user');
+  
+  // Process conversational Power BI
+  setTimeout(() => {
+    const result = `💬 **Conversational Power BI**<br><br>
+<div style="background:#e8f5e8;padding:15px;border-radius:8px;margin:10px 0;border-left:4px solid #4caf50;">
+  <h3 style="margin:0 0 10px 0;color:#2e7d32;">📊 Tuas Delay Analysis</h3>
+  <strong>Date:</strong> ${new Date().toLocaleDateString()}<br>
+  <strong>Total Delays:</strong> 3 vessels<br>
+  <strong>Average Delay:</strong> 2.3 hours<br>
+  <strong>Primary Cause:</strong> Weather conditions
+</div>
+<div style="background:#e3f2fd;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #2196f3;">
+  <strong>🌊 Weather Impact:</strong><br>
+  • Wind Speed: 25 knots (above 20 knot limit)<br>
+  • Visibility: 2 miles (below 3 mile minimum)<br>
+  • Wave Height: 3.2m (above 2.5m safe limit)<br>
+  • Weather Delay: 85% of total delays
+</div>
+<div style="background:#fff3e0;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #ff9800;">
+  <strong>📈 Performance Comparison:</strong><br>
+  • Today vs Yesterday: +45% delays<br>
+  • Today vs Last Week: +23% delays<br>
+  • Today vs Last Month: +12% delays<br>
+  • Weather Severity: High (Level 3/5)
+</div>
+<div style="background:#f3e5f5;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #9c27b0;">
+  <strong>🔍 Detailed Breakdown:</strong><br>
+  • MSC LORETO: 3.2h delay (weather)<br>
+  • EVER GIVEN: 1.8h delay (weather)<br>
+  • COSCO SHIPPING: 1.9h delay (weather)<br>
+  • Total Impact: 6.9 hours lost
+</div>
+<div style="background:#e1f5fe;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #03a9f4;">
+  <strong>💡 Recommendations:</strong><br>
+  • Monitor weather forecasts 24h ahead<br>
+  • Implement dynamic scheduling<br>
+  • Consider alternative berth assignments<br>
+  • Activate weather contingency plans
+</div>`;
+    addBubble(result, 'bot');
+  }, 120);
+}
+
+/* -------- Predictive Analytics Response Generator -------- */
+function generatePredictiveAnalyticsResponse() {
+  try {
+    const currentDate = new Date();
+    const nextWeek = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+    
+    // Generate realistic predictive data for Asia-Europe route
+    const forecastData = {
+      route: 'Asia–Europe',
+      period: 'Next Week',
+      delayRisk: {
+        low: Math.floor(Math.random() * 20) + 10,      // 10-30%
+        medium: Math.floor(Math.random() * 30) + 25,  // 25-55%
+        high: Math.floor(Math.random() * 25) + 15     // 15-40%
+      },
+      carbonForecast: {
+        current: (Math.random() * 0.5 + 0.3).toFixed(2),  // 0.3-0.8 tons CO₂/NM
+        predicted: (Math.random() * 0.6 + 0.2).toFixed(2), // 0.2-0.8 tons CO₂/NM
+        trend: Math.random() > 0.5 ? 'increasing' : 'decreasing'
+      },
+      weatherFactors: {
+        stormRisk: Math.floor(Math.random() * 40) + 20,  // 20-60%
+        windImpact: Math.floor(Math.random() * 30) + 10,  // 10-40%
+        visibility: Math.floor(Math.random() * 20) + 80   // 80-100%
+      },
+      portCongestion: {
+        singapore: Math.floor(Math.random() * 30) + 20,   // 20-50%
+        rotterdam: Math.floor(Math.random() * 35) + 25,  // 25-60%
+        hamburg: Math.floor(Math.random() * 25) + 15     // 15-40%
+      },
+      recommendations: [
+        'Consider alternative routing via Suez Canal',
+        'Implement dynamic speed optimization',
+        'Coordinate with port authorities for berth scheduling',
+        'Monitor weather patterns closely',
+        'Prepare contingency plans for high-risk periods'
+      ]
+    };
+    
+    const totalRisk = forecastData.delayRisk.low + forecastData.delayRisk.medium + forecastData.delayRisk.high;
+    const avgDelayRisk = ((forecastData.delayRisk.medium + forecastData.delayRisk.high * 2) / totalRisk * 100).toFixed(1);
+    
+    return `🔮 **AI Predictive Analytics Forecast**
+📅 **Period:** ${currentDate.toLocaleDateString()} - ${nextWeek.toLocaleDateString()}
+🛣️ **Route:** ${forecastData.route}
+
+📊 **Delay Risk Assessment:**
+• **Low Risk:** ${forecastData.delayRisk.low}% (0-2 hours delay)
+• **Medium Risk:** ${forecastData.delayRisk.medium}% (2-6 hours delay)  
+• **High Risk:** ${forecastData.delayRisk.high}% (6+ hours delay)
+• **Overall Risk Score:** ${avgDelayRisk}% (Weighted Average)
+
+🌍 **Environmental Forecast:**
+• **Current CO₂:** ${forecastData.carbonForecast.current} tons/NM
+• **Predicted CO₂:** ${forecastData.carbonForecast.predicted} tons/NM
+• **Trend:** ${forecastData.carbonForecast.trend === 'increasing' ? '📈 Increasing' : '📉 Decreasing'}
+
+🌦️ **Weather Impact Analysis:**
+• **Storm Risk:** ${forecastData.weatherFactors.stormRisk}%
+• **Wind Impact:** ${forecastData.weatherFactors.windImpact}%
+• **Visibility:** ${forecastData.weatherFactors.visibility}%
+
+🏢 **Port Congestion Forecast:**
+• **Singapore:** ${forecastData.portCongestion.singapore}% congestion
+• **Rotterdam:** ${forecastData.portCongestion.rotterdam}% congestion
+• **Hamburg:** ${forecastData.portCongestion.hamburg}% congestion
+
+⚠️ **Key Risk Factors:**
+• Weather patterns show ${forecastData.weatherFactors.stormRisk > 40 ? 'elevated' : 'moderate'} storm activity
+• Port congestion levels are ${forecastData.portCongestion.rotterdam > 50 ? 'high' : 'manageable'}
+• Carbon efficiency trend is ${forecastData.carbonForecast.trend}
+
+💡 **AI Recommendations:**
+${forecastData.recommendations.map(rec => `• ${rec}`).join('\n')}
+
+🎯 **Confidence Level:** ${Math.floor(Math.random() * 20) + 75}% (Based on historical data and current conditions)
+
+📈 **Next Update:** ${new Date(currentDate.getTime() + 24 * 60 * 60 * 1000).toLocaleDateString()}`;
+  } catch (error) {
+    console.error('Error generating predictive analytics response:', error);
+    return `🔮 **AI Predictive Analytics Forecast**<br><br><div style="background:#f0f8ff;padding:12px;border-radius:8px;margin:8px 0;border-left:4px solid #007acc;">Unable to generate forecast at this time. Please try again later.</div>`;
+  }
+}
+
+
+/* -------- Auto Report Generator Response Generator -------- */
+function generateAutoReportResponse(query) {
+  try {
+    const currentDate = new Date();
+    const queryLower = query.toLowerCase();
+    
+    // Determine report type and period
+    let reportType = 'berth utilization';
+    let period = 'weekly';
+    let periodText = 'This Week';
+    
+    if (queryLower.includes('daily')) {
+      period = 'daily';
+      periodText = 'Today';
+    } else if (queryLower.includes('monthly')) {
+      period = 'monthly';
+      periodText = 'This Month';
+    }
+    
+    if (queryLower.includes('berth')) {
+      reportType = 'berth utilization';
+    } else if (queryLower.includes('delay') || queryLower.includes('performance')) {
+      reportType = 'performance';
+    } else if (queryLower.includes('carbon') || queryLower.includes('emission')) {
+      reportType = 'carbon footprint';
+    } else if (queryLower.includes('financial') || queryLower.includes('cost')) {
+      reportType = 'financial';
+    }
+    
+    // Generate realistic KPI data
+    const kpiData = generateKPIData(reportType, period);
+    
+    // Generate report content
+    let response = `📊 **Auto Report Generator - ${periodText} ${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Report**<br><br>
+📅 **Report Period:** ${getPeriodRange(period)}<br>
+🕒 **Generated:** ${currentDate.toLocaleString()}<br>
+📋 **Report Type:** ${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Analysis<br><br>`;
+    
+    // Executive Summary
+    response += `<div style="background:#e8f5e8;padding:15px;border-radius:8px;margin:10px 0;border-left:4px solid #4caf50;">
+      <h3 style="margin:0 0 10px 0;color:#2e7d32;">📈 Executive Summary</h3>
+      <strong>Overall Performance:</strong> ${kpiData.overallPerformance}<br>
+      <strong>Key Achievement:</strong> ${kpiData.keyAchievement}<br>
+      <strong>Primary Concern:</strong> ${kpiData.primaryConcern}<br>
+      <strong>Recommendation:</strong> ${kpiData.recommendation}
+    </div>`;
+    
+    // Key Performance Indicators
+    response += `<div style="background:#e3f2fd;padding:15px;border-radius:8px;margin:10px 0;border-left:4px solid #2196f3;">
+      <h3 style="margin:0 0 10px 0;color:#1976d2;">📊 Key Performance Indicators</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">
+        <div style="background:white;padding:10px;border-radius:6px;text-align:center;">
+          <div style="font-size:24px;font-weight:bold;color:#2196f3;">${kpiData.kpis.utilization}%</div>
+          <div style="font-size:12px;color:#666;">Berth Utilization</div>
+        </div>
+        <div style="background:white;padding:10px;border-radius:6px;text-align:center;">
+          <div style="font-size:24px;font-weight:bold;color:#4caf50;">${kpiData.kpis.efficiency}%</div>
+          <div style="font-size:12px;color:#666;">Operational Efficiency</div>
+        </div>
+        <div style="background:white;padding:10px;border-radius:6px;text-align:center;">
+          <div style="font-size:24px;font-weight:bold;color:#ff9800;">${kpiData.kpis.delayRate}%</div>
+          <div style="font-size:12px;color:#666;">Delay Rate</div>
+        </div>
+        <div style="background:white;padding:10px;border-radius:6px;text-align:center;">
+          <div style="font-size:24px;font-weight:bold;color:#9c27b0;">${kpiData.kpis.customerSatisfaction}%</div>
+          <div style="font-size:12px;color:#666;">Customer Satisfaction</div>
+        </div>
+      </div>
+    </div>`;
+    
+    // Detailed Metrics
+    response += `<div style="background:#fff3e0;padding:15px;border-radius:8px;margin:10px 0;border-left:4px solid #ff9800;">
+      <h3 style="margin:0 0 10px 0;color:#f57c00;">📋 Detailed Metrics</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:15px;">
+        <div>
+          <strong>🚢 Vessel Operations:</strong><br>
+          • Total Vessels: ${kpiData.metrics.totalVessels}<br>
+          • On-Time Arrivals: ${kpiData.metrics.onTimeArrivals}%<br>
+          • Average Turnaround: ${kpiData.metrics.avgTurnaround}h<br>
+          • Peak Hour Utilization: ${kpiData.metrics.peakUtilization}%
+        </div>
+        <div>
+          <strong>📦 Cargo Handling:</strong><br>
+          • Total Containers: ${kpiData.metrics.totalContainers.toLocaleString()}<br>
+          • Loading Efficiency: ${kpiData.metrics.loadingEfficiency}%<br>
+          • Unloading Efficiency: ${kpiData.metrics.unloadingEfficiency}%<br>
+          • Yard Occupancy: ${kpiData.metrics.yardOccupancy}%
+        </div>
+        <div>
+          <strong>🌍 Environmental:</strong><br>
+          • CO₂ Emissions: ${kpiData.metrics.co2Emissions} tons<br>
+          • Fuel Consumption: ${kpiData.metrics.fuelConsumption}L<br>
+          • Green Operations: ${kpiData.metrics.greenOperations}%<br>
+          • Carbon Efficiency: ${kpiData.metrics.carbonEfficiency}%
+        </div>
+        <div>
+          <strong>💰 Financial:</strong><br>
+          • Revenue: $${kpiData.metrics.revenue.toLocaleString()}<br>
+          • Operating Cost: $${kpiData.metrics.operatingCost.toLocaleString()}<br>
+          • Profit Margin: ${kpiData.metrics.profitMargin}%<br>
+          • Cost per TEU: $${kpiData.metrics.costPerTEU}
+        </div>
+      </div>
+    </div>`;
+    
+    // Trends and Analysis
+    response += `<div style="background:#f3e5f5;padding:15px;border-radius:8px;margin:10px 0;border-left:4px solid #9c27b0;">
+      <h3 style="margin:0 0 10px 0;color:#7b1fa2;">📈 Trends & Analysis</h3>
+      <strong>📊 Performance Trends:</strong><br>
+      • ${kpiData.trends.utilizationTrend}<br>
+      • ${kpiData.trends.efficiencyTrend}<br>
+      • ${kpiData.trends.delayTrend}<br>
+      • ${kpiData.trends.customerTrend}<br><br>
+      
+      <strong>🎯 Key Insights:</strong><br>
+      • ${kpiData.insights.insight1}<br>
+      • ${kpiData.insights.insight2}<br>
+      • ${kpiData.insights.insight3}
+    </div>`;
+    
+    // Recommendations
+    response += `<div style="background:#e0f2f1;padding:15px;border-radius:8px;margin:10px 0;border-left:4px solid #4caf50;">
+      <h3 style="margin:0 0 10px 0;color:#2e7d32;">💡 Recommendations</h3>
+      <strong>🚀 Immediate Actions:</strong><br>
+      • ${kpiData.recommendations.immediate1}<br>
+      • ${kpiData.recommendations.immediate2}<br><br>
+      
+      <strong>📋 Strategic Initiatives:</strong><br>
+      • ${kpiData.recommendations.strategic1}<br>
+      • ${kpiData.recommendations.strategic2}<br>
+      • ${kpiData.recommendations.strategic3}
+    </div>`;
+    
+    // Footer
+    response += `<div style="background:#f5f5f5;padding:10px;border-radius:6px;margin:15px 0;text-align:center;font-size:12px;color:#666;">
+      📊 <strong>Auto Report Generator</strong> | Generated by Maritime AI Assistant | Next Report: ${getNextReportDate(period)}
+    </div>`;
+    
+    return response;
+  } catch (error) {
+    console.error('Error generating auto report:', error);
+    return `📊 **Auto Report Generator**<br><br><div style="background:#f0f8ff;padding:12px;border-radius:8px;margin:8px 0;border-left:4px solid #007acc;">Unable to generate report at this time. Please try again later.</div>`;
+  }
+}
+
+// Helper functions for Auto Report Generator
+function generateKPIData(reportType, period) {
+  const baseUtilization = Math.floor(Math.random() * 20) + 70; // 70-90%
+  const baseEfficiency = Math.floor(Math.random() * 15) + 80; // 80-95%
+  const baseDelayRate = Math.floor(Math.random() * 10) + 5; // 5-15%
+  const baseSatisfaction = Math.floor(Math.random() * 10) + 85; // 85-95%
+  
+  return {
+    overallPerformance: baseUtilization > 80 ? 'Excellent' : baseUtilization > 70 ? 'Good' : 'Needs Improvement',
+    keyAchievement: `Achieved ${baseUtilization}% berth utilization with ${baseEfficiency}% operational efficiency`,
+    primaryConcern: baseDelayRate > 10 ? 'Delay rates above target threshold' : 'Maintaining current performance levels',
+    recommendation: baseDelayRate > 10 ? 'Implement proactive delay prevention measures' : 'Continue current operational excellence',
+    
+    kpis: {
+      utilization: baseUtilization,
+      efficiency: baseEfficiency,
+      delayRate: baseDelayRate,
+      customerSatisfaction: baseSatisfaction
+    },
+    
+    metrics: {
+      totalVessels: Math.floor(Math.random() * 50) + 100,
+      onTimeArrivals: Math.floor(Math.random() * 15) + 80,
+      avgTurnaround: (Math.random() * 8 + 12).toFixed(1),
+      peakUtilization: Math.floor(Math.random() * 20) + 75,
+      totalContainers: Math.floor(Math.random() * 10000) + 50000,
+      loadingEfficiency: Math.floor(Math.random() * 10) + 85,
+      unloadingEfficiency: Math.floor(Math.random() * 10) + 88,
+      yardOccupancy: Math.floor(Math.random() * 20) + 60,
+      co2Emissions: (Math.random() * 100 + 200).toFixed(1),
+      fuelConsumption: Math.floor(Math.random() * 5000) + 10000,
+      greenOperations: Math.floor(Math.random() * 20) + 70,
+      carbonEfficiency: Math.floor(Math.random() * 15) + 80,
+      revenue: Math.floor(Math.random() * 500000) + 2000000,
+      operatingCost: Math.floor(Math.random() * 300000) + 1200000,
+      profitMargin: (Math.random() * 10 + 15).toFixed(1),
+      costPerTEU: Math.floor(Math.random() * 50) + 200
+    },
+    
+    trends: {
+      utilizationTrend: `Berth utilization ${Math.random() > 0.5 ? 'increased' : 'decreased'} by ${(Math.random() * 5 + 2).toFixed(1)}% compared to last period`,
+      efficiencyTrend: `Operational efficiency ${Math.random() > 0.5 ? 'improved' : 'declined'} by ${(Math.random() * 3 + 1).toFixed(1)}%`,
+      delayTrend: `Delay rates ${Math.random() > 0.5 ? 'increased' : 'decreased'} by ${(Math.random() * 2 + 0.5).toFixed(1)}%`,
+      customerTrend: `Customer satisfaction ${Math.random() > 0.5 ? 'rose' : 'fell'} by ${(Math.random() * 3 + 1).toFixed(1)}%`
+    },
+    
+    insights: {
+      insight1: `Peak utilization occurs during ${['morning', 'afternoon', 'evening'][Math.floor(Math.random() * 3)]} hours`,
+      insight2: `${reportType} performance is ${Math.random() > 0.5 ? 'above' : 'below'} industry benchmarks`,
+      insight3: `Weather conditions ${Math.random() > 0.5 ? 'positively' : 'negatively'} impacted operations this period`
+    },
+    
+    recommendations: {
+      immediate1: 'Optimize berth allocation during peak hours',
+      immediate2: 'Implement real-time monitoring for delay prevention',
+      strategic1: 'Invest in automation technology for improved efficiency',
+      strategic2: 'Develop contingency plans for weather-related disruptions',
+      strategic3: 'Enhance customer communication protocols'
+    }
+  };
+}
+
+function getPeriodRange(period) {
+  const now = new Date();
+  switch (period) {
+    case 'daily':
+      return now.toLocaleDateString();
+    case 'weekly':
+      const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      return `${weekStart.toLocaleDateString()} - ${now.toLocaleDateString()}`;
+    case 'monthly':
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      return `${monthStart.toLocaleDateString()} - ${now.toLocaleDateString()}`;
+    default:
+      return now.toLocaleDateString();
+  }
+}
+
+function getNextReportDate(period) {
+  const now = new Date();
+  switch (period) {
+    case 'daily':
+      return new Date(now.getTime() + 24 * 60 * 60 * 1000).toLocaleDateString();
+    case 'weekly':
+      return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString();
+    case 'monthly':
+      return new Date(now.getFullYear(), now.getMonth() + 1, 1).toLocaleDateString();
+    default:
+      return new Date(now.getTime() + 24 * 60 * 60 * 1000).toLocaleDateString();
+  }
+}
+
+/* -------- RAG Historical Memory Response Generator -------- */
+function generateRAGMemoryResponse(query) {
+  try {
+    const currentDate = new Date();
+    
+    // Historical case database
+    const historicalCases = [
+      {
+        id: 'CASE-2023-001',
+        date: '2023-03-15',
+        location: 'Tuas Port',
+        issue: 'Container handling delay',
+        duration: '18 hours',
+        cause: 'Crane malfunction during peak hours',
+        solution: 'Deployed backup crane system and implemented staggered loading schedule',
+        effectiveness: '95%',
+        lessonsLearned: 'Always maintain backup equipment and have contingency plans for peak periods'
+      },
+      {
+        id: 'CASE-2023-002',
+        date: '2023-07-22',
+        location: 'Singapore Port',
+        issue: 'Vessel berthing delay',
+        duration: '12 hours',
+        cause: 'Weather conditions and port congestion',
+        solution: 'Coordinated with weather services and implemented dynamic berth allocation',
+        effectiveness: '88%',
+        lessonsLearned: 'Real-time weather monitoring and flexible berth management are crucial'
+      },
+      {
+        id: 'CASE-2023-003',
+        date: '2023-11-08',
+        location: 'Rotterdam Port',
+        issue: 'Customs clearance delay',
+        duration: '24 hours',
+        cause: 'Documentation discrepancies',
+        solution: 'Implemented automated document verification and pre-clearance procedures',
+        effectiveness: '92%',
+        lessonsLearned: 'Digital documentation and pre-clearance can significantly reduce delays'
+      },
+      {
+        id: 'CASE-2024-001',
+        date: '2024-01-15',
+        location: 'Hamburg Port',
+        issue: 'Cargo handling delay',
+        duration: '16 hours',
+        cause: 'Staff shortage during peak season',
+        solution: 'Deployed temporary workforce and optimized shift scheduling',
+        effectiveness: '90%',
+        lessonsLearned: 'Predictive workforce planning prevents seasonal delays'
+      },
+      {
+        id: 'CASE-2024-002',
+        date: '2024-05-20',
+        location: 'Shanghai Port',
+        issue: 'Container yard congestion',
+        duration: '20 hours',
+        cause: 'Inbound/outbound traffic imbalance',
+        solution: 'Implemented dynamic container repositioning and optimized truck routing',
+        effectiveness: '87%',
+        lessonsLearned: 'Real-time traffic management and container repositioning are essential'
+      }
+    ];
+    
+    // Extract keywords from query
+    const queryLower = query.toLowerCase();
+    let matchedCases = [];
+    
+    // Find relevant cases based on query
+    if (queryLower.includes('tuas')) {
+      matchedCases = historicalCases.filter(case_ => case_.location.toLowerCase().includes('tuas'));
+    } else if (queryLower.includes('delay')) {
+      matchedCases = historicalCases.filter(case_ => 
+        case_.issue.toLowerCase().includes('delay') || 
+        case_.issue.toLowerCase().includes('berthing') ||
+        case_.issue.toLowerCase().includes('handling')
+      );
+    } else if (queryLower.includes('similar')) {
+      // Return most recent cases as "similar"
+      matchedCases = historicalCases.slice(0, 3);
+    } else {
+      // Default: return most relevant cases
+      matchedCases = historicalCases.slice(0, 2);
+    }
+    
+    // If no specific matches, return general cases
+    if (matchedCases.length === 0) {
+      matchedCases = historicalCases.slice(0, 2);
+    }
+    
+    // Generate response
+    let response = `🧠 **RAG Historical Memory Analysis**<br><br>
+📅 **Query:** ${query}<br>
+🔍 **Found ${matchedCases.length} similar case(s) from historical database**<br><br>`;
+    
+    matchedCases.forEach((case_, index) => {
+      response += `<div style="background:#f8f9fa;padding:15px;border-radius:8px;margin:10px 0;border-left:4px solid #28a745;">
+        <h4 style="margin:0 0 10px 0;color:#28a745;">📋 Case ${case_.id}</h4>
+        <strong>📅 Date:</strong> ${case_.date}<br>
+        <strong>📍 Location:</strong> ${case_.location}<br>
+        <strong>⚠️ Issue:</strong> ${case_.issue}<br>
+        <strong>⏱️ Duration:</strong> ${case_.duration}<br>
+        <strong>🔍 Root Cause:</strong> ${case_.cause}<br>
+        <strong>✅ Solution Applied:</strong> ${case_.solution}<br>
+        <strong>📊 Effectiveness:</strong> ${case_.effectiveness}<br>
+        <strong>💡 Key Learning:</strong> ${case_.lessonsLearned}
+      </div>`;
+    });
+    
+    response += `<div style="background:#e3f2fd;padding:12px;border-radius:8px;margin:15px 0;border-left:4px solid #2196f3;">
+      <strong>🎯 Recommended Actions:</strong><br>
+      • Review similar cases for proven solutions<br>
+      • Implement preventive measures based on historical patterns<br>
+      • Consider contingency plans for identified risk factors<br>
+      • Monitor key performance indicators from successful cases
+    </div>
+    
+    <div style="background:#fff3e0;padding:12px;border-radius:8px;margin:15px 0;border-left:4px solid #ff9800;">
+      <strong>📈 Success Metrics:</strong><br>
+      • Average resolution time: ${Math.floor(Math.random() * 8) + 12} hours<br>
+      • Success rate: ${Math.floor(Math.random() * 15) + 85}%<br>
+      • Cost savings: $${(Math.random() * 50000 + 10000).toFixed(0)} per incident<br>
+      • Customer satisfaction: ${Math.floor(Math.random() * 10) + 90}%
+    </div>
+    
+    <small style="color:#666;">💡 <strong>Note:</strong> This analysis is based on historical case studies. For real-time implementation, consult with operations teams and consider current conditions.</small>`;
+    
+    return response;
+  } catch (error) {
+    console.error('Error generating RAG memory response:', error);
+    return `🧠 **RAG Historical Memory**<br><br><div style="background:#f0f8ff;padding:12px;border-radius:8px;margin:8px 0;border-left:4px solid #007acc;">Unable to retrieve historical cases at this time. Please try again later.</div>`;
+  }
+}
+
+/* -------- Mock Analytics Report Generator -------- */
+function generateMockAnalyticsReport() {
+  try {
+    const currentDate = new Date();
+    const weekStart = new Date(currentDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+    
+    // Generate realistic mock data for Asian routes
+    const mockData = {
+      totalShipments: Math.floor(Math.random() * 50) + 150,
+      delayedShipments: Math.floor(Math.random() * 20) + 15,
+      onTimeShipments: 0,
+      averageDelay: (Math.random() * 8 + 2).toFixed(1),
+      routes: [
+        { name: 'Singapore → Shanghai', delays: Math.floor(Math.random() * 5) + 2, avgDelay: (Math.random() * 6 + 1).toFixed(1) },
+        { name: 'Hong Kong → Tokyo', delays: Math.floor(Math.random() * 4) + 1, avgDelay: (Math.random() * 5 + 0.5).toFixed(1) },
+        { name: 'Busan → Singapore', delays: Math.floor(Math.random() * 6) + 3, avgDelay: (Math.random() * 7 + 2).toFixed(1) },
+        { name: 'Shanghai → Los Angeles', delays: Math.floor(Math.random() * 8) + 5, avgDelay: (Math.random() * 10 + 3).toFixed(1) },
+        { name: 'Tokyo → Rotterdam', delays: Math.floor(Math.random() * 7) + 4, avgDelay: (Math.random() * 9 + 2).toFixed(1) }
+      ],
+      ports: [
+        { name: 'Singapore', congestion: Math.floor(Math.random() * 30) + 20, efficiency: Math.floor(Math.random() * 20) + 75 },
+        { name: 'Shanghai', congestion: Math.floor(Math.random() * 40) + 30, efficiency: Math.floor(Math.random() * 25) + 70 },
+        { name: 'Hong Kong', congestion: Math.floor(Math.random() * 25) + 15, efficiency: Math.floor(Math.random() * 15) + 80 },
+        { name: 'Tokyo', congestion: Math.floor(Math.random() * 35) + 25, efficiency: Math.floor(Math.random() * 20) + 75 },
+        { name: 'Busan', congestion: Math.floor(Math.random() * 20) + 10, efficiency: Math.floor(Math.random() * 10) + 85 }
+      ]
+    };
+    
+    mockData.onTimeShipments = mockData.totalShipments - mockData.delayedShipments;
+    const delayRate = ((mockData.delayedShipments / mockData.totalShipments) * 100).toFixed(1);
+    
+    return `📊 **Weekly Delay Analysis Report - Asian Routes**
+📅 **Period:** ${weekStart.toLocaleDateString()} - ${currentDate.toLocaleDateString()}
+
+📈 **Overall Performance:**
+• Total Shipments: ${mockData.totalShipments}
+• On-Time Deliveries: ${mockData.onTimeShipments} (${(100 - parseFloat(delayRate)).toFixed(1)}%)
+• Delayed Shipments: ${mockData.delayedShipments} (${delayRate}%)
+• Average Delay: ${mockData.averageDelay} hours
+
+🛣️ **Route Performance:**
+${mockData.routes.map(route => 
+  `• **${route.name}**: ${route.delays} delays, avg ${route.avgDelay}h delay`
+).join('\n')}
+
+🏢 **Port Congestion Analysis:**
+${mockData.ports.map(port => 
+  `• **${port.name}**: ${port.congestion}% congestion, ${port.efficiency}% efficiency`
+).join('\n')}
+
+⚠️ **Key Insights:**
+• Shanghai → Los Angeles route shows highest delay rates
+• Singapore port maintains good efficiency despite moderate congestion
+• Weather-related delays contributed to 35% of total delays
+• Recommended action: Optimize Shanghai port operations
+
+📋 **Recommendations:**
+1. Increase berth capacity at Shanghai port
+2. Implement predictive scheduling for weather delays
+3. Consider alternative routes for high-volume shipments
+4. Enhance communication protocols with port authorities
+
+🔄 **Next Report:** ${new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString()}`;
+  } catch (error) {
+    console.error('Error generating mock analytics report:', error);
+    return `📊 **Weekly Delay Analysis Report - Asian Routes**<br><br><div style="background:#f0f8ff;padding:12px;border-radius:8px;margin:8px 0;border-left:4px solid #007acc;">Unable to generate analytics report at this time. Please try again later.</div>`;
+  }
+}
+
+/* -------- Cross-Port Learning Engine Response Generator -------- */
+function generateCrossPortLearningResponse(query) {
+  try {
+    const queryLower = query.toLowerCase();
+    let sourcePort = 'Antwerp';
+    let targetPort = 'Tuas';
+    let strategy = 'fuel-saving optimization';
+    
+    // Extract ports and strategy from query
+    if(/antwerp/i.test(queryLower)) sourcePort = 'Antwerp';
+    if(/tuas/i.test(queryLower)) targetPort = 'Tuas';
+    if(/rotterdam/i.test(queryLower)) sourcePort = 'Rotterdam';
+    if(/singapore/i.test(queryLower)) targetPort = 'Singapore';
+    if(/fuel.*saving/i.test(queryLower)) strategy = 'fuel-saving optimization';
+    if(/efficiency/i.test(queryLower)) strategy = 'operational efficiency';
+    if(/safety/i.test(queryLower)) strategy = 'safety protocols';
+    
+    return `🌐 **Cross-Port Learning Engine (EchoNet)**<br><br>
+<div style="background:#e8f5e8;padding:15px;border-radius:8px;margin:10px 0;border-left:4px solid #4caf50;">
+  <h3 style="margin:0 0 10px 0;color:#2e7d32;">🔄 Best Practice Transfer</h3>
+  <strong>Source Port:</strong> ${sourcePort}<br>
+  <strong>Target Port:</strong> ${targetPort}<br>
+  <strong>Strategy:</strong> ${strategy}<br>
+  <strong>Success Rate:</strong> 95% (proven at 8 ports)
+</div>
+<div style="background:#e3f2fd;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #2196f3;">
+  <strong>📊 ${sourcePort}'s Strategy:</strong><br>
+  • Dynamic speed optimization: 12% fuel savings<br>
+  • Berth allocation algorithm: 8% efficiency gain<br>
+  • Weather-based routing: 15% reduction in delays<br>
+  • Vessel coordination system: 20% faster turnaround
+</div>
+<div style="background:#fff3e0;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #ff9800;">
+  <strong>🎯 Implementation Plan for ${targetPort}:</strong><br>
+  • Phase 1: Speed optimization (Week 1-2)<br>
+  • Phase 2: Berth algorithm deployment (Week 3-4)<br>
+  • Phase 3: Weather integration (Week 5-6)<br>
+  • Phase 4: Full coordination system (Week 7-8)<br>
+  <strong>Expected Results:</strong> 10-15% fuel savings, 5-8% efficiency gain
+</div>
+<div style="background:#f3e5f5;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #9c27b0;">
+  <strong>🔗 Learning Network:</strong><br>
+  • Connected Ports: 24 globally<br>
+  • Active Strategies: 156 best practices<br>
+  • Success Stories: 342 implementations<br>
+  • Real-time Updates: Every 4 hours
+</div>`;
+  } catch (error) {
+    console.error('Error generating cross-port learning response:', error);
+    return `🌐 **Cross-Port Learning Engine**<br><br><div style="background:#f0f8ff;padding:12px;border-radius:8px;margin:8px 0;border-left:4px solid #007acc;">Unable to process cross-port learning request at this time. Please try again later.</div>`;
+  }
+}
+
+/* -------- Sustainability AI Response Generator -------- */
+function generateSustainabilityAIResponse(query) {
+  try {
+    const queryLower = query.toLowerCase();
+    let carbonTarget = '15%';
+    let delayLimit = '10 minutes';
+    
+    // Extract targets from query
+    const carbonMatch = queryLower.match(/(\d+)%.*carbon|carbon.*(\d+)%/);
+    if (carbonMatch) {
+      carbonTarget = (carbonMatch[1] || carbonMatch[2]) + '%';
+    }
+    
+    const delayMatch = queryLower.match(/(\d+).*minute|minute.*(\d+)/);
+    if (delayMatch) {
+      delayLimit = (delayMatch[1] || delayMatch[2]) + ' minutes';
+    }
+    
+    const carbonValue = parseInt(carbonTarget);
+    const delayValue = parseInt(delayLimit);
+    
+    return `🌱 **Sustainability AI (Harmony)**<br><br>
+<div style="background:#e8f5e8;padding:15px;border-radius:8px;margin:10px 0;border-left:4px solid #4caf50;">
+  <h3 style="margin:0 0 10px 0;color:#2e7d32;">⚖️ Efficiency vs Carbon Balance</h3>
+  <strong>Target:</strong> ${carbonTarget} carbon reduction<br>
+  <strong>Acceptable Delay:</strong> ≤${delayLimit}<br>
+  <strong>Current Carbon:</strong> 2,450 tons/month<br>
+  <strong>Target Carbon:</strong> ${Math.round(2450 * (1 - carbonValue/100))} tons/month<br>
+  <strong>Savings:</strong> ${Math.round(2450 * carbonValue/100)} tons/month
+</div>
+<div style="background:#e3f2fd;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #2196f3;">
+  <strong>🎯 Optimized Strategy:</strong><br>
+  • Vessel Speed Reduction: ${Math.round(carbonValue * 0.6)}% carbon cut (${Math.round(delayValue * 0.5)} min delay)<br>
+  • Electric Crane Usage: ${Math.round(carbonValue * 0.25)}% carbon cut (${Math.round(delayValue * 0.2)} min delay)<br>
+  • Solar Power Integration: ${Math.round(carbonValue * 0.1)}% carbon cut (${Math.round(delayValue * 0.1)} min delay)<br>
+  • Route Optimization: ${Math.round(carbonValue * 0.05)}% carbon cut (${Math.round(delayValue * 0.2)} min delay)<br>
+  <strong>Total Impact:</strong> ${carbonTarget} carbon reduction, ${delayLimit} delay
+</div>
+<div style="background:#fff3e0;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #ff9800;">
+  <strong>📊 Environmental Metrics:</strong><br>
+  • CO₂ Reduction: ${Math.round(2450 * carbonValue/100)} tons/month<br>
+  • Energy Savings: ${Math.round(1200 * carbonValue/100)} MWh/month<br>
+  • Fuel Efficiency: +${Math.round(carbonValue * 1.2)}% improvement<br>
+  • Green Score: ${85 + Math.round(carbonValue * 0.5)}/100 (excellent)
+</div>
+<div style="background:#f3e5f5;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #9c27b0;">
+  <strong>🔄 Real-time Monitoring:</strong><br>
+  • Carbon Tracking: Live updates every 15 min<br>
+  • Efficiency Alerts: Automatic optimization<br>
+  • Performance Dashboard: 24/7 monitoring<br>
+  • Sustainability Score: Real-time calculation
+</div>`;
+  } catch (error) {
+    console.error('Error generating sustainability AI response:', error);
+    return `🌱 **Sustainability AI**<br><br><div style="background:#f0f8ff;padding:12px;border-radius:8px;margin:8px 0;border-left:4px solid #007acc;">Unable to process sustainability request at this time. Please try again later.</div>`;
+  }
+}
+
+/* -------- Conversational Power BI Response Generator -------- */
+function generateConversationalPowerBIResponse(query) {
+  try {
+    const queryLower = query.toLowerCase();
+    let analysisType = 'delay analysis';
+    let port = 'Tuas';
+    let timeFrame = 'today';
+    
+    // Extract analysis type and port from query
+    if(/delay/i.test(queryLower)) analysisType = 'delay analysis';
+    if(/performance/i.test(queryLower)) analysisType = 'performance analysis';
+    if(/utilization/i.test(queryLower)) analysisType = 'utilization analysis';
+    if(/tuas/i.test(queryLower)) port = 'Tuas';
+    if(/singapore/i.test(queryLower)) port = 'Singapore';
+    if(/antwerp/i.test(queryLower)) port = 'Antwerp';
+    if(/today/i.test(queryLower)) timeFrame = 'today';
+    if(/yesterday/i.test(queryLower)) timeFrame = 'yesterday';
+    if(/week/i.test(queryLower)) timeFrame = 'this week';
+    
+    return `💬 **Conversational Power BI**<br><br>
+<div style="background:#e8f5e8;padding:15px;border-radius:8px;margin:10px 0;border-left:4px solid #4caf50;">
+  <h3 style="margin:0 0 10px 0;color:#2e7d32;">📊 ${port} ${analysisType.charAt(0).toUpperCase() + analysisType.slice(1)}</h3>
+  <strong>Date:</strong> ${new Date().toLocaleDateString()}<br>
+  <strong>Port:</strong> ${port}<br>
+  <strong>Analysis:</strong> ${analysisType}<br>
+  <strong>Time Frame:</strong> ${timeFrame}
+</div>
+<div style="background:#e3f2fd;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #2196f3;">
+  <strong>📈 Key Metrics:</strong><br>
+  • Total Vessels: 8 scheduled<br>
+  • On-time Performance: 75%<br>
+  • Average Delay: 2.3 hours<br>
+  • Primary Cause: Weather conditions
+</div>
+<div style="background:#fff3e0;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #ff9800;">
+  <strong>📊 Performance Comparison:</strong><br>
+  • Today vs Yesterday: +45% delays<br>
+  • Today vs Last Week: +23% delays<br>
+  • Today vs Last Month: +12% delays<br>
+  • Weather Severity: High (Level 3/5)
+</div>
+<div style="background:#f3e5f5;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #9c27b0;">
+  <strong>🔍 Detailed Breakdown:</strong><br>
+  • MSC LORETO: 3.2h delay (weather)<br>
+  • EVER GIVEN: 1.8h delay (weather)<br>
+  • COSCO SHIPPING: 1.9h delay (weather)<br>
+  • Total Impact: 6.9 hours lost
+</div>
+<div style="background:#e1f5fe;padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #03a9f4;">
+  <strong>💡 Recommendations:</strong><br>
+  • Monitor weather forecasts 24h ahead<br>
+  • Implement dynamic scheduling<br>
+  • Consider alternative berth assignments<br>
+  • Activate weather contingency plans
+</div>`;
+  } catch (error) {
+    console.error('Error generating conversational Power BI response:', error);
+    return `💬 **Conversational Power BI**<br><br><div style="background:#f0f8ff;padding:12px;border-radius:8px;margin:8px 0;border-left:4px solid #007acc;">Unable to process analytics request at this time. Please try again later.</div>`;
+  }
+}
+
+/* -------- Fullscreen Toggle Function -------- */
+function toggleFullscreen() {
+  const chatCard = document.querySelector('.chat-card');
+  const fullscreenBtn = document.querySelector('.fullscreen-btn');
+  const icon = fullscreenBtn.querySelector('i');
+  
+  if (chatCard.classList.contains('fullscreen')) {
+    // Exit fullscreen
+    chatCard.classList.remove('fullscreen');
+    fullscreenBtn.classList.remove('fullscreen');
+    icon.className = 'fa-solid fa-expand';
+    fullscreenBtn.title = 'Enter Fullscreen';
+    
+    // Restore body scroll
+    document.body.style.overflow = '';
+  } else {
+    // Enter fullscreen
+    chatCard.classList.add('fullscreen');
+    fullscreenBtn.classList.add('fullscreen');
+    icon.className = 'fa-solid fa-compress';
+    fullscreenBtn.title = 'Exit Fullscreen';
+    
+    // Prevent body scroll
+    document.body.style.overflow = 'hidden';
+    
+    // Scroll to top of chat
+    const chatBody = document.getElementById('chatBody');
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }
+}
+
+// Handle ESC key to exit fullscreen
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'Escape') {
+    const chatCard = document.querySelector('.chat-card');
+    if (chatCard.classList.contains('fullscreen')) {
+      toggleFullscreen();
+    }
+  }
+});
+
+/* -------- Dashboard Functions -------- */
+function openDashboard() {
+  // Add visual feedback
+  const button = event.target.closest('.pill');
+  if (button) {
+    button.style.transform = 'scale(0.95)';
+    setTimeout(() => {
+      button.style.transform = 'scale(1)';
+    }, 150);
+  }
+  
+  // Add loading message to chat
+  addBubble('🚀 Opening Real-time Analytics Dashboard...', 'bot');
+  
+  // Open dashboard in new tab
+  setTimeout(() => {
+    window.open('dashboard.html', '_blank');
+  }, 500);
+}
+
+/* -------- init -------- */
+window.addEventListener('load', ()=>{
+  fillHeroCards();
+  renderRows(sampleData);
+  showTab(document.querySelector('.tab.active'));
+});
+</script>
+</body>
+</html>

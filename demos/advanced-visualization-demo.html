@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Network Insights - Advanced Data Visualization Demo</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.9/dat.gui.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dragula/3.7.3/dragula.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dragula/3.7.3/dragula.min.css" />
+
+<style>
+  :root{
+    --ocean-dark:#0a3d62;--ocean-mid:#3c6382;--ocean-light:#60a3bc;
+    --accent:#ff8c00;--text:#ffffff;--muted:#e8f4f8;
+    --nav:#0a3d62cc;--ink:#ffffff;
+    --gradient-primary: linear-gradient(135deg, #0d2235 0%, #0d2235 100%);
+    --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --gradient-accent: linear-gradient(135deg, #ff8c00 0%, #ffbb00 100%);
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --shadow-medium: 0 16px 64px rgba(0, 0, 0, 0.15);
+    --shadow-strong: 0 24px 96px rgba(0, 0, 0, 0.2);
+  }
+  
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;color:var(--text);overflow-x:hidden}
+  
+  /* Ocean background */
+  .ocean-bg{position:fixed;inset:0;z-index:-10;background:linear-gradient(180deg,var(--ocean-light) 0%,var(--ocean-mid) 50%,var(--ocean-dark) 100%)}
+  .wave-container{position:fixed;inset:0;overflow:hidden;z-index:-9}
+  .wave{position:absolute;width:200%;height:200px;background:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.2" d="M0,192L48,197.3C96,203,192,213,288,218.7C384,224,480,224,576,202.7C672,181,768,139,864,138.7C960,139,1056,181,1152,186.7C1248,192,1344,160,1392,144L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"/></svg>') repeat-x bottom/200% 100%}
+  .wave-1{bottom:0;animation:wave 15s linear infinite;opacity:.18}
+  .wave-2{bottom:-25px;animation:wave 10s linear reverse infinite;opacity:.14}
+  .wave-3{bottom:-50px;animation:wave 8s linear infinite;opacity:.1}
+  @keyframes wave{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+  /* Navigation */
+  .navbar{position:sticky;top:0;z-index:50;background:rgba(10,61,98,0.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.12);padding:12px 0}
+  .nav-content{display:flex;align-items:center;justify-content:space-between;max-width:1400px;margin:0 auto;padding:0 20px}
+  .brand{display:flex;gap:10px;align-items:center;font-weight:800;font-size:20px;color:#ffffff;text-shadow:0 1px 2px rgba(0,0,0,0.3)}
+  .brand i{color:var(--accent);font-size:24px;animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.7}}
+  .nav-links{display:flex;gap:20px}
+  .nav-links a{color:#ffffff;text-decoration:none;padding:8px 16px;border-radius:20px;transition:all 0.3s ease;font-weight:500;text-shadow:0 1px 2px rgba(0,0,0,0.3)}
+  .nav-links a:hover{background:var(--glass-bg);transform:translateY(-2px)}
+
+  /* Main Container */
+  .main-container{max-width:1400px;margin:0 auto;padding:20px;display:grid;gap:20px}
+  
+  /* Feature Tabs */
+  .feature-tabs{display:flex;gap:10px;margin-bottom:30px;background:rgba(255,255,255,0.1);border-radius:12px;padding:8px;backdrop-filter:blur(10px)}
+  .tab-button{background:transparent;color:#ffffff;border:none;padding:12px 20px;border-radius:8px;cursor:pointer;transition:all 0.3s ease;font-weight:600}
+  .tab-button.active{background:var(--gradient-accent);color:#fff;box-shadow:var(--shadow-medium)}
+  .tab-button:hover:not(.active){background:rgba(255,255,255,0.1)}
+
+  /* Tab Content */
+  .tab-content{display:none;animation:fadeIn 0.5s ease}
+  .tab-content.active{display:block}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+  /* 3D Port Model */
+  .port-3d-container{background:rgba(255,255,255,0.95);border-radius:16px;padding:20px;box-shadow:var(--shadow-medium);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.2);height:600px;position:relative}
+  .port-3d-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+  .port-3d-title{font-size:18px;font-weight:700;color:#1a1a1a}
+  .port-3d-controls{display:flex;gap:10px}
+  .port-3d-control{background:var(--gradient-accent);color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.3s ease}
+  .port-3d-control:hover{transform:translateY(-2px);box-shadow:var(--shadow-medium)}
+  .port-3d-control.active{background:var(--gradient-primary)}
+  #port3D{width:100%;height:500px;border-radius:12px;overflow:hidden;background:#000}
+
+  /* AR/VR Integration */
+  .ar-vr-container{background:rgba(255,255,255,0.95);border-radius:16px;padding:20px;box-shadow:var(--shadow-medium);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.2);height:600px;position:relative}
+  .ar-vr-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+  .ar-vr-title{font-size:18px;font-weight:700;color:#1a1a1a}
+  .ar-vr-controls{display:flex;gap:10px}
+  .ar-vr-control{background:var(--gradient-accent);color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.3s ease}
+  .ar-vr-control:hover{transform:translateY(-2px);box-shadow:var(--shadow-medium)}
+  .ar-vr-control.active{background:var(--gradient-primary)}
+  #arVrView{width:100%;height:500px;border-radius:12px;overflow:hidden;background:linear-gradient(45deg,#667eea,#764ba2);position:relative;display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px;font-weight:700}
+
+  /* Interactive Charts */
+  .charts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:20px}
+  .chart-container{background:rgba(255,255,255,0.95);border-radius:16px;padding:20px;box-shadow:var(--shadow-medium);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.2);position:relative}
+  .chart-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+  .chart-title{font-size:16px;font-weight:700;color:#1a1a1a}
+  .chart-controls{display:flex;gap:8px}
+  .chart-control{background:#f3f4f6;color:#374151;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;transition:all 0.3s ease}
+  .chart-control:hover{background:#e5e7eb}
+  .chart-control.active{background:var(--gradient-accent);color:#fff}
+  .chart-wrapper{position:relative;height:300px}
+  .chart-interaction{position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.7);color:#fff;padding:8px 12px;border-radius:6px;font-size:12px;opacity:0;transition:opacity 0.3s ease}
+  .chart-container:hover .chart-interaction{opacity:1}
+
+  /* Custom Dashboard */
+  .dashboard-builder{background:rgba(255,255,255,0.95);border-radius:16px;padding:20px;box-shadow:var(--shadow-medium);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.2)}
+  .builder-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+  .builder-title{font-size:18px;font-weight:700;color:#1a1a1a}
+  .builder-controls{display:flex;gap:10px}
+  .builder-control{background:var(--gradient-accent);color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.3s ease}
+  .builder-control:hover{transform:translateY(-2px);box-shadow:var(--shadow-medium)}
+  
+  .widget-palette{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin-bottom:20px;padding:15px;background:#f8fafc;border-radius:12px}
+  .widget-item{background:#fff;border:2px dashed #d1d5db;border-radius:8px;padding:15px;text-align:center;cursor:grab;transition:all 0.3s ease}
+  .widget-item:hover{border-color:var(--accent);transform:translateY(-2px)}
+  .widget-item:active{cursor:grabbing}
+  .widget-icon{font-size:24px;color:var(--accent);margin-bottom:8px}
+  .widget-name{font-size:12px;font-weight:600;color:#374151}
+
+  .dashboard-canvas{min-height:400px;background:#f8fafc;border:2px dashed #d1d5db;border-radius:12px;padding:20px;position:relative}
+  .dashboard-canvas.drag-over{border-color:var(--accent);background:#fef3c7}
+  .dashboard-widget{background:#fff;border-radius:8px;padding:15px;box-shadow:var(--shadow-soft);margin-bottom:15px;cursor:move;transition:all 0.3s ease;position:relative}
+  .dashboard-widget:hover{box-shadow:var(--shadow-medium);transform:translateY(-2px)}
+  .dashboard-widget .remove-btn{position:absolute;top:5px;right:5px;background:#ef4444;color:#fff;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:10px;opacity:0;transition:opacity 0.3s ease}
+  .dashboard-widget:hover .remove-btn{opacity:1}
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .main-container{padding:10px}
+    .charts-grid{grid-template-columns:1fr}
+    .widget-palette{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+    .feature-tabs{flex-wrap:wrap}
+  }
+
+  /* Loading Animation */
+  .loading{display:flex;align-items:center;justify-content:center;height:200px;color:#666}
+  .loading i{animation:spin 1s linear infinite;margin-right:8px}
+  @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+
+  /* Demo Notice */
+  .demo-notice{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:15px;border-radius:12px;margin-bottom:20px;text-align:center;font-weight:600}
+  .demo-notice i{margin-right:8px;animation:pulse 2s infinite}
+</style>
+</head>
+<body>
+  <!-- Background -->
+  <div class="ocean-bg"></div>
+  <div class="wave-container">
+    <div class="wave wave-1"></div>
+    <div class="wave wave-2"></div>
+    <div class="wave wave-3"></div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-content">
+      <div class="brand">
+        <i class="fa-solid fa-cube"></i>
+        <span>Advanced Data Visualization Demo</span>
+      </div>
+      <div class="nav-links">
+        <a href="index.html"><i class="fa-solid fa-home"></i> Home</a>
+        <a href="dashboard.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+        <a href="#"><i class="fa-solid fa-cog"></i> Settings</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Demo Notice -->
+  <div class="demo-notice">
+    <i class="fa-solid fa-flask"></i>
+    This is a demonstration of advanced data visualization features. All interactions are simulated for showcase purposes.
+  </div>
+
+  <!-- Main Container -->
+  <div class="main-container">
+    <!-- Feature Tabs -->
+    <div class="feature-tabs">
+      <button class="tab-button active" onclick="showTab('port3d')">
+        <i class="fa-solid fa-cube"></i> 3D Port Model
+      </button>
+      <button class="tab-button" onclick="showTab('arvr')">
+        <i class="fa-solid fa-vr-cardboard"></i> AR/VR Integration
+      </button>
+      <button class="tab-button" onclick="showTab('charts')">
+        <i class="fa-solid fa-chart-bar"></i> Interactive Charts
+      </button>
+      <button class="tab-button" onclick="showTab('dashboard')">
+        <i class="fa-solid fa-th-large"></i> Custom Dashboard
+      </button>
+    </div>
+
+    <!-- 3D Port Model Tab -->
+    <div id="port3d" class="tab-content active">
+      <div class="port-3d-container">
+        <div class="port-3d-header">
+          <div class="port-3d-title">3D Port Model - Singapore PSA Terminal</div>
+          <div class="port-3d-controls">
+            <button class="port-3d-control active" onclick="setPortView('overview')">Overview</button>
+            <button class="port-3d-control" onclick="setPortView('berths')">Berths</button>
+            <button class="port-3d-control" onclick="setPortView('cranes')">Cranes</button>
+            <button class="port-3d-control" onclick="setPortView('vessels')">Vessels</button>
+          </div>
+        </div>
+        <div id="port3D">
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:#fff;">
+            <i class="fa-solid fa-cube" style="font-size:48px;margin-bottom:16px;animation:spin 4s linear infinite;"></i>
+            <h3>3D Port Model Loading...</h3>
+            <p>Interactive 3D visualization of port layout, berths, cranes, and vessel positions</p>
+            <div style="margin-top:20px;">
+              <button onclick="startPort3D()" style="background:var(--gradient-accent);color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:600;">
+                <i class="fa-solid fa-play"></i> Start 3D Experience
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AR/VR Integration Tab -->
+    <div id="arvr" class="tab-content">
+      <div class="ar-vr-container">
+        <div class="ar-vr-header">
+          <div class="ar-vr-title">AR/VR Data Exploration</div>
+          <div class="ar-vr-controls">
+            <button class="ar-vr-control active" onclick="setARVRMode('ar')">AR Mode</button>
+            <button class="ar-vr-control" onclick="setARVRMode('vr')">VR Mode</button>
+            <button class="ar-vr-control" onclick="setARVRMode('mixed')">Mixed Reality</button>
+          </div>
+        </div>
+        <div id="arVrView">
+          <div style="text-align:center;">
+            <i class="fa-solid fa-vr-cardboard" style="font-size:64px;margin-bottom:20px;animation:float 3s ease-in-out infinite;"></i>
+            <h2>Immersive Data Exploration</h2>
+            <p style="font-size:16px;margin:20px 0;">Walk through your port data in 3D space</p>
+            <div style="display:flex;gap:15px;justify-content:center;margin-top:30px;">
+              <button onclick="startAR()" style="background:rgba(255,255,255,0.2);color:#fff;border:2px solid #fff;padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:600;">
+                <i class="fa-solid fa-mobile-screen-button"></i> Start AR
+              </button>
+              <button onclick="startVR()" style="background:rgba(255,255,255,0.2);color:#fff;border:2px solid #fff;padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:600;">
+                <i class="fa-solid fa-vr-cardboard"></i> Start VR
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive Charts Tab -->
+    <div id="charts" class="tab-content">
+      <div class="charts-grid">
+        <div class="chart-container">
+          <div class="chart-header">
+            <div class="chart-title">Interactive Port Performance</div>
+            <div class="chart-controls">
+              <button class="chart-control active" onclick="updateChart('performance')">Performance</button>
+              <button class="chart-control" onclick="updateChart('efficiency')">Efficiency</button>
+              <button class="chart-control" onclick="updateChart('delays')">Delays</button>
+            </div>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="interactiveChart1"></canvas>
+            <div class="chart-interaction">
+              <i class="fa-solid fa-hand-pointer"></i> Click & Drag to explore
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <div class="chart-header">
+            <div class="chart-title">Real-time Vessel Tracking</div>
+            <div class="chart-controls">
+              <button class="chart-control active" onclick="updateChart('tracking')">Tracking</button>
+              <button class="chart-control" onclick="updateChart('routes')">Routes</button>
+              <button class="chart-control" onclick="updateChart('weather')">Weather</button>
+            </div>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="interactiveChart2"></canvas>
+            <div class="chart-interaction">
+              <i class="fa-solid fa-expand-arrows-alt"></i> Zoom & Pan enabled
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <div class="chart-header">
+            <div class="chart-title">Carbon Footprint Analysis</div>
+            <div class="chart-controls">
+              <button class="chart-control active" onclick="updateChart('carbon')">Carbon</button>
+              <button class="chart-control" onclick="updateChart('fuel')">Fuel</button>
+              <button class="chart-control" onclick="updateChart('emissions')">Emissions</button>
+            </div>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="interactiveChart3"></canvas>
+            <div class="chart-interaction">
+              <i class="fa-solid fa-mouse-pointer"></i> Hover for details
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <div class="chart-header">
+            <div class="chart-title">Predictive Analytics</div>
+            <div class="chart-controls">
+              <button class="chart-control active" onclick="updateChart('predictions')">Predictions</button>
+              <button class="chart-control" onclick="updateChart('trends')">Trends</button>
+              <button class="chart-control" onclick="updateChart('forecasts')">Forecasts</button>
+            </div>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="interactiveChart4"></canvas>
+            <div class="chart-interaction">
+              <i class="fa-solid fa-magic"></i> AI-powered insights
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Custom Dashboard Tab -->
+    <div id="dashboard" class="tab-content">
+      <div class="dashboard-builder">
+        <div class="builder-header">
+          <div class="builder-title">Custom Dashboard Builder</div>
+          <div class="builder-controls">
+            <button class="builder-control" onclick="saveDashboard()">
+              <i class="fa-solid fa-save"></i> Save Layout
+            </button>
+            <button class="builder-control" onclick="resetDashboard()">
+              <i class="fa-solid fa-undo"></i> Reset
+            </button>
+            <button class="builder-control" onclick="previewDashboard()">
+              <i class="fa-solid fa-eye"></i> Preview
+            </button>
+          </div>
+        </div>
+
+        <div class="widget-palette">
+          <div class="widget-item" draggable="true" data-widget="kpi">
+            <div class="widget-icon"><i class="fa-solid fa-chart-line"></i></div>
+            <div class="widget-name">KPI Cards</div>
+          </div>
+          <div class="widget-item" draggable="true" data-widget="chart">
+            <div class="widget-icon"><i class="fa-solid fa-chart-bar"></i></div>
+            <div class="widget-name">Charts</div>
+          </div>
+          <div class="widget-item" draggable="true" data-widget="map">
+            <div class="widget-icon"><i class="fa-solid fa-map"></i></div>
+            <div class="widget-name">Maps</div>
+          </div>
+          <div class="widget-item" draggable="true" data-widget="table">
+            <div class="widget-icon"><i class="fa-solid fa-table"></i></div>
+            <div class="widget-name">Data Tables</div>
+          </div>
+          <div class="widget-item" draggable="true" data-widget="gauge">
+            <div class="widget-icon"><i class="fa-solid fa-tachometer-alt"></i></div>
+            <div class="widget-name">Gauges</div>
+          </div>
+          <div class="widget-item" draggable="true" data-widget="alert">
+            <div class="widget-icon"><i class="fa-solid fa-bell"></i></div>
+            <div class="widget-name">Alerts</div>
+          </div>
+        </div>
+
+        <div class="dashboard-canvas" id="dashboardCanvas">
+          <div style="text-align:center;color:#9ca3af;padding:40px;">
+            <i class="fa-solid fa-th-large" style="font-size:48px;margin-bottom:16px;"></i>
+            <h3>Drag widgets here to build your dashboard</h3>
+            <p>Start by dragging widgets from the palette above</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global variables
+    let currentTab = 'port3d';
+    let currentPortView = 'overview';
+    let currentARVRMode = 'ar';
+    let widgetCounter = 0;
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeCharts();
+      initializeDragAndDrop();
+      initializePort3D();
+    });
+
+    // Tab switching
+    function showTab(tabId) {
+      // Hide all tabs
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      
+      // Remove active class from all buttons
+      document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      
+      // Show selected tab
+      document.getElementById(tabId).classList.add('active');
+      
+      // Add active class to clicked button
+      event.target.classList.add('active');
+      
+      currentTab = tabId;
+    }
+
+    // 3D Port Model Functions
+    function setPortView(view) {
+      currentPortView = view;
+      document.querySelectorAll('.port-3d-control').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      // Simulate view change
+      const container = document.getElementById('port3D');
+      container.innerHTML = `
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:#fff;">
+          <i class="fa-solid fa-cube" style="font-size:48px;margin-bottom:16px;animation:spin 2s linear infinite;"></i>
+          <h3>Switching to ${view} view...</h3>
+          <p>Loading 3D model components</p>
+        </div>
+      `;
+      
+      setTimeout(() => {
+        container.innerHTML = `
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:#fff;">
+            <i class="fa-solid fa-check-circle" style="font-size:48px;margin-bottom:16px;color:#10b981;"></i>
+            <h3>${view.charAt(0).toUpperCase() + view.slice(1)} View Active</h3>
+            <p>3D visualization loaded successfully</p>
+          </div>
+        `;
+      }, 1000);
+    }
+
+    function startPort3D() {
+      const container = document.getElementById('port3D');
+      container.innerHTML = `
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:#fff;">
+          <i class="fa-solid fa-cube" style="font-size:48px;margin-bottom:16px;animation:spin 1s linear infinite;"></i>
+          <h3>Initializing 3D Engine...</h3>
+          <p>Loading port geometry and textures</p>
+        </div>
+      `;
+      
+      setTimeout(() => {
+        container.innerHTML = `
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:#fff;">
+            <i class="fa-solid fa-check-circle" style="font-size:48px;margin-bottom:16px;color:#10b981;"></i>
+            <h3>3D Port Model Ready!</h3>
+            <p>Interactive 3D visualization is now active</p>
+            <div style="margin-top:20px;font-size:14px;">
+              <div>• Mouse: Rotate view</div>
+              <div>• Scroll: Zoom in/out</div>
+              <div>• Click: Select objects</div>
+            </div>
+          </div>
+        `;
+      }, 2000);
+    }
+
+    // AR/VR Functions
+    function setARVRMode(mode) {
+      currentARVRMode = mode;
+      document.querySelectorAll('.ar-vr-control').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      const container = document.getElementById('arVrView');
+      const gradients = {
+        'ar': 'linear-gradient(45deg,#667eea,#764ba2)',
+        'vr': 'linear-gradient(45deg,#f093fb,#f5576c)',
+        'mixed': 'linear-gradient(45deg,#4facfe,#00f2fe)'
+      };
+      
+      container.style.background = gradients[mode];
+    }
+
+    function startAR() {
+      alert('AR Mode: Camera access required. This would launch AR experience on mobile device.');
+    }
+
+    function startVR() {
+      alert('VR Mode: VR headset required. This would launch immersive VR experience.');
+    }
+
+    // Interactive Charts
+    function initializeCharts() {
+      // Chart 1: Port Performance
+      const ctx1 = document.getElementById('interactiveChart1').getContext('2d');
+      new Chart(ctx1, {
+        type: 'bar',
+        data: {
+          labels: ['Singapore', 'Shanghai', 'Rotterdam', 'Hamburg', 'Dubai'],
+          datasets: [{
+            label: 'Efficiency %',
+            data: [95, 92, 89, 87, 85],
+            backgroundColor: 'rgba(255, 140, 0, 0.8)',
+            borderColor: 'rgba(255, 140, 0, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: { beginAtZero: true, max: 100 }
+          },
+          onClick: function(event, elements) {
+            if (elements.length > 0) {
+              alert(`Clicked on ${this.data.labels[elements[0].index]} - Efficiency: ${this.data.datasets[0].data[elements[0].index]}%`);
+            }
+          }
+        }
+      });
+
+      // Chart 2: Vessel Tracking
+      const ctx2 = document.getElementById('interactiveChart2').getContext('2d');
+      new Chart(ctx2, {
+        type: 'line',
+        data: {
+          labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
+          datasets: [{
+            label: 'Vessels in Port',
+            data: [12, 15, 18, 22, 19, 16],
+            borderColor: 'rgba(59, 130, 246, 1)',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+
+      // Chart 3: Carbon Analysis
+      const ctx3 = document.getElementById('interactiveChart3').getContext('2d');
+      new Chart(ctx3, {
+        type: 'doughnut',
+        data: {
+          labels: ['Electric', 'Hybrid', 'Diesel', 'LNG'],
+          datasets: [{
+            data: [35, 25, 30, 10],
+            backgroundColor: [
+              'rgba(16, 185, 129, 0.8)',
+              'rgba(59, 130, 246, 0.8)',
+              'rgba(239, 68, 68, 0.8)',
+              'rgba(245, 158, 11, 0.8)'
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom' }
+          }
+        }
+      });
+
+      // Chart 4: Predictive Analytics
+      const ctx4 = document.getElementById('interactiveChart4').getContext('2d');
+      new Chart(ctx4, {
+        type: 'line',
+        data: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+          datasets: [{
+            label: 'Historical',
+            data: [85, 87, 89, 91, 88, 92, 90, 93, 91, 94, 92, 95],
+            borderColor: 'rgba(255, 140, 0, 1)',
+            backgroundColor: 'rgba(255, 140, 0, 0.1)',
+            tension: 0.4
+          }, {
+            label: 'Predicted',
+            data: [95, 97, 96, 98, 97, 99, 98, 100, 99, 101, 100, 102],
+            borderColor: 'rgba(59, 130, 246, 1)',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            borderDash: [5, 5],
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top' }
+          }
+        }
+      });
+    }
+
+    function updateChart(type) {
+      document.querySelectorAll('.chart-control').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      // Simulate chart update
+      console.log(`Updating chart to show: ${type}`);
+    }
+
+    // Custom Dashboard Functions
+    function initializeDragAndDrop() {
+      const palette = document.querySelector('.widget-palette');
+      const canvas = document.getElementById('dashboardCanvas');
+      
+      // Make widgets draggable
+      palette.addEventListener('dragstart', function(e) {
+        e.dataTransfer.setData('text/plain', e.target.dataset.widget);
+        e.target.style.opacity = '0.5';
+      });
+      
+      palette.addEventListener('dragend', function(e) {
+        e.target.style.opacity = '1';
+      });
+      
+      // Handle drop on canvas
+      canvas.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        canvas.classList.add('drag-over');
+      });
+      
+      canvas.addEventListener('dragleave', function(e) {
+        canvas.classList.remove('drag-over');
+      });
+      
+      canvas.addEventListener('drop', function(e) {
+        e.preventDefault();
+        canvas.classList.remove('drag-over');
+        
+        const widgetType = e.dataTransfer.getData('text/plain');
+        addWidgetToCanvas(widgetType);
+      });
+    }
+
+    function addWidgetToCanvas(widgetType) {
+      widgetCounter++;
+      const canvas = document.getElementById('dashboardCanvas');
+      
+      // Remove placeholder if it exists
+      const placeholder = canvas.querySelector('div[style*="text-align:center"]');
+      if (placeholder) {
+        placeholder.remove();
+      }
+      
+      const widget = document.createElement('div');
+      widget.className = 'dashboard-widget';
+      widget.id = `widget-${widgetCounter}`;
+      
+      const widgetContent = getWidgetContent(widgetType);
+      widget.innerHTML = `
+        <button class="remove-btn" onclick="removeWidget('widget-${widgetCounter}')">×</button>
+        ${widgetContent}
+      `;
+      
+      canvas.appendChild(widget);
+      
+      // Make widget draggable within canvas
+      makeWidgetDraggable(widget);
+    }
+
+    function getWidgetContent(widgetType) {
+      const contents = {
+        'kpi': `
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <h4 style="margin:0;color:#1a1a1a;">Port Efficiency</h4>
+              <p style="margin:4px 0;color:#666;font-size:12px;">Real-time KPI</p>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:24px;font-weight:700;color:var(--accent);">94.2%</div>
+              <div style="font-size:12px;color:#10b981;">↗ +2.1%</div>
+            </div>
+          </div>
+        `,
+        'chart': `
+          <div>
+            <h4 style="margin:0 0 10px 0;color:#1a1a1a;">Performance Chart</h4>
+            <div style="height:120px;background:#f8fafc;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#666;">
+              <i class="fa-solid fa-chart-bar" style="font-size:24px;"></i>
+            </div>
+          </div>
+        `,
+        'map': `
+          <div>
+            <h4 style="margin:0 0 10px 0;color:#1a1a1a;">Port Map</h4>
+            <div style="height:120px;background:#f8fafc;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#666;">
+              <i class="fa-solid fa-map" style="font-size:24px;"></i>
+            </div>
+          </div>
+        `,
+        'table': `
+          <div>
+            <h4 style="margin:0 0 10px 0;color:#1a1a1a;">Data Table</h4>
+            <div style="height:120px;background:#f8fafc;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#666;">
+              <i class="fa-solid fa-table" style="font-size:24px;"></i>
+            </div>
+          </div>
+        `,
+        'gauge': `
+          <div>
+            <h4 style="margin:0 0 10px 0;color:#1a1a1a;">Performance Gauge</h4>
+            <div style="height:120px;background:#f8fafc;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#666;">
+              <i class="fa-solid fa-tachometer-alt" style="font-size:24px;"></i>
+            </div>
+          </div>
+        `,
+        'alert': `
+          <div>
+            <h4 style="margin:0 0 10px 0;color:#1a1a1a;">Alerts</h4>
+            <div style="height:120px;background:#f8fafc;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#666;">
+              <i class="fa-solid fa-bell" style="font-size:24px;"></i>
+            </div>
+          </div>
+        `
+      };
+      
+      return contents[widgetType] || '<div>Unknown widget</div>';
+    }
+
+    function makeWidgetDraggable(widget) {
+      widget.draggable = true;
+      
+      widget.addEventListener('dragstart', function(e) {
+        e.dataTransfer.setData('text/plain', widget.id);
+        widget.style.opacity = '0.5';
+      });
+      
+      widget.addEventListener('dragend', function(e) {
+        widget.style.opacity = '1';
+      });
+    }
+
+    function removeWidget(widgetId) {
+      const widget = document.getElementById(widgetId);
+      if (widget) {
+        widget.remove();
+        
+        // Show placeholder if no widgets left
+        const canvas = document.getElementById('dashboardCanvas');
+        if (canvas.children.length === 0) {
+          canvas.innerHTML = `
+            <div style="text-align:center;color:#9ca3af;padding:40px;">
+              <i class="fa-solid fa-th-large" style="font-size:48px;margin-bottom:16px;"></i>
+              <h3>Drag widgets here to build your dashboard</h3>
+              <p>Start by dragging widgets from the palette above</p>
+            </div>
+          `;
+        }
+      }
+    }
+
+    function saveDashboard() {
+      const widgets = document.querySelectorAll('.dashboard-widget');
+      const layout = Array.from(widgets).map(widget => ({
+        id: widget.id,
+        type: widget.querySelector('h4').textContent
+      }));
+      
+      alert(`Dashboard saved! Layout contains ${layout.length} widgets.`);
+      console.log('Saved layout:', layout);
+    }
+
+    function resetDashboard() {
+      if (confirm('Are you sure you want to reset the dashboard?')) {
+        const canvas = document.getElementById('dashboardCanvas');
+        canvas.innerHTML = `
+          <div style="text-align:center;color:#9ca3af;padding:40px;">
+            <i class="fa-solid fa-th-large" style="font-size:48px;margin-bottom:16px;"></i>
+            <h3>Drag widgets here to build your dashboard</h3>
+            <p>Start by dragging widgets from the palette above</p>
+          </div>
+        `;
+        widgetCounter = 0;
+      }
+    }
+
+    function previewDashboard() {
+      alert('Preview mode: This would show how the dashboard looks to end users.');
+    }
+
+    // Initialize 3D Port Model
+    function initializePort3D() {
+      // This would initialize Three.js scene
+      console.log('3D Port Model initialized');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSA关键词提取和数据查询演示</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .demo-section {
+            margin-bottom: 40px;
+            padding: 25px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            background: #fafafa;
+        }
+        
+        .demo-section h2 {
+            color: #333;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .input-group input:focus, .input-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .result h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .keywords {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 10px 0;
+        }
+        
+        .keyword-tag {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .psa-data {
+            margin-top: 15px;
+        }
+        
+        .data-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #28a745;
+        }
+        
+        .data-item h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        
+        .data-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .metric {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .metric-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .metric-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-top: 4px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .examples {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .example-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .example-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+        
+        .example-card h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        
+        .example-card p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .api-info {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .api-info h3 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+        
+        .api-endpoint {
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 5px 0;
+            border-left: 3px solid #1976d2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚢 PSA关键词提取和数据查询演示</h1>
+            <p>体验AI如何从用户问题中提取关键词并查询PSA官方数据</p>
+        </div>
+        
+        <div class="content">
+            <!-- 关键词提取演示 -->
+            <div class="demo-section">
+                <h2>🔍 关键词提取演示</h2>
+                <div class="input-group">
+                    <label for="questionInput">输入您的问题：</label>
+                    <textarea id="questionInput" rows="3" placeholder="例如：新加坡港的泊位时间是多少？或者查询货物#342的状态"></textarea>
+                </div>
+                <button class="btn" onclick="extractKeywordsDemo()">提取关键词</button>
+                <div id="keywordsResult" class="result" style="display: none;">
+                    <h3>提取的关键词：</h3>
+                    <div id="keywordsDisplay"></div>
+                </div>
+            </div>
+            
+            <!-- PSA数据查询演示 -->
+            <div class="demo-section">
+                <h2>📊 PSA数据查询演示</h2>
+                <div class="input-group">
+                    <label for="dataQueryInput">输入查询问题：</label>
+                    <textarea id="dataQueryInput" rows="3" placeholder="例如：查询鹿特丹港的碳减排数据"></textarea>
+                </div>
+                <button class="btn" onclick="queryPSADataDemo()">查询PSA数据</button>
+                <div id="psaDataResult" class="result" style="display: none;">
+                    <h3>查询结果：</h3>
+                    <div id="psaDataDisplay"></div>
+                </div>
+            </div>
+            
+            <!-- 示例问题 -->
+            <div class="demo-section">
+                <h2>💡 示例问题</h2>
+                <p>点击下面的示例问题来快速体验功能：</p>
+                <div class="examples">
+                    <div class="example-card" onclick="setQuestion('新加坡港的泊位时间是多少？')">
+                        <h4>🏢 泊位时间查询</h4>
+                        <p>新加坡港的泊位时间是多少？</p>
+                    </div>
+                    <div class="example-card" onclick="setQuestion('查询鹿特丹港的碳减排数据')">
+                        <h4>🌱 碳减排数据</h4>
+                        <p>查询鹿特丹港的碳减排数据</p>
+                    </div>
+                    <div class="example-card" onclick="setQuestion('货物#342的追踪状态')">
+                        <h4>🚢 货物追踪</h4>
+                        <p>货物#342的追踪状态</p>
+                    </div>
+                    <div class="example-card" onclick="setQuestion('汉堡港的港口效率如何？')">
+                        <h4>⚡ 港口效率</h4>
+                        <p>汉堡港的港口效率如何？</p>
+                    </div>
+                    <div class="example-card" onclick="setQuestion('洛杉矶港的拥堵情况')">
+                        <h4>🚦 港口拥堵</h4>
+                        <p>洛杉矶港的拥堵情况</p>
+                    </div>
+                    <div class="example-card" onclick="setQuestion('上海港的船舶调度计划')">
+                        <h4>📅 船舶调度</h4>
+                        <p>上海港的船舶调度计划</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- API信息 -->
+            <div class="api-info">
+                <h3>🔗 API端点信息</h3>
+                <p>系统提供以下API端点：</p>
+                <div class="api-endpoint">POST /api/chat/extract-keywords - 提取关键词</div>
+                <div class="api-endpoint">POST /api/chat/query-by-question - 根据问题查询PSA数据</div>
+                <div class="api-endpoint">GET /api/chat/psa-data-types - 获取可用数据类型</div>
+                <div class="api-endpoint">GET /api/chat/psa-ports - 获取可用港口列表</div>
+                <div class="api-endpoint">GET /api/chat/psa-data/by-type/{dataType} - 根据类型查询数据</div>
+                <div class="api-endpoint">GET /api/chat/psa-data/by-port/{portName} - 根据港口查询数据</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8080/api';
+        
+        // 设置示例问题
+        function setQuestion(question) {
+            document.getElementById('questionInput').value = question;
+            document.getElementById('dataQueryInput').value = question;
+        }
+        
+        // 关键词提取演示
+        async function extractKeywordsDemo() {
+            const question = document.getElementById('questionInput').value.trim();
+            if (!question) {
+                alert('请输入问题');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('keywordsResult');
+            const displayDiv = document.getElementById('keywordsDisplay');
+            
+            resultDiv.style.display = 'block';
+            displayDiv.innerHTML = '<div class="loading">正在提取关键词...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/chat/extract-keywords`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(question)
+                });
+                
+                if (response.ok) {
+                    const keywords = await response.json();
+                    displayKeywords(keywords);
+                } else {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('关键词提取失败:', error);
+                displayDiv.innerHTML = '<div class="error">关键词提取失败，请检查后端服务是否运行</div>';
+            }
+        }
+        
+        // 显示关键词
+        function displayKeywords(keywords) {
+            const displayDiv = document.getElementById('keywordsDisplay');
+            let html = '';
+            
+            // PSA关键词
+            if (keywords.psaKeywords && Object.keys(keywords.psaKeywords).length > 0) {
+                html += '<h4>PSA业务关键词：</h4><div class="keywords">';
+                Object.entries(keywords.psaKeywords).forEach(([category, words]) => {
+                    words.forEach(word => {
+                        html += `<span class="keyword-tag">${category}: ${word}</span>`;
+                    });
+                });
+                html += '</div>';
+            }
+            
+            // 时间关键词
+            if (keywords.timeKeywords && keywords.timeKeywords.length > 0) {
+                html += '<h4>时间关键词：</h4><div class="keywords">';
+                keywords.timeKeywords.forEach(word => {
+                    html += `<span class="keyword-tag">${word}</span>`;
+                });
+                html += '</div>';
+            }
+            
+            // 港口关键词
+            if (keywords.portKeywords && keywords.portKeywords.length > 0) {
+                html += '<h4>港口关键词：</h4><div class="keywords">';
+                keywords.portKeywords.forEach(word => {
+                    html += `<span class="keyword-tag">${word}</span>`;
+                });
+                html += '</div>';
+            }
+            
+            // 状态关键词
+            if (keywords.statusKeywords && keywords.statusKeywords.length > 0) {
+                html += '<h4>状态关键词：</h4><div class="keywords">';
+                keywords.statusKeywords.forEach(word => {
+                    html += `<span class="keyword-tag">${word}</span>`;
+                });
+                html += '</div>';
+            }
+            
+            // 货物ID
+            if (keywords.shipmentIds && keywords.shipmentIds.length > 0) {
+                html += '<h4>货物ID：</h4><div class="keywords">';
+                keywords.shipmentIds.forEach(id => {
+                    html += `<span class="keyword-tag">#${id}</span>`;
+                });
+                html += '</div>';
+            }
+            
+            if (html === '') {
+                html = '<p>未检测到相关关键词</p>';
+            }
+            
+            displayDiv.innerHTML = html;
+        }
+        
+        // PSA数据查询演示
+        async function queryPSADataDemo() {
+            const question = document.getElementById('dataQueryInput').value.trim();
+            if (!question) {
+                alert('请输入查询问题');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('psaDataResult');
+            const displayDiv = document.getElementById('psaDataDisplay');
+            
+            resultDiv.style.display = 'block';
+            displayDiv.innerHTML = '<div class="loading">正在查询PSA数据...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/chat/query-by-question?question=${encodeURIComponent(question)}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (response.ok) {
+                    const psaData = await response.json();
+                    displayPSAData(psaData);
+                } else {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('PSA数据查询失败:', error);
+                displayDiv.innerHTML = '<div class="error">PSA数据查询失败，请检查后端服务是否运行</div>';
+            }
+        }
+        
+        // 显示PSA数据
+        function displayPSAData(psaData) {
+            const displayDiv = document.getElementById('psaDataDisplay');
+            
+            if (!psaData || psaData.length === 0) {
+                displayDiv.innerHTML = '<p>未找到相关数据</p>';
+                return;
+            }
+            
+            let html = '';
+            psaData.forEach(data => {
+                html += `
+                    <div class="data-item">
+                        <h4>${data.portName} - ${getDataTypeName(data.dataType)}</h4>
+                        <p>${data.description}</p>
+                        <div class="data-metrics">
+                            ${Object.entries(data.metrics || {}).map(([key, value]) => `
+                                <div class="metric">
+                                    <div class="metric-label">${key}</div>
+                                    <div class="metric-value">${value}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <p><small>更新时间: ${new Date(data.timestamp).toLocaleString()}</small></p>
+                    </div>
+                `;
+            });
+            
+            displayDiv.innerHTML = html;
+        }
+        
+        // 获取数据类型中文名称
+        function getDataTypeName(dataType) {
+            const typeNames = {
+                'berth_time': '泊位时间',
+                'carbon_savings': '碳减排',
+                'port_efficiency': '港口效率',
+                'cargo_tracking': '货物追踪',
+                'port_congestion': '港口拥堵',
+                'vessel_scheduling': '船舶调度'
+            };
+            return typeNames[dataType] || dataType;
+        }
+    </script>
+</body>
+</html>

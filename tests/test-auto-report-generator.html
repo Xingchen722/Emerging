@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto Report Generator Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 1000px; margin: 0 auto; padding: 20px; }
+        .test-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .test-button { background: #007acc; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .test-button:hover { background: #005a9e; }
+        .result { background: #f0f8ff; padding: 15px; border-radius: 8px; border-left: 4px solid #007acc; margin-top: 15px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .chat-simulation { border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin: 10px 0; background: #f9f9f9; max-height: 600px; overflow-y: auto; }
+        .bubble { display: inline-block; padding: 12px 14px; border-radius: 14px; margin: 8px 0; max-width: min(640px, 92%); line-height: 1.55; box-shadow: 0 6px 18px rgba(0,0,0,.08); }
+        .bubble.user { background: #e6f0ff; margin-left: auto; }
+        .bubble.bot { background: #fff; }
+        .bubble-time { display: block; font-size: 12px; opacity: 0.6; margin-top: 6px; }
+        .button-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>📊 Auto Report Generator Test</h1>
+        <p>Testing the Auto Report Generator functionality for generating daily/weekly reports with key KPIs and summaries</p>
+        
+        <div class="status success">
+            <strong>✅ Auto Report Generator Features:</strong>
+            <ul>
+                <li><strong>Multiple Report Types:</strong> Berth utilization, performance, carbon footprint, financial</li>
+                <li><strong>Flexible Periods:</strong> Daily, weekly, monthly reports</li>
+                <li><strong>Comprehensive KPIs:</strong> Utilization, efficiency, delay rates, customer satisfaction</li>
+                <li><strong>Detailed Metrics:</strong> Vessel operations, cargo handling, environmental, financial</li>
+                <li><strong>Trend Analysis:</strong> Performance trends and key insights</li>
+                <li><strong>Actionable Recommendations:</strong> Immediate actions and strategic initiatives</li>
+                <li><strong>Executive Summary:</strong> High-level performance overview</li>
+            </ul>
+        </div>
+        
+        <div class="button-grid">
+            <button class="test-button" onclick="testBerthReport()">Test Berth Report</button>
+            <button class="test-button" onclick="testDailyReport()">Test Daily Report</button>
+            <button class="test-button" onclick="testPerformanceReport()">Test Performance Report</button>
+            <button class="test-button" onclick="testFinancialReport()">Test Financial Report</button>
+            <button class="test-button" onclick="testAllReports()">Test All Reports</button>
+            <button class="test-button" onclick="clearChat()">Clear Chat</button>
+        </div>
+        
+        <div class="chat-simulation">
+            <h3>Auto Report Generator Test Results:</h3>
+            <div id="chatSimulation"></div>
+        </div>
+        
+        <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+            <h3>📋 Auto Report Generator Details:</h3>
+            <p><strong>Purpose:</strong> Generates daily/weekly reports with key KPIs and summaries automatically.</p>
+            <p><strong>Example Query:</strong> "Generate this week's berth utilization report."</p>
+            <p><strong>Features:</strong></p>
+            <ul>
+                <li><strong>Report Types:</strong> Berth utilization, performance, carbon footprint, financial analysis</li>
+                <li><strong>Time Periods:</strong> Daily, weekly, monthly report generation</li>
+                <li><strong>KPI Dashboard:</strong> Key performance indicators with visual metrics</li>
+                <li><strong>Detailed Analysis:</strong> Comprehensive metrics across operations</li>
+                <li><strong>Trend Analysis:</strong> Performance trends and insights</li>
+                <li><strong>Recommendations:</strong> Immediate actions and strategic initiatives</li>
+                <li><strong>Executive Summary:</strong> High-level performance overview</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Copy the Auto Report Generator functions from root index.html
+        function generateAutoReportResponse(query) {
+            try {
+                const currentDate = new Date();
+                const queryLower = query.toLowerCase();
+                
+                // Determine report type and period
+                let reportType = 'berth utilization';
+                let period = 'weekly';
+                let periodText = 'This Week';
+                
+                if (queryLower.includes('daily')) {
+                    period = 'daily';
+                    periodText = 'Today';
+                } else if (queryLower.includes('monthly')) {
+                    period = 'monthly';
+                    periodText = 'This Month';
+                }
+                
+                if (queryLower.includes('berth')) {
+                    reportType = 'berth utilization';
+                } else if (queryLower.includes('delay') || queryLower.includes('performance')) {
+                    reportType = 'performance';
+                } else if (queryLower.includes('carbon') || queryLower.includes('emission')) {
+                    reportType = 'carbon footprint';
+                } else if (queryLower.includes('financial') || queryLower.includes('cost')) {
+                    reportType = 'financial';
+                }
+                
+                // Generate realistic KPI data
+                const kpiData = generateKPIData(reportType, period);
+                
+                // Generate report content
+                let response = `📊 **Auto Report Generator - ${periodText} ${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Report**<br><br>
+📅 **Report Period:** ${getPeriodRange(period)}<br>
+🕒 **Generated:** ${currentDate.toLocaleString()}<br>
+📋 **Report Type:** ${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Analysis<br><br>`;
+                
+                // Executive Summary
+                response += `<div style="background:#e8f5e8;padding:15px;border-radius:8px;margin:10px 0;border-left:4px solid #4caf50;">
+                    <h3 style="margin:0 0 10px 0;color:#2e7d32;">📈 Executive Summary</h3>
+                    <strong>Overall Performance:</strong> ${kpiData.overallPerformance}<br>
+                    <strong>Key Achievement:</strong> ${kpiData.keyAchievement}<br>
+                    <strong>Primary Concern:</strong> ${kpiData.primaryConcern}<br>
+                    <strong>Recommendation:</strong> ${kpiData.recommendation}
+                </div>`;
+                
+                // Key Performance Indicators
+                response += `<div style="background:#e3f2fd;padding:15px;border-radius:8px;margin:10px 0;border-left:4px solid #2196f3;">
+                    <h3 style="margin:0 0 10px 0;color:#1976d2;">📊 Key Performance Indicators</h3>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">
+                        <div style="background:white;padding:10px;border-radius:6px;text-align:center;">
+                            <div style="font-size:24px;font-weight:bold;color:#2196f3;">${kpiData.kpis.utilization}%</div>
+                            <div style="font-size:12px;color:#666;">Berth Utilization</div>
+                        </div>
+                        <div style="background:white;padding:10px;border-radius:6px;text-align:center;">
+                            <div style="font-size:24px;font-weight:bold;color:#4caf50;">${kpiData.kpis.efficiency}%</div>
+                            <div style="font-size:12px;color:#666;">Operational Efficiency</div>
+                        </div>
+                        <div style="background:white;padding:10px;border-radius:6px;text-align:center;">
+                            <div style="font-size:24px;font-weight:bold;color:#ff9800;">${kpiData.kpis.delayRate}%</div>
+                            <div style="font-size:12px;color:#666;">Delay Rate</div>
+                        </div>
+                        <div style="background:white;padding:10px;border-radius:6px;text-align:center;">
+                            <div style="font-size:24px;font-weight:bold;color:#9c27b0;">${kpiData.kpis.customerSatisfaction}%</div>
+                            <div style="font-size:12px;color:#666;">Customer Satisfaction</div>
+                        </div>
+                    </div>
+                </div>`;
+                
+                // Detailed Metrics
+                response += `<div style="background:#fff3e0;padding:15px;border-radius:8px;margin:10px 0;border-left:4px solid #ff9800;">
+                    <h3 style="margin:0 0 10px 0;color:#f57c00;">📋 Detailed Metrics</h3>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:15px;">
+                        <div>
+                            <strong>🚢 Vessel Operations:</strong><br>
+                            • Total Vessels: ${kpiData.metrics.totalVessels}<br>
+                            • On-Time Arrivals: ${kpiData.metrics.onTimeArrivals}%<br>
+                            • Average Turnaround: ${kpiData.metrics.avgTurnaround}h<br>
+                            • Peak Hour Utilization: ${kpiData.metrics.peakUtilization}%
+                        </div>
+                        <div>
+                            <strong>📦 Cargo Handling:</strong><br>
+                            • Total Containers: ${kpiData.metrics.totalContainers.toLocaleString()}<br>
+                            • Loading Efficiency: ${kpiData.metrics.loadingEfficiency}%<br>
+                            • Unloading Efficiency: ${kpiData.metrics.unloadingEfficiency}%<br>
+                            • Yard Occupancy: ${kpiData.metrics.yardOccupancy}%
+                        </div>
+                        <div>
+                            <strong>🌍 Environmental:</strong><br>
+                            • CO₂ Emissions: ${kpiData.metrics.co2Emissions} tons<br>
+                            • Fuel Consumption: ${kpiData.metrics.fuelConsumption}L<br>
+                            • Green Operations: ${kpiData.metrics.greenOperations}%<br>
+                            • Carbon Efficiency: ${kpiData.metrics.carbonEfficiency}%
+                        </div>
+                        <div>
+                            <strong>💰 Financial:</strong><br>
+                            • Revenue: $${kpiData.metrics.revenue.toLocaleString()}<br>
+                            • Operating Cost: $${kpiData.metrics.operatingCost.toLocaleString()}<br>
+                            • Profit Margin: ${kpiData.metrics.profitMargin}%<br>
+                            • Cost per TEU: $${kpiData.metrics.costPerTEU}
+                        </div>
+                    </div>
+                </div>`;
+                
+                // Trends and Analysis
+                response += `<div style="background:#f3e5f5;padding:15px;border-radius:8px;margin:10px 0;border-left:4px solid #9c27b0;">
+                    <h3 style="margin:0 0 10px 0;color:#7b1fa2;">📈 Trends & Analysis</h3>
+                    <strong>📊 Performance Trends:</strong><br>
+                    • ${kpiData.trends.utilizationTrend}<br>
+                    • ${kpiData.trends.efficiencyTrend}<br>
+                    • ${kpiData.trends.delayTrend}<br>
+                    • ${kpiData.trends.customerTrend}<br><br>
+                    
+                    <strong>🎯 Key Insights:</strong><br>
+                    • ${kpiData.insights.insight1}<br>
+                    • ${kpiData.insights.insight2}<br>
+                    • ${kpiData.insights.insight3}
+                </div>`;
+                
+                // Recommendations
+                response += `<div style="background:#e0f2f1;padding:15px;border-radius:8px;margin:10px 0;border-left:4px solid #4caf50;">
+                    <h3 style="margin:0 0 10px 0;color:#2e7d32;">💡 Recommendations</h3>
+                    <strong>🚀 Immediate Actions:</strong><br>
+                    • ${kpiData.recommendations.immediate1}<br>
+                    • ${kpiData.recommendations.immediate2}<br><br>
+                    
+                    <strong>📋 Strategic Initiatives:</strong><br>
+                    • ${kpiData.recommendations.strategic1}<br>
+                    • ${kpiData.recommendations.strategic2}<br>
+                    • ${kpiData.recommendations.strategic3}
+                </div>`;
+                
+                // Footer
+                response += `<div style="background:#f5f5f5;padding:10px;border-radius:6px;margin:15px 0;text-align:center;font-size:12px;color:#666;">
+                    📊 <strong>Auto Report Generator</strong> | Generated by Maritime AI Assistant | Next Report: ${getNextReportDate(period)}
+                </div>`;
+                
+                return response;
+            } catch (error) {
+                console.error('Error generating auto report:', error);
+                return `📊 **Auto Report Generator**<br><br><div style="background:#f0f8ff;padding:12px;border-radius:8px;margin:8px 0;border-left:4px solid #007acc;">Unable to generate report at this time. Please try again later.</div>`;
+            }
+        }
+
+        // Helper functions
+        function generateKPIData(reportType, period) {
+            const baseUtilization = Math.floor(Math.random() * 20) + 70; // 70-90%
+            const baseEfficiency = Math.floor(Math.random() * 15) + 80; // 80-95%
+            const baseDelayRate = Math.floor(Math.random() * 10) + 5; // 5-15%
+            const baseSatisfaction = Math.floor(Math.random() * 10) + 85; // 85-95%
+            
+            return {
+                overallPerformance: baseUtilization > 80 ? 'Excellent' : baseUtilization > 70 ? 'Good' : 'Needs Improvement',
+                keyAchievement: `Achieved ${baseUtilization}% berth utilization with ${baseEfficiency}% operational efficiency`,
+                primaryConcern: baseDelayRate > 10 ? 'Delay rates above target threshold' : 'Maintaining current performance levels',
+                recommendation: baseDelayRate > 10 ? 'Implement proactive delay prevention measures' : 'Continue current operational excellence',
+                
+                kpis: {
+                    utilization: baseUtilization,
+                    efficiency: baseEfficiency,
+                    delayRate: baseDelayRate,
+                    customerSatisfaction: baseSatisfaction
+                },
+                
+                metrics: {
+                    totalVessels: Math.floor(Math.random() * 50) + 100,
+                    onTimeArrivals: Math.floor(Math.random() * 15) + 80,
+                    avgTurnaround: (Math.random() * 8 + 12).toFixed(1),
+                    peakUtilization: Math.floor(Math.random() * 20) + 75,
+                    totalContainers: Math.floor(Math.random() * 10000) + 50000,
+                    loadingEfficiency: Math.floor(Math.random() * 10) + 85,
+                    unloadingEfficiency: Math.floor(Math.random() * 10) + 88,
+                    yardOccupancy: Math.floor(Math.random() * 20) + 60,
+                    co2Emissions: (Math.random() * 100 + 200).toFixed(1),
+                    fuelConsumption: Math.floor(Math.random() * 5000) + 10000,
+                    greenOperations: Math.floor(Math.random() * 20) + 70,
+                    carbonEfficiency: Math.floor(Math.random() * 15) + 80,
+                    revenue: Math.floor(Math.random() * 500000) + 2000000,
+                    operatingCost: Math.floor(Math.random() * 300000) + 1200000,
+                    profitMargin: (Math.random() * 10 + 15).toFixed(1),
+                    costPerTEU: Math.floor(Math.random() * 50) + 200
+                },
+                
+                trends: {
+                    utilizationTrend: `Berth utilization ${Math.random() > 0.5 ? 'increased' : 'decreased'} by ${(Math.random() * 5 + 2).toFixed(1)}% compared to last period`,
+                    efficiencyTrend: `Operational efficiency ${Math.random() > 0.5 ? 'improved' : 'declined'} by ${(Math.random() * 3 + 1).toFixed(1)}%`,
+                    delayTrend: `Delay rates ${Math.random() > 0.5 ? 'increased' : 'decreased'} by ${(Math.random() * 2 + 0.5).toFixed(1)}%`,
+                    customerTrend: `Customer satisfaction ${Math.random() > 0.5 ? 'rose' : 'fell'} by ${(Math.random() * 3 + 1).toFixed(1)}%`
+                },
+                
+                insights: {
+                    insight1: `Peak utilization occurs during ${['morning', 'afternoon', 'evening'][Math.floor(Math.random() * 3)]} hours`,
+                    insight2: `${reportType} performance is ${Math.random() > 0.5 ? 'above' : 'below'} industry benchmarks`,
+                    insight3: `Weather conditions ${Math.random() > 0.5 ? 'positively' : 'negatively'} impacted operations this period`
+                },
+                
+                recommendations: {
+                    immediate1: 'Optimize berth allocation during peak hours',
+                    immediate2: 'Implement real-time monitoring for delay prevention',
+                    strategic1: 'Invest in automation technology for improved efficiency',
+                    strategic2: 'Develop contingency plans for weather-related disruptions',
+                    strategic3: 'Enhance customer communication protocols'
+                }
+            };
+        }
+
+        function getPeriodRange(period) {
+            const now = new Date();
+            switch (period) {
+                case 'daily':
+                    return now.toLocaleDateString();
+                case 'weekly':
+                    const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                    return `${weekStart.toLocaleDateString()} - ${now.toLocaleDateString()}`;
+                case 'monthly':
+                    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+                    return `${monthStart.toLocaleDateString()} - ${now.toLocaleDateString()}`;
+                default:
+                    return now.toLocaleDateString();
+            }
+        }
+
+        function getNextReportDate(period) {
+            const now = new Date();
+            switch (period) {
+                case 'daily':
+                    return new Date(now.getTime() + 24 * 60 * 60 * 1000).toLocaleDateString();
+                case 'weekly':
+                    return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString();
+                case 'monthly':
+                    return new Date(now.getFullYear(), now.getMonth() + 1, 1).toLocaleDateString();
+                default:
+                    return new Date(now.getTime() + 24 * 60 * 60 * 1000).toLocaleDateString();
+            }
+        }
+
+        // Simulate addBubble function
+        function addBubble(text, who='bot') {
+            const chatDiv = document.getElementById('chatSimulation');
+            const bubble = document.createElement('div');
+            bubble.className = `bubble ${who}`;
+            bubble.innerHTML = text + `<span class="bubble-time">${new Date().toLocaleTimeString()}</span>`;
+            chatDiv.appendChild(bubble);
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+        }
+
+        function testBerthReport() {
+            const query = "Generate this week's berth utilization report.";
+            addBubble(query, 'user');
+            setTimeout(() => {
+                const result = generateAutoReportResponse(query);
+                addBubble(result, 'bot');
+            }, 120);
+        }
+
+        function testDailyReport() {
+            const query = "Generate today's daily performance report.";
+            addBubble(query, 'user');
+            setTimeout(() => {
+                const result = generateAutoReportResponse(query);
+                addBubble(result, 'bot');
+            }, 120);
+        }
+
+        function testPerformanceReport() {
+            const query = "Generate weekly performance analysis report.";
+            addBubble(query, 'user');
+            setTimeout(() => {
+                const result = generateAutoReportResponse(query);
+                addBubble(result, 'bot');
+            }, 120);
+        }
+
+        function testFinancialReport() {
+            const query = "Generate monthly financial report with cost analysis.";
+            addBubble(query, 'user');
+            setTimeout(() => {
+                const result = generateAutoReportResponse(query);
+                addBubble(result, 'bot');
+            }, 120);
+        }
+
+        function testAllReports() {
+            addBubble('Testing all Auto Report Generator queries...', 'bot');
+            setTimeout(() => testBerthReport(), 200);
+            setTimeout(() => testDailyReport(), 400);
+            setTimeout(() => testPerformanceReport(), 600);
+            setTimeout(() => testFinancialReport(), 800);
+        }
+
+        function clearChat() {
+            document.getElementById('chatSimulation').innerHTML = '';
+        }
+
+        // Test on page load
+        window.onload = function() {
+            console.log('Auto Report Generator test page loaded');
+            addBubble('Testing Auto Report Generator functionality - generating comprehensive reports with KPIs and summaries!', 'bot');
+        };
+    </script>
+</body>
+</html>

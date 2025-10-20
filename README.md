@@ -1,336 +1,300 @@
 # 🌐 Network Insights
 
-一个基于Java Spring Boot和现代Web技术的智能全球协调平台，支持多语言AI对话和实时翻译。
+An intelligent global coordination platform based on Java Spring Boot and modern web technologies, supporting multilingual AI conversations and real-time translation.
 
-## 📋 项目概览 (Summary)
+## 📋 Project Overview
 
-Network Insights是一个企业级的全球航运协调AI平台，专为海事物流行业设计。平台集成了多种AI功能，包括团队协调、数据分析、预测分析、历史案例检索、自动报告生成和实时数据可视化等核心功能。
+Network Insights is an enterprise-grade global shipping coordination AI platform designed specifically for the maritime logistics industry. The platform integrates multiple AI capabilities including team coordination, data analysis, predictive analytics, historical case retrieval, automatic report generation, and real-time data visualization.
 
-### 🎯 核心价值
-- **智能化协调**: AI驱动的团队协调和沟通
-- **数据驱动决策**: 实时数据分析和预测
-- **多语言支持**: 全球团队无缝沟通
-- **自动化报告**: 智能报告生成和分析
-- **可视化洞察**: 实时数据仪表板和图表
+### 🌐 How to Access the Web Application
 
-### 🚀 最新更新 (Recent Updates)
-- ✅ **团队协调功能**: 智能识别和连接相关团队成员
-- ✅ **分析报告系统**: 自动生成周报和KPI分析
-- ✅ **语言翻译增强**: 支持30+种语言的实时翻译
-- ✅ **预测分析AI**: 港口延误和碳排放预测
-- ✅ **历史案例检索**: RAG系统提供历史解决方案
-- ✅ **自动报告生成**: 智能生成日报和周报
-- ✅ **实时数据可视化**: 动态KPI仪表板和全球地图
-- ✅ **海洋主题UI**: 专业的海事行业界面设计
-- ✅ **多维度钻取**: 从全球到具体船只的层级分析
-- ✅ **全屏聊天**: 增强的AI助手交互体验
+#### Local Deployment Access Methods
 
-### 🌐 如何访问Web应用
-
-#### 本地部署访问方式
-
-**方式一：使用启动脚本（推荐）**
+**Method 1: Using Startup Script (Recommended)**
 ```bash
-# 1. 进入项目目录
+# 1. Navigate to project directory
 cd Emerging-new-try
 
-# 2. 运行启动脚本
+# 2. Run startup script
 ./start.sh
 
-# 3. 访问应用
-# 主页面: http://localhost:8000
+# 3. Access application
+# Main page: http://localhost:8000
 ```
 
-**方式二：手动启动**
+**Method 2: Manual Startup**
 ```bash
-# 1. 启动后端服务
+# 1. Start backend service
 mvn spring-boot:run
 
-# 2. 新开终端，启动前端服务
+# 2. Open new terminal, start frontend service
 python3 -m http.server 8000
 
-# 3. 访问应用
-# 主页面: http://localhost:8000
-# 后端API: http://localhost:8080/api
+# 3. Access application
+# Main page: http://localhost:8000
+# Backend API: http://localhost:8080/api
 ```
 
-**方式三：直接打开HTML文件（简单预览）**
+**Method 3: Direct HTML File Opening (Simple Preview)**
 ```bash
-# 1. 直接双击 index.html 文件
-# 或者在浏览器中打开文件路径
+# 1. Double-click index.html file directly
+# Or open file path in browser
 open index.html  # macOS
 start index.html # Windows
 xdg-open index.html # Linux
 
-# 注意：这种方式只能预览界面，AI功能需要后端服务支持
+# Note: This method only previews the interface, AI features require backend service support
 ```
 
-#### 访问地址说明
-- **🏠 主页面**: `http://localhost:8000` - 完整的AI助手和功能展示
+#### Access URL Descriptions
+- **🏠 Main Page**: `http://localhost:8000` - Complete AI assistant and feature showcase
 
-#### 系统要求
-- **Java 17+**: 运行Spring Boot后端
-- **Python 3.x**: 运行前端HTTP服务器
-- **现代浏览器**: Chrome、Firefox、Safari、Edge等
-- **网络连接**: 用于加载CDN资源（字体、图标等）
+#### System Requirements
+- **Java 17+**: Run Spring Boot backend
+- **Python 3.x**: Run frontend HTTP server
+- **Modern Browser**: Chrome, Firefox, Safari, Edge, etc.
+- **Network Connection**: For loading CDN resources (fonts, icons, etc.)
 
-#### 故障排除
+#### Troubleshooting
 
-**问题1：端口冲突**
+**Issue 1: Port Conflict**
 ```bash
-# 如果8000端口被占用，可以修改为其他端口
-python3 -m http.server 8001  # 使用8001端口
-# 然后访问 http://localhost:8001
+# If port 8000 is occupied, you can modify to another port
+python3 -m http.server 8001  # Use port 8001
+# Then access http://localhost:8001
 ```
 
-**问题2：Java版本问题**
+**Issue 2: Java Version Problem**
 ```bash
-# 检查Java版本
+# Check Java version
 java -version
 
-# 如果版本低于17，需要安装Java 17+
+# If version is below 17, install Java 17+
 # macOS: brew install openjdk@17
 # Ubuntu: sudo apt install openjdk-17-jdk
 ```
 
-**问题3：防火墙阻止**
+**Issue 3: Firewall Blocking**
 ```bash
-# macOS: 系统偏好设置 > 安全性与隐私 > 防火墙
-# Windows: Windows Defender防火墙设置
+# macOS: System Preferences > Security & Privacy > Firewall
+# Windows: Windows Defender Firewall settings
 # Linux: sudo ufw allow 8000
 ```
 
-**问题4：主页链接打不开**
+**Issue 4: Main Page Links Not Opening**
 ```bash
-# 检查服务是否运行
-lsof -i :8000  # 检查8000端口
-lsof -i :8080  # 检查8080端口
+# Check if services are running
+lsof -i :8000  # Check port 8000
+lsof -i :8080  # Check port 8080
 
-# 如果没有服务运行，重新启动
+# If no services are running, restart
 ./start.sh
 
-# 或者手动启动
-mvn spring-boot:run &  # 后台启动后端
-python3 -m http.server 8000 &  # 后台启动前端
+# Or start manually
+mvn spring-boot:run &  # Background start backend
+python3 -m http.server 8000 &  # Background start frontend
 ```
 
-**问题5：AI功能不工作**
-- 确保后端服务在8080端口运行
-- 检查浏览器控制台是否有CORS错误
-- 尝试刷新页面或清除浏览器缓存
+**Issue 5: AI Features Not Working**
+- Ensure backend service is running on port 8080
+- Check browser console for CORS errors
+- Try refreshing page or clearing browser cache
 
-**问题6：页面样式异常**
-- 检查网络连接，确保CDN资源能正常加载
-- 尝试使用不同的浏览器
-- 清除浏览器缓存和Cookie
+**Issue 6: Page Styling Issues**
+- Check network connection, ensure CDN resources load properly
+- Try using different browsers
+- Clear browser cache and cookies
 
-## ✨ 主要功能
+## ✨ Main Features
 
-### 🤖 智能AI助手
-- **智能问答**: 查询项目状态、货物位置、系统状态等实时信息
-- **团队协调**: 智能识别并连接相关团队成员，支持按地区、专业领域筛选
-- **分析报告**: 自动生成每日/每周全球协调报告和KPI分析
-- **语言翻译**: 支持30+种语言的实时翻译，包括中文、英文、日文等
-- **预测分析**: AI预测港口延误风险和碳排放超标
-- **历史案例**: RAG系统检索相似历史案例并提供解决方案
-- **自动报告**: 智能生成泊位利用率、港口效率等专业报告
+### 🤖 Intelligent AI Assistant
+- **Smart Q&A**: Query project status, cargo location, system status and other real-time information
+- **Team Coordination**: Intelligently identify and connect relevant team members, support filtering by region and expertise
+- **Analytics Reports**: Automatically generate daily/weekly global coordination reports and KPI analysis
+- **Language Translation**: Support real-time translation for 30+ languages including Chinese, English, Japanese, etc.
+- **Predictive Analytics**: AI predicts port delay risks and carbon emission overruns
+- **Historical Cases**: RAG system retrieves similar historical cases and provides solutions
+- **Auto Reports**: Intelligently generate professional reports on berth utilization, port efficiency, etc.
 
-### 📊 数据分析与可视化
-- **实时KPI仪表板**: 动态显示港口效率、到达准确率、碳减排等指标
-- **全球地图热力图**: 可视化各港口效率、延误情况、碳排放水平
-- **时间轴分析**: 历史趋势对比和AI预测曲线
-- **多维度钻取**: 从全球→区域→港口→具体船只的层级分析
-- **交互式图表**: 支持点击、缩放、悬停等交互操作
+### 📊 Data Analysis & Visualization
+- **Real-time KPI Dashboard**: Dynamically display port efficiency, arrival accuracy, carbon reduction and other metrics
+- **Global Map Heatmap**: Visualize port efficiency, delay situations, carbon emission levels
+- **Timeline Analysis**: Historical trend comparison and AI prediction curves
+- **Multi-dimensional Drill-down**: Hierarchical analysis from global → regional → port → specific vessels
+- **Interactive Charts**: Support click, zoom, hover and other interactive operations
 
-### 🚢 海事专业功能
-- **船舶跟踪**: 实时船舶位置和状态监控
-- **港口管理**: 泊位利用率、起重机状态、天气条件
-- **碳排放分析**: 燃料效率、可再生能源使用、排放目标
-- **成本优化**: 运营成本分析和优化建议
-- **应急响应**: 紧急情况处理和联系信息
-- **合规检查**: 法规合规性检查和审计状态
+### 🚢 Maritime Professional Features
+- **Vessel Tracking**: Real-time vessel position and status monitoring
+- **Port Management**: Berth utilization, crane status, weather conditions
+- **Carbon Emission Analysis**: Fuel efficiency, renewable energy usage, emission targets
+- **Cost Optimization**: Operational cost analysis and optimization recommendations
+- **Emergency Response**: Emergency situation handling and contact information
+- **Compliance Check**: Regulatory compliance check and audit status
 
-### 🌍 多语言支持
-- 🇨🇳 中文 (Chinese)
-- 🇺🇸 英语 (English)  
-- 🇩🇪 德语 (Deutsch)
-- 🇫🇷 法语 (Français)
-- 🇯🇵 日语 (日本語)
-- 🇰🇷 韩语 (한국어)
-- 🇪🇸 西班牙语 (Español)
-- 🇮🇹 意大利语 (Italiano)
-- 🇵🇹 葡萄牙语 (Português)
-- 🇷🇺 俄语 (Русский)
-- 以及更多...
+### 🌍 Multilingual Support
+- 🇨🇳 Chinese (中文)
+- 🇺🇸 English (English)  
+- 🇩🇪 German (Deutsch)
+- 🇫🇷 French (Français)
+- 🇯🇵 Japanese (日本語)
+- 🇰🇷 Korean (한국어)
+- 🇪🇸 Spanish (Español)
+- 🇮🇹 Italian (Italiano)
+- 🇵🇹 Portuguese (Português)
+- 🇷🇺 Russian (Русский)
+- And more...
 
-## 🏗️ 技术架构
+## 🏗️ Technical Architecture
 
-### 后端 (Java)
-- **Spring Boot 3.2.0**: 主框架
+### Backend (Java)
+- **Spring Boot 3.2.0**: Main framework
 - **Spring Web**: RESTful API
-- **Spring Data JPA**: 数据持久化
-- **Google Cloud Translate**: AI翻译服务
-- **H2 Database**: 内存数据库
-- **Maven**: 依赖管理
-- **Team Coordination Service**: 团队协调服务
-- **Analytics Service**: 数据分析服务
-- **RAG Memory Service**: 历史案例检索服务
+- **Spring Data JPA**: Data persistence
+- **Google Cloud Translate**: AI translation service
+- **H2 Database**: In-memory database
+- **Maven**: Dependency management
+- **Team Coordination Service**: Team coordination service
+- **Analytics Service**: Data analysis service
+- **RAG Memory Service**: Historical case retrieval service
 
-### 前端 (HTML/CSS/JavaScript)
-- **响应式设计**: 支持移动端和桌面端
-- **现代UI**: 海洋主题、渐变背景、动画效果
-- **实时通信**: 与Java后端API集成
-- **多语言界面**: 动态语言切换
-- **Chart.js**: 交互式图表库
-- **Leaflet**: 全球地图可视化
-- **Three.js**: 3D数据可视化
-- **全屏聊天**: 增强的用户交互体验
+### Frontend (HTML/CSS/JavaScript)
+- **Responsive Design**: Support for mobile and desktop
+- **Modern UI**: Maritime theme, gradient backgrounds, animation effects
+- **Real-time Communication**: Integration with Java backend API
+- **Multilingual Interface**: Dynamic language switching
+- **Chart.js**: Interactive chart library
+- **Leaflet**: Global map visualization
+- **Three.js**: 3D data visualization
+- **Fullscreen Chat**: Enhanced user interaction experience
 
-### 数据可视化
-- **动态KPI仪表板**: 实时数据更新和趋势指示
-- **全球地图热力图**: 港口性能可视化
-- **时间轴分析**: 历史趋势和预测曲线
-- **多维度钻取**: 层级数据导航
-- **交互式图表**: 支持多种图表类型
+### Data Visualization
+- **Dynamic KPI Dashboard**: Real-time data updates and trend indicators
+- **Global Map Heatmap**: Port performance visualization
+- **Timeline Analysis**: Historical trends and prediction curves
+- **Multi-dimensional Drill-down**: Hierarchical data navigation
+- **Interactive Charts**: Support for multiple chart types
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-### 环境要求
+### Environment Requirements
 - Java 17+
 - Maven 3.6+
-- Python 3.x (用于前端服务器)
+- Python 3.x (for frontend server)
 
-### 安装步骤
+### Installation Steps
 
-1. **克隆项目**
+1. **Clone Project**
 ```bash
 git clone <repository-url>
 cd Emerging
 ```
 
-2. **设置Google翻译API密钥** (可选)
+2. **Set Google Translate API Key** (Optional)
 ```bash
 export GOOGLE_TRANSLATE_API_KEY=your-api-key-here
 ```
 
-3. **启动应用**
+3. **Start Application**
 ```bash
 ./start.sh
 ```
 
-或者手动启动：
+Or start manually:
 
 ```bash
-# 启动后端
+# Start backend
 mvn spring-boot:run
 
-# 启动前端 (新终端)
+# Start frontend (new terminal)
 python3 -m http.server 8000
 ```
 
-4. **访问应用**
-- 前端: http://localhost:8000
-- 后端API: http://localhost:8080/api
-- 数据库控制台: http://localhost:8080/h2-console
+4. **Access Application**
+- Frontend: http://localhost:8000
+- Backend API: http://localhost:8080/api
+- Database Console: http://localhost:8080/h2-console
 
-## 📡 API接口
+## 📡 API Interface
 
-### 聊天相关
-- `POST /api/chat/message` - 发送消息获取AI回复
-- `POST /api/chat/message-with-data` - 发送消息并获取结构化数据
-- `GET /api/chat/languages` - 获取支持的语言列表
-- `POST /api/chat/detect-language` - 检测文本语言
-- `POST /api/chat/translate` - 翻译文本
-- `POST /api/chat/quick-question` - 快速提问
+### Chat Related
+- `POST /api/chat/message` - Send message and get AI response
+- `POST /api/chat/message-with-data` - Send message and get structured data
+- `GET /api/chat/languages` - Get supported language list
+- `POST /api/chat/detect-language` - Detect text language
+- `POST /api/chat/translate` - Translate text
+- `POST /api/chat/quick-question` - Quick question
 
-### 团队协调
-- `POST /api/team-coordination/query` - 团队协调查询
-- `GET /api/team-coordination/members` - 获取团队成员列表
-- `GET /api/team-coordination/members/{id}` - 获取特定成员信息
-- `POST /api/team-coordination/search` - 搜索团队成员
+### Team Coordination
+- `POST /api/team-coordination/query` - Team coordination query
+- `GET /api/team-coordination/members` - Get team member list
+- `GET /api/team-coordination/members/{id}` - Get specific member information
+- `POST /api/team-coordination/search` - Search team members
 
-### 数据分析
-- `POST /api/analytics/report` - 生成分析报告
-- `GET /api/analytics/kpi` - 获取KPI数据
-- `POST /api/analytics/predict` - AI预测分析
+### Data Analysis
+- `POST /api/analytics/report` - Generate analysis report
+- `GET /api/analytics/kpi` - Get KPI data
+- `POST /api/analytics/predict` - AI predictive analysis
 
-### 历史案例检索
-- `POST /api/rag/search` - 搜索历史案例
-- `GET /api/rag/cases` - 获取案例列表
+### Historical Case Retrieval
+- `POST /api/rag/search` - Search historical cases
+- `GET /api/rag/cases` - Get case list
 
-### 自动报告
-- `POST /api/reports/generate` - 生成自动报告
-- `GET /api/reports/templates` - 获取报告模板
+### Auto Reports
+- `POST /api/reports/generate` - Generate auto report
+- `GET /api/reports/templates` - Get report templates
 
-### 请求示例
+### Request Examples
 
-**发送消息:**
+**Send Message:**
 ```bash
 curl -X POST http://localhost:8080/api/chat/message?language=en \
   -H "Content-Type: application/json" \
   -d '{"content":"Where is shipment #342 now?","sender":"user","language":"en"}'
 ```
 
-**团队协调查询:**
+**Team Coordination Query:**
 ```bash
 curl -X POST http://localhost:8080/api/team-coordination/query \
   -H "Content-Type: application/json" \
   -d '{"message":"Who owns Europe network issues?"}'
 ```
 
-**生成分析报告:**
+**Generate Analysis Report:**
 ```bash
 curl -X POST http://localhost:8080/api/analytics/report \
   -H "Content-Type: application/json" \
   -d '{"query":"Weekly delay analysis for Asian routes","type":"weekly"}'
 ```
 
-**翻译文本:**
+**Translate Text:**
 ```bash
 curl -X POST http://localhost:8080/api/chat/translate \
   -H "Content-Type: application/json" \
   -d '{"text":"Hello team, meeting at 3PM","sourceLanguage":"en","targetLanguage":"zh"}'
 ```
 
-**AI预测分析:**
+**AI Predictive Analysis:**
 ```bash
 curl -X POST http://localhost:8080/api/analytics/predict \
   -H "Content-Type: application/json" \
   -d '{"query":"Forecast next week delay risk for Asia-Europe route","type":"delay"}'
 ```
 
-## 🎨 界面特性
+## 🎨 Interface Features
 
-### 海洋主题设计
-- **海洋色彩方案**: 深蓝到浅蓝的渐变背景
-- **船舶元素**: 动态集装箱船、货船、锚、指南针等海洋图标
-- **波浪动画**: 三层波浪效果营造海洋氛围
-- **集装箱色彩**: 橙色、红色、蓝色、绿色、黄色等集装箱主题色
+### Maritime Theme Design
+- **Ocean Color Scheme**: Deep blue to light blue gradient backgrounds
+- **Maritime Elements**: Dynamic container ships, cargo ships, anchors, compasses and other maritime icons
+- **Wave Animations**: Three-layer wave effects creating ocean atmosphere
+- **Container Colors**: Orange, red, blue, green, yellow and other container theme colors
+- **Gradient Backgrounds and Glass Effects**: Professional maritime theme visual effects
+- **Smooth Animations and Transitions**: Ship sailing, floating, rotating animations
+- **Responsive Layout**: Perfect adaptation for mobile and desktop
+- **Fullscreen Chat Mode**: Enhanced AI assistant interaction experience
 
-### 现代化设计
-- **渐变背景和毛玻璃效果**: 专业的海洋主题视觉效果
-- **流畅的动画和过渡**: 船舶航行、浮动、旋转等动画
-- **响应式布局**: 完美适配移动端和桌面端
-- **全屏聊天模式**: 增强的AI助手交互体验
+## 🔧 Configuration
 
-### 交互功能
-- **实时打字指示器**: 显示AI正在思考
-- **语言切换通知**: 多语言界面无缝切换
-- **平滑滚动导航**: 流畅的页面导航体验
-- **悬停动画效果**: 丰富的交互反馈
-- **快捷按钮**: 一键访问常用功能
-- **全屏模式**: 沉浸式的聊天体验
-
-### 数据可视化
-- **动态KPI仪表板**: 实时更新的关键指标
-- **全球地图热力图**: 交互式港口性能地图
-- **时间轴分析**: 历史趋势和预测曲线
-- **多维度钻取**: 层级数据导航和分析
-- **交互式图表**: 支持点击、缩放、悬停操作
-
-## 🔧 配置说明
-
-### 应用配置 (application.yml)
+### Application Configuration (application.yml)
 ```yaml
 server:
   port: 8080
@@ -347,103 +311,103 @@ google:
       api-key: ${GOOGLE_TRANSLATE_API_KEY:your-api-key-here}
 ```
 
-### 环境变量
-- `GOOGLE_TRANSLATE_API_KEY`: Google翻译API密钥
-- `SERVER_PORT`: 服务器端口 (默认8080)
+### Environment Variables
+- `GOOGLE_TRANSLATE_API_KEY`: Google Translate API key
+- `SERVER_PORT`: Server port (default 8080)
 
-## 📁 项目结构
+## 📁 Project Structure
 
 ```
 Emerging-new-try/
-├── README.md                                 # 项目说明文档
-├── index.html                                # 主页面
-├── dashboard.html                            # 实时数据可视化仪表板
-├── script.js                                 # 前端JavaScript
-├── pom.xml                                   # Maven配置
-├── docs/                                     # 文档文件夹
-│   ├── AZURE_OPENAI_INTEGRATION.md          # Azure OpenAI集成指南
-│   ├── AZURE_OPENAI_SETUP.md                # Azure OpenAI设置
-│   ├── POWERBI_EMBEDDED_GUIDE.md            # Power BI嵌入指南
-│   ├── POWERBI_SETUP.md                     # Power BI设置
-│   ├── PROJECT_SUMMARY.md                   # 项目总结
-│   ├── PSA_KEYWORD_EXTRACTION_README.md     # PSA关键词提取说明
-│   ├── SETUP.md                             # 设置指南
-│   └── SMART_TRACKING_SUMMARY.md            # 智能追踪总结
-├── demos/                                    # 演示页面文件夹
-│   ├── advanced-visualization-demo.html      # 高级可视化演示
-│   ├── debug-translation.html               # 翻译调试页面
-│   ├── enhanced-index-demo.html             # 增强首页演示
-│   ├── information-architecture-demo.html   # 信息架构改进演示
-│   ├── maritime-theme-demo.html             # 海洋主题UI演示
-│   └── quick-test.html                      # 快速测试页面
-├── scripts/                                  # 脚本文件夹
-│   ├── start.sh                             # 启动脚本
-│   ├── start-full.sh                        # 完整启动脚本
-│   ├── start-simple.sh                      # 简单启动脚本
-│   ├── start-with-config.sh                 # 配置启动脚本
-│   ├── test-*.sh                            # 各种测试脚本
-│   └── config.env                           # 环境配置文件
-├── data/                                    # 数据文件夹
-│   ├── psa-complete-data.txt                # PSA完整数据
-│   ├── psa-extended-data.txt                # PSA扩展数据
-│   └── psa-raw-data.txt                     # PSA原始数据
-├── tests/                                    # 测试文件夹
-│   ├── test-all-buttons-undefined-fix.html   # 按钮undefined修复测试
-│   ├── test-all-quick-buttons.html           # 所有快捷按钮测试
-│   ├── test-auto-report-generator.html       # 自动报告生成器测试
-│   ├── test-button-undefined-fix.html        # 按钮undefined修复测试
-│   ├── test-enhanced-ui.html                # 增强UI测试
-│   ├── test-fullscreen-chat.html             # 全屏聊天测试
-│   ├── test-fullscreen-display-fix.html     # 全屏显示修复测试
-│   ├── test-index-translation.html           # 首页翻译测试
-│   ├── test-language-default-english.html    # 默认英语测试
-│   ├── test-new-ai-features.html             # 新AI功能测试
-│   ├── test-predictive-analytics.html        # 预测分析测试
-│   ├── test-rag-historical-memory.html       # RAG历史记忆测试
-│   ├── test-root-translation.html            # 根目录翻译测试
-│   ├── test-translation-undefined-fix.html   # 翻译undefined修复测试
-│   └── test-translation.html                 # 翻译功能测试
-├── src/main/java/com/networkinsights/ai/     # Java后端代码
-│   ├── NetworkInsightsApplication.java       # 主应用类
-│   ├── controller/                          # REST API控制器
-│   │   ├── ChatController.java               # 聊天控制器
-│   │   ├── TeamCoordinationController.java   # 团队协调控制器
-│   │   ├── SmartTrackingController.java     # 智能跟踪控制器
-│   │   └── AnalyticsController.java          # 分析控制器
-│   ├── service/                             # 业务逻辑服务
-│   │   ├── AIService.java                   # AI服务
-│   │   ├── TranslationService.java          # 翻译服务
-│   │   ├── TeamCoordinationService.java     # 团队协调服务
-│   │   ├── DocumentProcessingService.java   # 文档处理服务
-│   │   └── AnalyticsService.java            # 分析服务
-│   ├── model/                               # 数据模型
-│   │   ├── ChatMessage.java                 # 聊天消息模型
-│   │   ├── TeamMember.java                  # 团队成员模型
-│   │   ├── LanguageRequest.java             # 语言请求模型
-│   │   └── SupportedLanguage.java           # 支持语言模型
-│   └── config/                              # 配置类
-│       └── CorsConfig.java                  # CORS配置
-└── src/main/resources/                     # 资源文件
-    ├── static/                              # 静态资源
-    │   ├── index.html                       # 主页面（Spring Boot服务）
-    │   └── dashboard.html                   # 数据仪表板（Spring Boot服务）
-    └── application.yml                      # 应用配置
+├── README.md                                 # Project documentation
+├── index.html                                # Main page
+├── dashboard.html                            # Real-time data visualization dashboard
+├── script.js                                 # Frontend JavaScript
+├── pom.xml                                   # Maven configuration
+├── docs/                                     # Documentation folder
+│   ├── AZURE_OPENAI_INTEGRATION.md          # Azure OpenAI integration guide
+│   ├── AZURE_OPENAI_SETUP.md                # Azure OpenAI setup
+│   ├── POWERBI_EMBEDDED_GUIDE.md            # Power BI embedded guide
+│   ├── POWERBI_SETUP.md                     # Power BI setup
+│   ├── PROJECT_SUMMARY.md                   # Project summary
+│   ├── PSA_KEYWORD_EXTRACTION_README.md     # PSA keyword extraction guide
+│   ├── SETUP.md                             # Setup guide
+│   └── SMART_TRACKING_SUMMARY.md            # Smart tracking summary
+├── demos/                                    # Demo pages folder
+│   ├── advanced-visualization-demo.html      # Advanced visualization demo
+│   ├── debug-translation.html               # Translation debug page
+│   ├── enhanced-index-demo.html             # Enhanced homepage demo
+│   ├── information-architecture-demo.html   # Information architecture demo
+│   ├── maritime-theme-demo.html             # Maritime theme UI demo
+│   └── quick-test.html                      # Quick test page
+├── scripts/                                  # Scripts folder
+│   ├── start.sh                             # Startup script
+│   ├── start-full.sh                        # Full startup script
+│   ├── start-simple.sh                      # Simple startup script
+│   ├── start-with-config.sh                 # Config startup script
+│   ├── test-*.sh                            # Various test scripts
+│   └── config.env                           # Environment configuration file
+├── data/                                    # Data folder
+│   ├── psa-complete-data.txt                # PSA complete data
+│   ├── psa-extended-data.txt                # PSA extended data
+│   └── psa-raw-data.txt                     # PSA raw data
+├── tests/                                    # Test folder
+│   ├── test-all-buttons-undefined-fix.html   # Button undefined fix test
+│   ├── test-all-quick-buttons.html           # All quick buttons test
+│   ├── test-auto-report-generator.html       # Auto report generator test
+│   ├── test-button-undefined-fix.html        # Button undefined fix test
+│   ├── test-enhanced-ui.html                # Enhanced UI test
+│   ├── test-fullscreen-chat.html             # Fullscreen chat test
+│   ├── test-fullscreen-display-fix.html     # Fullscreen display fix test
+│   ├── test-index-translation.html           # Homepage translation test
+│   ├── test-language-default-english.html    # Default English test
+│   ├── test-new-ai-features.html             # New AI features test
+│   ├── test-predictive-analytics.html        # Predictive analytics test
+│   ├── test-rag-historical-memory.html       # RAG historical memory test
+│   ├── test-root-translation.html            # Root directory translation test
+│   ├── test-translation-undefined-fix.html   # Translation undefined fix test
+│   └── test-translation.html                 # Translation function test
+├── src/main/java/com/networkinsights/ai/     # Java backend code
+│   ├── NetworkInsightsApplication.java       # Main application class
+│   ├── controller/                          # REST API controllers
+│   │   ├── ChatController.java               # Chat controller
+│   │   ├── TeamCoordinationController.java   # Team coordination controller
+│   │   ├── SmartTrackingController.java     # Smart tracking controller
+│   │   └── AnalyticsController.java          # Analytics controller
+│   ├── service/                             # Business logic services
+│   │   ├── AIService.java                   # AI service
+│   │   ├── TranslationService.java          # Translation service
+│   │   ├── TeamCoordinationService.java     # Team coordination service
+│   │   ├── DocumentProcessingService.java   # Document processing service
+│   │   └── AnalyticsService.java            # Analytics service
+│   ├── model/                               # Data models
+│   │   ├── ChatMessage.java                 # Chat message model
+│   │   ├── TeamMember.java                  # Team member model
+│   │   ├── LanguageRequest.java             # Language request model
+│   │   └── SupportedLanguage.java           # Supported language model
+│   └── config/                              # Configuration classes
+│       └── CorsConfig.java                  # CORS configuration
+└── src/main/resources/                     # Resource files
+    ├── static/                              # Static resources
+    │   ├── index.html                       # Main page (Spring Boot service)
+    │   └── dashboard.html                   # Data dashboard (Spring Boot service)
+    └── application.yml                      # Application configuration
 ```
 
-## 🌟 特色亮点
+## 🌟 Key Highlights
 
-1. **海洋主题设计**: 专业的海事行业界面，海洋色彩和船舶元素
-2. **AI驱动**: 集成多种AI服务进行智能分析和预测
-3. **实时交互**: 前后端实时通信，动态数据更新
-4. **多语言支持**: 支持30+种语言的实时翻译
-5. **现代化UI**: 使用最新的Web技术和海洋主题设计
-6. **数据可视化**: 动态KPI仪表板、全球地图、时间轴分析
-7. **团队协调**: 智能识别和连接相关团队成员
-8. **预测分析**: AI预测港口延误和碳排放风险
-9. **历史案例**: RAG系统提供历史解决方案
-10. **自动报告**: 智能生成专业分析报告
-11. **易于扩展**: 模块化设计，易于添加新功能
-12. **全屏体验**: 沉浸式的AI助手交互
+1. **Maritime Theme Design**: Professional maritime industry interface with ocean colors and ship elements
+2. **AI-Driven**: Integrated multiple AI services for intelligent analysis and prediction
+3. **Real-time Interaction**: Frontend-backend real-time communication with dynamic data updates
+4. **Multilingual Support**: Real-time translation support for 30+ languages
+5. **Modern UI**: Using latest web technologies and maritime theme design
+6. **Data Visualization**: Dynamic KPI dashboard, global maps, timeline analysis
+7. **Team Coordination**: Intelligently identify and connect relevant team members
+8. **Predictive Analytics**: AI predicts port delays and carbon emission risks
+9. **Historical Cases**: RAG system provides historical solutions
+10. **Auto Reports**: Intelligently generate professional analysis reports
+11. **Easy to Extend**: Modular design, easy to add new features
+12. **Fullscreen Experience**: Immersive AI assistant interaction
 
 
 **Network Insights** - 让全球协作更智能 🚀

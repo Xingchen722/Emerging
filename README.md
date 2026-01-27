@@ -1,198 +1,206 @@
-# 🌐 Network Insights - 全球协调AI助手
+# 🌐 Network Insights - Global Maritime Coordination AI Platform
 
-一个基于Java Spring Boot和现代Web技术的智能全球协调平台，支持多语言AI对话和实时翻译。
+An intelligent global coordination platform based on Java Spring Boot and modern web technologies, supporting multilingual AI conversations and real-time translation.
 
-## ✨ 主要功能
+## Try it out
+https://xingchen722.github.io/Emerging/index.html
 
-### 🤖 智能AI助手
-- **智能问答**: 查询项目状态、货物位置、系统状态等实时信息
-- **团队沟通辅助**: 自动识别并连接相关团队成员
-- **智能报告**: 自动生成每日/每周全球协调报告
-- **语言辅助**: 支持20+种语言的实时翻译
+## 📋 Project Overview
 
-### 🌍 多语言支持
-- 🇨🇳 中文 (Chinese)
-- 🇺🇸 英语 (English)  
-- 🇩🇪 德语 (Deutsch)
-- 🇫🇷 法语 (Français)
-- 🇯🇵 日语 (日本語)
-- 🇰🇷 韩语 (한국어)
-- 🇪🇸 西班牙语 (Español)
-- 🇮🇹 意大利语 (Italiano)
-- 🇵🇹 葡萄牙语 (Português)
-- 🇷🇺 俄语 (Русский)
-- 以及更多...
+**Network Insights** is an enterprise-grade global maritime coordination AI platform designed specifically for the maritime logistics industry. The platform integrates multiple AI capabilities including team coordination, data analysis, predictive analytics, historical case retrieval, automatic report generation, and real-time data visualization.
 
-## 🏗️ 技术架构
+### 🎯 Core Positioning
 
-### 后端 (Java)
-- **Spring Boot 3.2.0**: 主框架
-- **Spring Web**: RESTful API
-- **Google Cloud Translate**: AI翻译服务
-- **H2 Database**: 内存数据库
-- **Maven**: 依赖管理
+Network Insights is committed to providing intelligent coordination and management solutions for the global maritime logistics industry, helping teams achieve:
 
-### 前端 (HTML/CSS/JavaScript)
-- **响应式设计**: 支持移动端和桌面端
-- **现代UI**: 渐变背景、动画效果
-- **实时通信**: 与Java后端API集成
-- **多语言界面**: 动态语言切换
+- 🌍 **Global Collaboration**: Cross-timezone, cross-language team coordination
+- 📊 **Intelligent Analysis**: AI-powered analysis and prediction based on real-time data
+- 🚢 **Professional Services**: Professional feature support for the maritime industry
+- 🤖 **AI-Driven**: Integration of multiple AI services for intelligent experience
 
-## 🚀 快速开始
+## ✨ Main Features
 
-### 环境要求
-- Java 17+
-- Maven 3.6+
-- Python 3.x (用于前端服务器)
+### 🤖 Intelligent AI Assistant
 
-### 安装步骤
+#### 1. Smart Q&A System
+- **Real-time Queries**: Query project status, cargo location, system status, and other real-time information
+- **Natural Language Processing**: Support for Chinese and English natural language conversations
+- **Context Understanding**: Intelligent responses based on context
+- **Fast Response**: Millisecond-level response time
 
-1. **克隆项目**
-```bash
-git clone <repository-url>
-cd Emerging
-```
+#### 2. Team Coordination Features
+- **Intelligent Identification**: Automatically identify and connect relevant team members
+- **Regional Filtering**: Support filtering by region and expertise
+- **Contact Information**: Provide detailed contact information for team members
+- **Collaboration Suggestions**: Recommend best contacts based on query content
 
-2. **设置Google翻译API密钥** (可选)
-```bash
-export GOOGLE_TRANSLATE_API_KEY=your-api-key-here
-```
+#### 3. Smart Cargo Tracking
+- **Natural Language Queries**: Query cargo location, ETA, routes, and other information using natural language
+- **Multi-dimensional Search**: Search by shipment ID, vessel name, port, etc.
+- **Real-time Status**: Display real-time cargo location and status
+- **Detailed Information**: Provide detailed information such as container count, weight, etc.
 
-3. **启动应用**
-```bash
-./start.sh
-```
+#### 4. Multilingual Translation
+- **30+ Language Support**: Support for Chinese, English, Japanese, Korean, French, German, Spanish, and more
+- **Real-time Translation**: Instant translation of conversation content
+- **Language Detection**: Automatically detect input language
+- **Professional Terminology**: Professional maritime industry terminology translation
 
-或者手动启动：
+#### 5. Predictive Analytics
+- **Port Delay Prediction**: AI predicts port delay risks
+- **Carbon Emission Prediction**: Predict carbon emission overrun risks
+- **Trend Analysis**: Trend prediction based on historical data
+- **Risk Assessment**: Multi-dimensional risk assessment reports
 
-```bash
-# 启动后端
-mvn spring-boot:run
+#### 6. Historical Case Retrieval (RAG)
+- **Intelligent Retrieval**: Retrieve similar historical cases based on RAG system
+- **Solution Recommendations**: Provide solutions for historical problems
+- **Knowledge Base**: Accumulate and utilize historical experience
+- **Best Practices**: Share cross-port best practices
 
-# 启动前端 (新终端)
-python3 -m http.server 8000
-```
+#### 7. Automatic Report Generation
+- **Intelligent Generation**: Automatically generate professional analysis reports
+- **Multiple Report Types**: Support daily/weekly/monthly reports, KPI analysis, efficiency analysis, etc.
+- **Visualization Charts**: Include rich charts and data visualization
+- **Professional Format**: Industry-standard report format
 
-4. **访问应用**
-- 前端: http://localhost:8000
-- 后端API: http://localhost:8080/api
-- 数据库控制台: http://localhost:8080/h2-console
+### 📊 Data Analysis & Visualization
 
-## 📡 API接口
+#### 1. Real-time KPI Dashboard
+- **Dynamic Updates**: Real-time display of port efficiency, arrival accuracy, carbon reduction, and other metrics
+- **Trend Indicators**: Display data trends and change directions
+- **Multi-dimensional Metrics**: Support multi-dimensional KPI display
+- **Interactive Operations**: Support click, zoom, hover, and other interactions
 
-### 聊天相关
-- `POST /api/chat/message` - 发送消息获取AI回复
-- `GET /api/chat/languages` - 获取支持的语言列表
-- `POST /api/chat/detect-language` - 检测文本语言
-- `POST /api/chat/translate` - 翻译文本
-- `POST /api/chat/quick-question` - 快速提问
+#### 2. Global Map Heatmap
+- **Port Efficiency Visualization**: Display port efficiency on the map
+- **Delay Situation Display**: Visualize delay situations
+- **Carbon Emission Levels**: Display carbon emission level distribution
+- **Real-time Vessel Positions**: Display real-time vessel positions and status
 
-### 请求示例
+#### 3. Timeline Analysis
+- **Historical Trend Comparison**: Compare historical data trends
+- **AI Prediction Curves**: Display AI-predicted future trends
+- **Multiple Time Dimensions**: Support daily/weekly/monthly/yearly time dimensions
+- **Interactive Charts**: Support interactive timeline operations
 
-**发送消息:**
-```bash
-curl -X POST http://localhost:8080/api/chat/message?language=zh \
-  -H "Content-Type: application/json" \
-  -d '{"content":"货物#342现在在哪里？","sender":"user","language":"zh"}'
-```
+#### 4. Multi-dimensional Drill-down Analysis
+- **Hierarchical Analysis**: Hierarchical analysis from global → regional → port → specific vessels
+- **Data Drill-down**: Support multi-level data drill-down
+- **Correlation Analysis**: Analyze correlations between different levels
+- **Flexible Navigation**: Flexible data navigation and exploration
 
-**翻译文本:**
-```bash
-curl -X POST http://localhost:8080/api/chat/translate \
-  -H "Content-Type: application/json" \
-  -d '{"text":"Hello World","sourceLanguage":"en","targetLanguage":"zh"}'
-```
+### 🚢 Maritime Professional Features
 
-## 🎨 界面特性
+#### 1. Vessel Tracking
+- **Real-time Position Monitoring**: Real-time monitoring of vessel positions and status
+- **Route Information**: Display vessel routes and destinations
+- **Estimated Time of Arrival**: Provide accurate ETA information
+- **Vessel Details**: Provide detailed vessel information
 
-### 现代化设计
-- 渐变背景和毛玻璃效果
-- 流畅的动画和过渡
-- 响应式布局
-- 深色/浅色主题支持
+#### 2. Port Management
+- **Berth Utilization**: Monitor berth usage
+- **Crane Status**: Display crane operational status
+- **Weather Conditions**: Provide port weather information
+- **Operational Efficiency**: Analyze port operational efficiency
 
-### 交互功能
-- 实时打字指示器
-- 语言切换通知
-- 平滑滚动导航
-- 悬停动画效果
+#### 3. Carbon Emission Analysis
+- **Fuel Efficiency**: Analyze fuel usage efficiency
+- **Renewable Energy Usage**: Monitor renewable energy usage
+- **Emission Targets**: Track carbon emission target completion
+- **Optimization Recommendations**: Provide emission reduction optimization recommendations
 
-## 🔧 配置说明
+#### 4. Cost Optimization
+- **Operational Cost Analysis**: Analyze various operational costs
+- **Optimization Recommendations**: Provide cost optimization recommendations
+- **Cost Prediction**: Predict future cost trends
+- **ROI Analysis**: Return on investment analysis
 
-### 应用配置 (application.yml)
-```yaml
-server:
-  port: 8080
+#### 5. Emergency Response
+- **Emergency Situation Handling**: Quick response to emergencies
+- **Contact Information**: Provide relevant contact information
+- **Emergency Plans**: Provide emergency plan guidance
+- **Status Updates**: Real-time emergency status updates
 
-spring:
-  datasource:
-    url: jdbc:h2:mem:testdb
-    username: sa
-    password: password
+#### 6. Compliance Check
+- **Regulatory Compliance**: Check regulatory compliance status
+- **Audit Status**: Track audit status
+- **Compliance Reports**: Generate compliance reports
+- **Risk Alerts**: Identify compliance risks
 
-google:
-  cloud:
-    translate:
-      api-key: ${GOOGLE_TRANSLATE_API_KEY:your-api-key-here}
-```
+### 🌍 Multilingual Support
+Support 30+ languages
 
-### 环境变量
-- `GOOGLE_TRANSLATE_API_KEY`: Google翻译API密钥
-- `SERVER_PORT`: 服务器端口 (默认8080)
+## 🏗️ Technical Architecture
 
-## 📁 项目结构
+### Backend Technology Stack
+The backend is built with Java 17, using Spring Boot 3.2.0 as the main framework, and integrates the following components and services:
 
-```
-Emerging/
-├── src/main/java/com/networkinsights/ai/
-│   ├── NetworkInsightsApplication.java    # 主应用类
-│   ├── controller/
-│   │   └── ChatController.java           # 聊天控制器
-│   ├── service/
-│   │   ├── AIService.java               # AI服务
-│   │   └── TranslationService.java      # 翻译服务
-│   ├── model/
-│   │   ├── ChatMessage.java             # 聊天消息模型
-│   │   ├── LanguageRequest.java         # 语言请求模型
-│   │   └── SupportedLanguage.java       # 支持语言模型
-│   └── config/
-│       └── CorsConfig.java              # CORS配置
-├── src/main/resources/
-│   └── application.yml                  # 应用配置
-├── index.html                           # 前端页面
-├── style.css                           # 样式文件
-├── script.js                           # JavaScript逻辑
-├── pom.xml                             # Maven配置
-├── start.sh                            # 启动脚本
-└── README.md                           # 项目说明
-```
+1. Spring Web: For building RESTful APIs.
+2. Spring Data JPA: Provides data persistence support.
+3. H2 Database: In-memory database used for development.
+4. Google Cloud Translate: AI-powered translation service.
+5. Azure OpenAI: Integration with OpenAI services.
+6. Power BI Embedded: Embedded Power BI data visualization.
+7. Maven: Dependency management tool.
+8. Jackson: JSON processing library.
 
-## 🌟 特色亮点
+### Frontend Technology Stack
+The frontend is developed using HTML5, CSS3, and JavaScript ES6, featuring the following:
 
-1. **完全中文化**: 界面和文档完全中文化
-2. **AI驱动**: 集成Google翻译API进行智能翻译
-3. **实时交互**: 前后端实时通信
-4. **多语言支持**: 支持20+种语言
-5. **现代化UI**: 使用最新的Web技术
-6. **易于扩展**: 模块化设计，易于添加新功能
+1. Responsive Design: Adaptable for both mobile and desktop devices.
+2. CSS Grid & Flexbox: For modern layout design.
+3. CSS Animations & Transitions: Provides smooth animation effects.
+4. Fetch API: For making HTTP requests.
+5. Chart.js: Interactive chart library.
+6. Leaflet: Global map visualization.
+7. Three.js: 3D data visualization.
+8. Font Awesome: Icon library.
 
-## 🤝 贡献指南
+### Core Service Components
+#### 1. AI Service Layer
+- **AIService**: Core AI service for intelligent conversations
+- **OpenAIService**: Azure OpenAI integration service
+- **TranslationService**: Multilingual translation service
+- **RealTimeAIAnalysisService**: Real-time AI analysis service
 
-1. Fork 项目
-2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 打开 Pull Request
+#### 2. Business Service Layer
+- **TeamCoordinationService**: Team coordination service
+- **SmartTrackingService**: Smart cargo tracking service
+- **PSADataService**: PSA data processing service
+- **DocumentProcessingService**: Document processing service
+- **KeywordExtractionService**: Keyword extraction service
 
-## 📄 许可证
+#### 3. Data Service Layer
+- **PowerBIService**: Power BI data service
+- **PowerBIEmbeddedService**: Power BI embedded service
+- **DataReadingService**: Data reading service
 
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情
+#### 4. API Controller Layer
+- **ChatController**: Chat API controller
+- **TeamCoordinationController**: Team coordination API
+- **SmartTrackingController**: Smart tracking API
+- **PowerBIController**: Power BI API
+- **FileUploadController**: File upload API
 
-## 📞 联系方式
+## 🎨 Interface Features
 
-- 项目链接: [https://github.com/your-username/network-insights-ai](https://github.com/your-username/network-insights-ai)
-- 问题反馈: [Issues](https://github.com/your-username/network-insights-ai/issues)
+### Maritime Theme Design
 
----
+- **Ocean Color Scheme**: Deep blue to light blue gradient backgrounds
+- **Maritime Elements**: Dynamic container ships, cargo ships, anchors, compasses, and other maritime icons
+- **Wave Animations**: Three-layer wave effects creating ocean atmosphere
+- **Container Colors**: Orange, red, blue, green, yellow, and other container theme colors
+- **Gradient Backgrounds and Glass Effects**: Professional maritime theme visual effects
+- **Smooth Animations and Transitions**: Ship sailing, floating, rotating animations
+- **Responsive Layout**: Perfect adaptation for mobile and desktop
+- **Fullscreen Chat Mode**: Immersive AI assistant interaction experience
 
-**Network Insights** - 让全球协作更智能 🚀
+### User Experience Optimization
+
+- **Real-time Typing Indicator**: Display AI typing status
+- **Language Switch Notification**: Friendly notification when switching languages
+- **Smooth Scroll Navigation**: Smooth page navigation experience
+- **Error Handling**: Friendly error prompts and handling
+- **Loading States**: Clear loading state indicators
+- **Responsive Design**: Adapt to various screen sizes
